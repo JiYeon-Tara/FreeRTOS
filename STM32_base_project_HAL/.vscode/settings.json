@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "sys.h": "c",
+        "stm32f1xx.h": "c"
+    }
+}
