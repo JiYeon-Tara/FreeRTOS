@@ -1,6 +1,11 @@
 {
     "C_Cpp.errorSquiggles": "Enabled",
     "files.associations": {
-        "key.h": "c"
+        "key.h": "c",
+        "nrf_pwr_mgmt.h": "c",
+        "include_head.h": "c",
+        "service_ble.h": "c",
+        "boards.h": "c",
+        "nordic_common.h": "c"
     }
 }
