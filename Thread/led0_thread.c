@@ -1,5 +1,11 @@
 #include "led0_thread.h"
-#include "led.h"
+
+/**************************** global varible ******************************/
+
+/**************************** macro definition ******************************/
+
+/**************************** macro definition ******************************/
+
 
 //LED0任务句柄
 TaskHandle_t LED0Task_Handler;
@@ -16,7 +22,7 @@ void led0_task(void *pvParameters)
         printf("%s running..\r\n", __func__);
         vTaskDelay(500);		//延时，当前任务进入阻塞态，调度器进行任务调度
     }
-	return;					//正常来说执行不到这里
+	//return;					//正常来说执行不到这里
 } 
 
 

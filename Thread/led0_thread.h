@@ -3,15 +3,18 @@
 #include "sys.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "led.h"
+/**************************** global varible ******************************/
 
-//任务优先级
-#define LED0_TASK_PRIO		2
-//任务堆栈大小	
-#define LED0_STK_SIZE 		50  
-//任务句柄, 声明为全局变量
-extern TaskHandle_t LED0Task_Handler;
-//任务函数
-void led0_task(void *pvParameters);
+/**************************** macro definition ******************************/
+
+/**************************** macro definition ******************************/
+
+//LED task
+#define LED0_TASK_PRIO		2 //任务优先级
+#define LED0_STK_SIZE 		50  //任务堆栈大小	
+extern TaskHandle_t LED0Task_Handler; //任务句柄, 声明为全局变量
+void led0_task(void *pvParameters); //任务函数
 
 /**
 * @fun: 对于任务(线程)可以使用全局变量的方式

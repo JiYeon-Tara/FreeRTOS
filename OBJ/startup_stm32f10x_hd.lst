@@ -563,13 +563,13 @@ ARM Macro Assembler    Page 9
               00000400 
               00000200 
               00000000 
-Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
-ork --depend=..\..\obj\startup_stm32f10x_hd.d -o..\..\obj\startup_stm32f10x_hd.
-o -ID:\install_location\keil5_MDK5_files\FreeRTOS\2_FreeRTOS_HWLib_LED\example\
-0_task\RTE -ID:\install_location\keil5_MDK_Pack\Keil\STM32F1xx_DFP\1.0.5\Device
-\Include -ID:\install_location\keil5_MDK_Core\ARM\CMSIS\Include --predefine="__
-UVISION_VERSION SETA 518" --predefine="STM32F10X_HD SETA 1" --list=..\..\obj\st
-artup_stm32f10x_hd.lst ..\..\CORE\startup_stm32f10x_hd.s
+Command Line: --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interwork --de
+pend=..\..\obj\startup_stm32f10x_hd.d -o..\..\obj\startup_stm32f10x_hd.o -ID:\i
+nstall_location\GitFile\FreeRTOS\example\0_task\RTE -ID:\install_location\keil5
+_MDK_Pack\Keil\STM32F1xx_DFP\1.0.5\Device\Include -ID:\install_location\keil5_M
+DK_Core\ARM\CMSIS\Include --predefine="__UVISION_VERSION SETA 518" --predefine=
+"STM32F10X_HD SETA 1" --list=..\..\obj\startup_stm32f10x_hd.lst ..\..\CORE\star
+tup_stm32f10x_hd.s
 
 
 

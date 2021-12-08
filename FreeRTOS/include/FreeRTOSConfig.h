@@ -107,6 +107,7 @@
 #define configCPU_CLOCK_HZ						(SystemCoreClock) //CPU频率
 #define configTICK_RATE_HZ						(1000) //时钟节拍频率，这里设置为1000，周期就是1ms
 #define configMAX_PRIORITIES					(32)//可使用的任务最大优先级
+
 //这里配置的并不是所有任务的最小堆栈大小
 //指的是空闲任务的最小堆栈
 //其他任务的空间是可以小于这个值的
@@ -220,7 +221,12 @@
 /*                                FreeRTOS与中断服务函数有关的配置选项                                          */
 /***************************************************************************************************************/
 #define xPortPendSVHandler 	PendSV_Handler	//PendSV 的中断服务函数
-#define vPortSVCHandler 	SVC_Handler		//SVC 的中断服务函数
+#define vPortSVCHandler 	SVC_Handler		//SVC 的中断服务函数, 执行 SVC 指令的时候会调用这个
+
+/***************************************************************************************************************/
+/*                                FreeRTOS与静态任务配置选项                                          */
+/***************************************************************************************************************/
+#define configSUPPORT_STATIC_ALLOCATION 1           //支持静态创建任务
 
 #endif /* FREERTOS_CONFIG_H */
 

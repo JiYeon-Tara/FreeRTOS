@@ -1,6 +1,6 @@
 ..\..\obj\main.o: main.c
 ..\..\obj\main.o: main.h
-..\..\obj\main.o: ..\..\BSP\LED\led.h
+..\..\obj\main.o: ..\..\SYSTEM\delay\delay.h
 ..\..\obj\main.o: ..\..\SYSTEM\sys\sys.h
 ..\..\obj\main.o: ..\0_task\stm32f10x.h
 ..\..\obj\main.o: ..\..\CORE\core_cm3.h
@@ -31,7 +31,6 @@
 ..\..\obj\main.o: ..\..\STM32F10x_FWLib\inc\stm32f10x_usart.h
 ..\..\obj\main.o: ..\..\STM32F10x_FWLib\inc\stm32f10x_wwdg.h
 ..\..\obj\main.o: ..\..\STM32F10x_FWLib\inc\misc.h
-..\..\obj\main.o: ..\..\SYSTEM\delay\delay.h
 ..\..\obj\main.o: ..\..\FreeRTOS\include\FreeRTOS.h
 ..\..\obj\main.o: D:\install_location\keil5_MDK_Core\ARM\ARMCC\Bin\..\include\stddef.h
 ..\..\obj\main.o: ..\..\FreeRTOS\include\FreeRTOSConfig.h
@@ -44,8 +43,3 @@
 ..\..\obj\main.o: ..\..\FreeRTOS\include\mpu_wrappers.h
 ..\..\obj\main.o: ..\..\FreeRTOS\include\task.h
 ..\..\obj\main.o: ..\..\FreeRTOS\include\list.h
-..\..\obj\main.o: ..\..\BOARD_PERIPHERAL\TIMER\timer.h
-..\..\obj\main.o: ..\..\BOARD_PERIPHERAL\TIMER\my_timer.h
-..\..\obj\main.o: ..\..\Thread\led0_thread.h
-..\..\obj\main.o: ..\..\Thread\led1_thread.h
-..\..\obj\main.o: ..\..\Thread\interrupt_thread.h

@@ -11,5 +11,13 @@
 #ifndef __THREAD_MANAGER_H__
 #define __THREAD_MANAGER_H__
 
+
+/**************************** global varible ******************************/
+
+/**************************** macro definition ******************************/
+
+/**************************** macro definition ******************************/
+
+
 #endif // end __THREAD_MANAGER_H__
 

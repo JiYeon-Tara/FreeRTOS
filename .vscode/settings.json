@@ -3,6 +3,15 @@
         "thread_manager.h": "c",
         "delay.h": "c",
         "sys.h": "c",
-        "stm32f10x.h": "c"
+        "stm32f10x.h": "c",
+        "interrupt_thread.h": "c",
+        "led0_thread.h": "c",
+        "led.h": "c",
+        "thread_ui.h": "c",
+        "FONT.H": "cpp",
+        "lcd.h": "c",
+        "thread_key.h": "c",
+        "list.h": "c",
+        "timers.h": "c"
     }
 }

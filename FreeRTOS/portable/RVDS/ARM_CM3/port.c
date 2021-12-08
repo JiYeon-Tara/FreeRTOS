@@ -265,23 +265,46 @@ __asm void vPortSVCHandler( void )
 }
 /*-----------------------------------------------------------*/
 
+/**
+ * @brief 开始第一个任务
+ * 
+ * @return __asm 
+ */
 __asm void prvStartFirstTask( void )
 {
 	PRESERVE8
 
 	/* Use the NVIC offset register to locate the stack. */
+	// 将 0XE000ED08 保存在寄存器 R0 中。一般来说向量表（NVIC）应该是从起始地址(0X00000000)开始存储的，
+	// 不过，有些应用可能需要在运行时修改或重定义向量表，Cortex-M 处理器为此提供了一个叫做向量表重定位的特性。
+	// 向量表重定位特性提供了一个名为向量表偏移寄存器(VTOR)的可编程寄存器。
+	// VTOR 寄存器的地址就是 0XE000 ED08，通过这个寄存器可以重新定义向量表，
+	// 比如在 STM32F103 的 ST 官方库中会通过函数 SystemInit()来设置 VTOR 寄存器，
+	// 代码如下：
+	// SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; 	//VTOR=0x08000000+0X00
+	// 通过上面一行代码就将向量表开始地址重新定义到了 0X08000000，向量表的起始地址存储的就是 MSP 初始值。
 	ldr r0, =0xE000ED08
+	// 读取 R0 中存储的地址处的数据并将其保存在 R0 寄存器，也就是读取寄存器 VTOR中的值，并将其保存在 R0 寄存器中。
+	// 这一行代码执行完就以后 R0 的值应该为 0X0800 0000。
 	ldr r0, [r0]
+	// 读取 R0 中存储的地址处的数据并将其保存在 R0 寄存器，也就是读取地址 0X0800 0000 处存储的数据，并将其保存在 R0 寄存器中。
+	// 我们知道向量表的起始地址保存的就是主栈指针 MSP 的初始值，这一行代码执行完以后寄存器 R0 就存储 MSP 的初始值。
 	ldr r0, [r0]
 
 	/* Set the msp back to the start of the stack. */
+	//复位 MSP，R0 中保存了 MSP 的初始值(0x0800 0000 地址保存的值)，将其赋值给 MSP 就相当于复位 MSP
 	msr msp, r0
 	/* Globally enable interrupts. */
+	//使能中断，
 	cpsie i
+	//使能 hardfault
 	cpsie f
+	//数据同步和指令同步屏障
 	dsb
 	isb
 	/* Call SVC to start the first task. */
+	//调用 SVC 指令触发 SVC 中断，SVC 也叫做请求管理调用，SVC 和 PendSV 异常对于 OS 的设计来说非常重要。
+	//SVC 异常由 SVC 指令触发。
 	svc 0
 	nop
 	nop
@@ -343,14 +366,14 @@ BaseType_t xPortStartScheduler( void )
 	portNVIC_SYSPRI2_REG |= portNVIC_PENDSV_PRI;
 	portNVIC_SYSPRI2_REG |= portNVIC_SYSTICK_PRI;
 
-	/* Start the timer that generates the tick ISR.  Interrupts are disabled
-	here already. */
+	/* Start the timer that generates the tick ISR.  Interrupts are disabled here already. */
 	vPortSetupTimerInterrupt();
 
 	/* Initialise the critical nesting count ready for the first task. */
 	uxCriticalNesting = 0;
 
 	/* Start the first task. */
+	//开始第一个任务
 	prvStartFirstTask();
 
 	/* Should not get here! */
@@ -613,8 +636,7 @@ void xPortSysTickHandler( void )
 /*-----------------------------------------------------------*/
 
 /*
- * Setup the SysTick timer to generate the tick interrupts at the required
- * frequency.
+ * Setup the SysTick timer to generate the tick interrupts at the required frequency.
  */
 #if configOVERRIDE_DEFAULT_TICK_CONFIGURATION == 0
 
@@ -630,8 +652,11 @@ void xPortSysTickHandler( void )
 		#endif /* configUSE_TICKLESS_IDLE */
 
 		/* Configure SysTick to interrupt at the requested rate. */
+		//初始化 SysTick, 直接操作寄存器实现
 		portNVIC_SYSTICK_LOAD_REG = ( configSYSTICK_CLOCK_HZ / configTICK_RATE_HZ ) - 1UL;
 		portNVIC_SYSTICK_CTRL_REG = ( portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT | portNVIC_SYSTICK_ENABLE_BIT );
+
+		return;
 	}
 
 #endif /* configOVERRIDE_DEFAULT_TICK_CONFIGURATION */

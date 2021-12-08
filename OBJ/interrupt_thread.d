@@ -44,3 +44,4 @@
 ..\..\obj\interrupt_thread.o: ..\..\FreeRTOS\include\list.h
 ..\..\obj\interrupt_thread.o: ..\..\SYSTEM\delay\delay.h
 ..\..\obj\interrupt_thread.o: ..\..\BSP\LED\led.h
+..\..\obj\interrupt_thread.o: ..\..\Thread\thread_ui.h

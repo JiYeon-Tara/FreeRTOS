@@ -1,7 +1,12 @@
 #include "led1_thread.h"
 #include "led.h"
 
-  
+/**************************** global varible ******************************/
+
+/**************************** macro definition ******************************/
+
+/**************************** macro definition ******************************/
+
 //LED1任务句柄
 TaskHandle_t LED1Task_Handler;
 
@@ -17,5 +22,5 @@ void led1_task(void *pvParameters)
         vTaskDelay(2000);
 
     }
-	return;					//正常来说执行不到这里
+	//return;					//正常来说执行不到这里
 }
