@@ -42,6 +42,8 @@
 ..\..\obj\thread_ui.o: ..\..\FreeRTOS\include\mpu_wrappers.h
 ..\..\obj\thread_ui.o: ..\..\FreeRTOS\include\task.h
 ..\..\obj\thread_ui.o: ..\..\FreeRTOS\include\list.h
+..\..\obj\thread_ui.o: ..\..\FreeRTOS\include\queue.h
 ..\..\obj\thread_ui.o: ..\..\BSP\LED\led.h
 ..\..\obj\thread_ui.o: ..\..\BSP\LCD\lcd.h
 ..\..\obj\thread_ui.o: D:\install_location\keil5_MDK_Core\ARM\ARMCC\Bin\..\include\stdlib.h
+..\..\obj\thread_ui.o: D:\install_location\keil5_MDK_Core\ARM\ARMCC\Bin\..\include\string.h

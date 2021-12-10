@@ -2939,6 +2939,18 @@ void LCD_ShowString(u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p)
     }  
 }
 
+/**
+ * @brief 封装一个显示字符串的函数
+ * 
+ * @param str 
+ */
+void disp_str(u8* str)
+{
+	LCD_Fill(5, 230, 110, 245, WHITE); //先清除显示区域
+	LCD_ShowString(5, 230, 100, 16, 16, str);
+
+	return;
+}
 
 
 

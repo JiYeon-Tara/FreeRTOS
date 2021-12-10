@@ -12,12 +12,17 @@
 #include <stdint.h>
 #include "led.h"
 #include "lcd.h"
+#include <stdint.h>
+#include <string.h>
+
 /**************************** global varible ******************************/
 //LCD 刷屏时使用的颜色
 static int lcd_discolor[14] = { WHITE, BLACK, BLUE, BRED, 
                         GRED, GBLUE, RED, MAGENTA, 
                         GREEN, CYAN, YELLOW, BROWN, 
                         BRRED, GRAY };
+extern xQueueHandle Key_Queue;          //消息队列句柄
+extern xQueueHandle Dual_Comm_Queue;          //消息队列句柄
 /**************************** macro definition ******************************/
 
 /**************************** macro definition ******************************/
@@ -59,13 +64,50 @@ void thread_ui_entry(void *pvParameters)
 
     while(1)
     {
+        
+        //
+        // 阻塞接收来自按键线程的消息
+        //
+        if(Key_Queue != NULL)
+        {
+            uint8_t key_val;
+            //
+            // 要通过 xQueueReceive 的返回值进行判断
+            //
+            if(xQueueReceive(Key_Queue, &key_val, 10) == pdTRUE) //portMAX_DELAY
+            {
+                printf("ui_thread receive key val = %d\r\n", key_val);
+                //UI show string
+                //LCD_fill();
+            }
+        }
+
+        //
+        // queue接收来自Dual comm 线程的消息
+        //
+        if(Dual_Comm_Queue != NULL)
+        {
+            uint8_t uart_receive[200];
+            
+            //
+            // 每次只能读取一个字节 ???????????????
+            //
+            if(xQueueReceive(Dual_Comm_Queue, uart_receive, 10))   //一次只能读取一个字节吗？？？
+            {
+                uint8_t ix = 0;
+                printf("ui_thread receive from usart:\r\n");
+                for(ix = 0; ix < 200; ++ix)
+                    printf("%c", uart_receive[ix]);
+            }
+        }
+
         num++; //任务执 1 行次数加 1 注意 num 加到 255 的时候会清零！！
         //LED0 =! LED0;
         printf("任务 1 已经执行：%d 次\r\n", num);
         if(num==5) 
         {
             //vTaskDelete(Task2Task_Handler);//任务 1 执行 5 次删除任务 2 (4)
-            printf("任务 1 删除了任务 2!\r\n");
+            //printf("任务 1 删除了任务 2!\r\n");
         }
         LCD_Fill(6, 131, 114, 313, lcd_discolor[num % 14]); //填充区域
         //LCD_Fill(6, 131, 114, 313, BLACK); //填充区域

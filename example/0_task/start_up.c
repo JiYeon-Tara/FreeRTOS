@@ -28,7 +28,7 @@ void hardware_init()
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	delay_init();	    				//延时函数初始化	  
 	uart_init(115200);					//初始化串口
-	//LED_Init();		  					//初始化LED
+	LED_Init();		  					//初始化LED
 
     return;
 }
@@ -87,12 +87,12 @@ void start_task(void *pvParameters)
     //
     // interrupt task
     //
-    xTaskCreate((TaskFunction_t )interrupt_task,     
-                (const char*    )"interrupt_task",   
-                (uint16_t       )INTERRUPT_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )INTERRUPT_TASK_PRIO,
-                (TaskHandle_t*  )&INTERRUPTTask_Handler); 
+    // xTaskCreate((TaskFunction_t )interrupt_task,     
+    //             (const char*    )"interrupt_task",   
+    //             (uint16_t       )INTERRUPT_STK_SIZE, 
+    //             (void*          )NULL,
+    //             (UBaseType_t    )INTERRUPT_TASK_PRIO,
+    //             (TaskHandle_t*  )&INTERRUPTTask_Handler); 
 
     //
     // ui_task  
@@ -108,6 +108,15 @@ void start_task(void *pvParameters)
     vTaskDelete(StartTask_Handler); //删除开始任务
 
     //
+    // dual_comm_task  
+    //
+    xTaskCreate((TaskFunction_t )dual_comm_task,     
+                (const char*    )"thread_dual_comm",   
+                (uint16_t       )DUAL_COMM_STK_SIZE, 
+                (void*          )NULL,
+                (UBaseType_t    )DUAL_COMM_TASK_PRIO,
+                (TaskHandle_t*  )&DualCommTask_Handler); 
+    //
     // static create task
     // xTaskCreateStatic() 的返回值是任务句柄
     //
@@ -118,6 +127,10 @@ void start_task(void *pvParameters)
                                             (UBaseType_t    )THREAD_ALGO_PRIO,
                                             (StackType_t*   )ThreadAlgoStack,
                                             (StaticTask_t*  )&ThreadAlgoTCB );
+
+
+    // 当任务退出 while(1) 时, 一定要删除任务
+    vTaskDelete(StartTask_Handler); //删除开始任务
     taskEXIT_CRITICAL();            //退出临界区
 	
 	return;

@@ -5,18 +5,6 @@
 #if SYSTEM_SUPPORT_OS
 #include "FreeRTOS.h"					//FreeRTOS使用	  
 #endif
-//////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK STM32开发板
-//串口1初始化		   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//修改日期:2012/8/18
-//版本：V1.5
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2009-2019
-//All rights reserved
-//********************************************************************************
 //V1.3修改说明 
 //支持适应不同频率下的串口波特率设置.
 //加入了对printf的支持
@@ -68,7 +56,7 @@ u8 USART_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 //bit15，	接收完成标志
 //bit14，	接收到0x0d
 //bit13~0，	接收到的有效字节数目
-u16 USART_RX_STA=0;       //接收状态标记	  
+u16 USART_RX_STA = 0;       //接收状态标记	  
   
 void uart_init(u32 bound)
 {
@@ -115,29 +103,37 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 {
 	u8 Res;
 
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
-		{
-		Res =USART_ReceiveData(USART1);	//读取接收到的数据
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾), 回车, 换行
+	{
+		Res = USART_ReceiveData(USART1);	//读取接收到的数据
 		
-		if((USART_RX_STA&0x8000)==0)//接收未完成
+		if((USART_RX_STA & 0x8000) == 0)	//接收未完成 bit[15]
+		{
+			if(USART_RX_STA & 0x4000)//接收到了0x0d bit[14]
 			{
-			if(USART_RX_STA&0x4000)//接收到了0x0d
-				{
-				if(Res!=0x0a)USART_RX_STA=0;//接收错误,重新开始
-				else USART_RX_STA|=0x8000;	//接收完成了 
-				}
+				if(Res != 0x0a)
+					USART_RX_STA = 0;//接收错误,重新开始
+				else 
+					USART_RX_STA |= 0x8000;	//接收完成了 
+			}
 			else //还没收到0X0D
-				{	
-				if(Res==0x0d)USART_RX_STA|=0x4000;
+			{
+				if(Res == 0x0d)
+					USART_RX_STA |= 0x4000;
 				else
-					{
-					USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
+				{
+					//保存数据到 USART_RX_BUF
+					USART_RX_BUF[USART_RX_STA & 0X3FFF] = Res ;	// 0x3FFF =  (0011 1111)b
 					USART_RX_STA++;
-					if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//接收数据错误,重新开始接收	  
-					}		 
-				}
-			}   		 
-     } 
+					if(USART_RX_STA > (USART_REC_LEN-1)) //接收数据错误,重新开始接收, 一次最多接收 USART_REC_LEN
+						USART_RX_STA = 0;
+				}		 
+			}
+		}   		 
+	}
+
+	return; 
 } 
-#endif	
+
+#endif // end EN_USART1_RX
 

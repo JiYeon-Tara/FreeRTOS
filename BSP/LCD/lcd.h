@@ -189,6 +189,9 @@ void LCD_Scan_Dir(u8 dir);									//设置屏扫描方向
 void LCD_Display_Dir(u8 dir);								//设置屏幕显示方向
 void LCD_Set_Window(u16 sx,u16 sy,u16 width,u16 height);	//设置窗口	
 
+//define function
+void disp_str(u8* str);
+
 //写数据函数
 #define LCD_WR_DATA(data){\
 LCD_RS_SET;\

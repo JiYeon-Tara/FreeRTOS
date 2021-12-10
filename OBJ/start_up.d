@@ -50,6 +50,7 @@
 ..\..\obj\start_up.o: ..\..\Thread\led1_thread.h
 ..\..\obj\start_up.o: ..\..\Thread\interrupt_thread.h
 ..\..\obj\start_up.o: ..\..\Thread\thread_ui.h
+..\..\obj\start_up.o: ..\..\FreeRTOS\include\queue.h
 ..\..\obj\start_up.o: ..\..\Thread\thread_algo.h
 ..\..\obj\start_up.o: ..\..\Thread\thread_key.h
 ..\..\obj\start_up.o: ..\..\BSP\KEY\key.h

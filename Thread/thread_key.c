@@ -2,6 +2,8 @@
 
 /**************************** global varible ******************************/
 TaskHandle_t KeyTask_Handler;   //任务句柄
+xQueueHandle Key_Queue;          //消息队列句柄
+
 /**************************** macro definition ******************************/
 
 /**************************** macro definition ******************************/
@@ -12,7 +14,9 @@ TaskHandle_t KeyTask_Handler;   //任务句柄
  */
 static void hardware_init()
 {
+    KEY_Init();
 
+    return;
 }
 
 /**
@@ -30,7 +34,7 @@ static void software_init()
  */
 static void resource_init()
 {
-
+    Key_Queue = xQueueCreate(KEY_Q_SIZE, sizeof(uint8_t));  //初始化消息队列
 }
 
 /**
@@ -50,9 +54,17 @@ void key_task(void *pvParameters)
         //printf("Key thread running...\r\n");
         //在有操作系统的地方使用 轮询按键有问题
         key = KEY_Scan(0);
+
+        //发送
+        //printf("thread_key = %d\r\n", key);
+        if(Key_Queue!=NULL && key!=0)
+        {
+            xQueueSend(Key_Queue, &key, 1000);   //发送到消息队列
+        }
         switch(key)
         {
             //按键 WKUP 坏了
+            //导致按键一直往这里跑, 其它按键也无效了
             case WKUP_PRES:
                 //vTaskSuspend(Task1Task_Handler); //挂起任务 1 (2)
                 //printf("挂起任务 1 的运行!\r\n");
