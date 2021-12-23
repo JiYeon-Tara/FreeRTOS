@@ -43,4 +43,5 @@
 ..\..\obj\thread_dual_comm.o: ..\..\FreeRTOS\include\task.h
 ..\..\obj\thread_dual_comm.o: ..\..\FreeRTOS\include\list.h
 ..\..\obj\thread_dual_comm.o: ..\..\FreeRTOS\include\queue.h
+..\..\obj\thread_dual_comm.o: ..\..\FreeRTOS\include\semphr.h
 ..\..\obj\thread_dual_comm.o: D:\install_location\keil5_MDK_Core\ARM\ARMCC\Bin\..\include\stdlib.h

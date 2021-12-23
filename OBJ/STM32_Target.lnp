@@ -38,6 +38,8 @@
 "..\..\obj\thread_algo.o"
 "..\..\obj\thread_key.o"
 "..\..\obj\thread_dual_comm.o"
+"..\..\obj\str_operation.o"
+"..\..\obj\command_parse.o"
 --nodebug --strict --scatter "..\..\OBJ\STM32_Target.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

@@ -21,8 +21,8 @@ static int lcd_discolor[14] = { WHITE, BLACK, BLUE, BRED,
                         GRED, GBLUE, RED, MAGENTA, 
                         GREEN, CYAN, YELLOW, BROWN, 
                         BRRED, GRAY };
-extern xQueueHandle Key_Queue;          //消息队列句柄
-extern xQueueHandle Dual_Comm_Queue;          //消息队列句柄
+extern xQueueHandle Key_Queue;          //消息队列句柄, from thread_key.c
+extern xQueueHandle Dual_Comm_Queue;          //消息队列句柄, from thread_dual_comm.c
 /**************************** macro definition ******************************/
 
 /**************************** macro definition ******************************/

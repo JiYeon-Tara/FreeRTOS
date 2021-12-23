@@ -43,3 +43,7 @@
 ..\..\obj\led0_thread.o: ..\..\FreeRTOS\include\task.h
 ..\..\obj\led0_thread.o: ..\..\FreeRTOS\include\list.h
 ..\..\obj\led0_thread.o: ..\..\BSP\LED\led.h
+..\..\obj\led0_thread.o: ..\..\FreeRTOS\include\semphr.h
+..\..\obj\led0_thread.o: ..\..\FreeRTOS\include\queue.h
+..\..\obj\led0_thread.o: ..\..\utils\str_operation.h
+..\..\obj\led0_thread.o: ..\..\utils\command_parse.h

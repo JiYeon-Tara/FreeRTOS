@@ -1,6 +1,7 @@
 问题们:
 
 (1)堆栈分配在哪里, 都是在 RAM 吗？ 有没有可能在 flash ， 应该不会， flash 相当于磁盘，
+(2)后面可以添加一个cmsis.h, cmsis.c 提供接口, 将 FreeRTOS 的接口进行封装, 这样切换操作系统时，只需要修改这个文件即可, 增强代码的可移植性;
 
 
 
@@ -43,7 +44,9 @@ QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize);
 
 ###### 1.2 信号量
 
-二值信号量
+信号量可以用于控制对共享资源的访问，也可以用于线程同步;
+
+二值信号量:用于任务与任务 以及 任务与中断之间的同步;
 
 计数型信号量
 

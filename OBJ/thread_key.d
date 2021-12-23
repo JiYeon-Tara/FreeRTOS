@@ -44,3 +44,4 @@
 ..\..\obj\thread_key.o: ..\..\FreeRTOS\include\list.h
 ..\..\obj\thread_key.o: ..\..\BSP\KEY\key.h
 ..\..\obj\thread_key.o: ..\..\FreeRTOS\include\queue.h
+..\..\obj\thread_key.o: ..\..\FreeRTOS\include\semphr.h

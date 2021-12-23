@@ -3,9 +3,11 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "semphr.h"
 
 /**************************** global varible ******************************/
 extern xQueueHandle Dual_Comm_Queue;          //队列句柄
+extern SemaphoreHandle_t BinarySemaphore;      //二值信号量
 /**************************** macro definition ******************************/
 #define DUAL_COMM_Q_SIZE            256     //队列大小
 

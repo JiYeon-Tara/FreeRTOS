@@ -13,6 +13,8 @@
         "thread_key.h": "c",
         "list.h": "c",
         "timers.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "semphr.h": "c",
+        "str_operation.h": "c"
     }
 }

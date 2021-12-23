@@ -54,4 +54,5 @@
 ..\..\obj\start_up.o: ..\..\Thread\thread_algo.h
 ..\..\obj\start_up.o: ..\..\Thread\thread_key.h
 ..\..\obj\start_up.o: ..\..\BSP\KEY\key.h
+..\..\obj\start_up.o: ..\..\FreeRTOS\include\semphr.h
 ..\..\obj\start_up.o: ..\..\Thread\thread_dual_comm.h

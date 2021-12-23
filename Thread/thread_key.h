@@ -5,6 +5,7 @@
 #include "task.h"
 #include "key.h"
 #include "queue.h"
+#include "semphr.h"
 
 /**************************** global varible ******************************/
 extern xQueueHandle Key_Queue;          //消息队列句柄

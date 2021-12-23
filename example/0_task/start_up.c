@@ -57,12 +57,12 @@ void start_task(void *pvParameters)
     //
     //创建LED0任务
     //
-    // xTaskCreate((TaskFunction_t )led0_task,     	
-    //             (const char*    )"led0_task",   	
-    //             (uint16_t       )LED0_STK_SIZE, 
-    //             (void*          )NULL,				
-    //             (UBaseType_t    )LED0_TASK_PRIO,	
-    //             (TaskHandle_t*  )&LED0Task_Handler);  
+    xTaskCreate((TaskFunction_t )led0_task,     	
+                (const char*    )"led0_task",   	
+                (uint16_t       )LED0_STK_SIZE, 
+                (void*          )NULL,				
+                (UBaseType_t    )LED0_TASK_PRIO,	
+                (TaskHandle_t*  )&LED0Task_Handler);  
 
     //
     //创建LED1任务

@@ -18,8 +18,15 @@
 /**************************** global varible ******************************/
 TaskHandle_t DualCommTask_Handler;   //任务句柄
 xQueueHandle Dual_Comm_Queue;          //消息队列句柄
+SemaphoreHandle_t BinarySemaphore;      //二值信号量
 
 /**************************** macro definition ******************************/
+//用于串口控制 LED 的命令
+#define LED0_ON     1
+#define LED0_OFF    2
+#define LED1_ON     3
+#define LED1_OFF    4
+#define COMMAND_ERR 0xFF
 
 /**************************** macro definition ******************************/
 
@@ -51,9 +58,15 @@ static void software_init()
  */
 static void resource_init()
 {
-    Dual_Comm_Queue = xQueueCreate(DUAL_COMM_Q_SIZE, sizeof(uint8_t));  //initialize queue
+    //
+    // initialize queue
+    //
+    Dual_Comm_Queue = xQueueCreate(DUAL_COMM_Q_SIZE, sizeof(uint8_t));  
 
-
+    //
+    // 初始化二值信号量
+    //
+    BinarySemaphore = xSemaphoreCreateBinary();
 }
 
 /**
@@ -89,6 +102,16 @@ void dual_comm_task(void *pvParameters)
             // 一次发送大量数据
             //
             xQueueSend(Dual_Comm_Queue, USART_RX_BUF, 10);
+
+            //
+            // 通过 semaphore 发送到 thread_led0 线程
+            // 应该是串口中断中释放信号量: dual_comm_thread 中进行解析
+            //
+            if(BinarySemaphore != NULL)
+            {
+                xSemaphoreGive(BinarySemaphore);
+            }
+            
 
 			USART_RX_STA = 0;   //复位标志位
             memset(USART_RX_BUF, 0, USART_REC_LEN); //清除全局变量缓存
