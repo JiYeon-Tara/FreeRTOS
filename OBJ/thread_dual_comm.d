@@ -44,4 +44,6 @@
 ..\..\obj\thread_dual_comm.o: ..\..\FreeRTOS\include\list.h
 ..\..\obj\thread_dual_comm.o: ..\..\FreeRTOS\include\queue.h
 ..\..\obj\thread_dual_comm.o: ..\..\FreeRTOS\include\semphr.h
+..\..\obj\thread_dual_comm.o: ..\..\FreeRTOS\include\timers.h
 ..\..\obj\thread_dual_comm.o: D:\install_location\keil5_MDK_Core\ARM\ARMCC\Bin\..\include\stdlib.h
+..\..\obj\thread_dual_comm.o: ..\..\BOARD_PERIPHERAL\TIMER\my_timer.h

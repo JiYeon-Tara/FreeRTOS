@@ -4,6 +4,7 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+#include "timers.h"
 
 /**************************** global varible ******************************/
 extern xQueueHandle Dual_Comm_Queue;          //╤сап╬Д╠З

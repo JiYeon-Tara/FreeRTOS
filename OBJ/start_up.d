@@ -45,6 +45,7 @@
 ..\..\obj\start_up.o: ..\..\FreeRTOS\include\list.h
 ..\..\obj\start_up.o: ..\..\BOARD_PERIPHERAL\TIMER\timer.h
 ..\..\obj\start_up.o: ..\..\BOARD_PERIPHERAL\TIMER\my_timer.h
+..\..\obj\start_up.o: ..\..\FreeRTOS\include\timers.h
 ..\..\obj\start_up.o: ..\..\Thread\led0_thread.h
 ..\..\obj\start_up.o: ..\..\BSP\LED\led.h
 ..\..\obj\start_up.o: ..\..\Thread\led1_thread.h

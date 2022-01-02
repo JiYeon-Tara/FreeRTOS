@@ -3,6 +3,7 @@
 #include "str_operation.h"
 #include "command_parse.h"
 #include "usart.h"  //需要用到串口中的全局变量
+//#include "timer.h"
 /**************************** global varible ******************************/
 extern SemaphoreHandle_t BinarySemaphore;      //二值信号量
 
