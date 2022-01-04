@@ -5,14 +5,24 @@
 //0,不支持os
 //1,支持os
 #define SYSTEM_SUPPORT_OS		1		//定义系统文件夹是否支持OS
-																	    
-	 
-//位带操作,实现51类似的GPIO控制功能
-//具体实现思想,参考<<CM3权威指南>>第五章(87页~92页).
-//IO口操作宏定义
-#define BITBAND(addr, bitnum) ((addr & 0xF0000000)+0x2000000+((addr &0xFFFFF)<<5)+(bitnum<<2)) 
-#define MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) 
-#define BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) 
+
+/**
+ * @brief C 语言实现位带(bit band) 操作的原理, 直接操作内存
+ * 
+ */
+// #define  DEVICE_REG0        ((volatile unsigned long *)(0x40000000)) //位带区
+// #define DEVICE_REG0_BIT0    ((volatile unsigned long *)(0x42000000)) //位带别名去
+// *DEVICE_REG0 = 0xAB;                    //使用地址访问寄存器
+// *DEVICE_REG0 = *DEVICE_REG0 | 0x2;      //传统方法置位 bit1
+// *DEVICE_REG0_BIT0 = 0x1;                //使用位带别名设置 bit1
+/**
+ * @brief  为了简化位带操作, 可以定义宏
+ * 具体实现思想,参考<<CM3权威指南>>第五章(87页~92页).
+ */
+#define BITBAND(addr, bitnum)   ((addr & 0xF0000000) + 0x2000000 + ((addr&0xFFFFF)<<5) + (bitnum<<2)) //这个看不太懂????????????????
+#define MEM_ADDR(addr)  *((volatile unsigned long  *)(addr))        //把该地址转换成一个指针
+#define BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum))    //
+
 //IO口地址映射
 #define GPIOA_ODR_Addr    (GPIOA_BASE+12) //0x4001080C 
 #define GPIOB_ODR_Addr    (GPIOB_BASE+12) //0x40010C0C 
@@ -32,7 +42,7 @@
  
 //IO口操作,只对单一的IO口!
 //确保n的值小于16!
-#define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //输出 
+#define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //输出, 使用: PAout(1) = 1; 
 #define PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  //输入 
 
 #define PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  //输出 

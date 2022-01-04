@@ -4,12 +4,11 @@
 #if SYSTEM_SUPPORT_OS
 #include "FreeRTOS.h"					//FreeRTOS使用		  
 #include "task.h"
+#endif // end SYSTEM_SUPPORT_OS
 
-#endif
 
-
-static u8  fac_us=0;							//us延时倍乘数			   
-static u16 fac_ms=0;							//ms延时倍乘数,在ucos下,代表每个节拍的ms数
+static u8  fac_us=0;							//us 延时倍乘数(每 us 对应的节拍数(tick count))		   
+static u16 fac_ms=0;							//ms 延时倍乘数,在ucos下,代表每个节拍的ms数
 	
 	
 extern void xPortSysTickHandler(void);
@@ -17,10 +16,10 @@ extern void xPortSysTickHandler(void);
 //systick中断服务函数,使用ucos时用到
 //这时候需要注释掉: stm32f10x_it.c 文件中的 SysTick_Handler() 函数
 void SysTick_Handler(void)
-{	
-    if(xTaskGetSchedulerState()!=taskSCHEDULER_NOT_STARTED)//系统已经运行
+{
+    if(xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)//系统已经运行
     {
-        xPortSysTickHandler();	
+        xPortSysTickHandler(); //调用了操作系统的滴答定时器的xPortSysTickHandler, 为操作系统提供时钟
     }
 }
 		   
@@ -33,17 +32,20 @@ void delay_init()
 	u32 reload;
 	//这里不需要 / 8
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);//选择外部时钟  HCLK
-	
-	fac_us=SystemCoreClock/1000000;				//不论是否使用OS,fac_us都需要使用
-	reload=SystemCoreClock/1000000;				//每秒钟的计数次数 单位为M  
-	reload*=1000000/configTICK_RATE_HZ;			//根据configTICK_RATE_HZ设定溢出时间
-												//reload为24位寄存器,最大值:16777216,在72M下,约合0.233s左右	
-	fac_ms=1000/configTICK_RATE_HZ;				//代表OS可以延时的最少单位	   
 
-	SysTick->CTRL|=SysTick_CTRL_TICKINT_Msk;   	//开启SYSTICK中断
-	SysTick->LOAD=reload; 						//每1/configTICK_RATE_HZ秒中断一次	
-	SysTick->CTRL|=SysTick_CTRL_ENABLE_Msk;   	//开启SYSTICK    
-}								    
+	fac_us = SystemCoreClock / 1000000;				//不论是否使用OS,fac_us都需要使用
+	//
+	// 计算 Systick 的重装值
+	//
+	reload = SystemCoreClock / 1000000;				//每秒钟的计数次数 单位为M  
+	reload *= 1000000 / configTICK_RATE_HZ;			//根据configTICK_RATE_HZ设定溢出时间
+													//reload为24位寄存器,最大值:16777216,在72M下,约合0.233s左右	
+	fac_ms = 1000 / configTICK_RATE_HZ;				//代表OS可以延时的最少单位, 每 ms 对应的 OS 的 Systick 的数目  
+
+	SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;   	//开启 SYSTICK 中断
+	SysTick->LOAD = reload; 						//每 1/configTICK_RATE_HZ(T = 1/f) 秒中断一次	
+	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;   	//开启 SYSTICK    
+}
 
 
 //延时nus
@@ -52,24 +54,27 @@ void delay_init()
 void delay_us(u32 nus)
 {		
 	u32 ticks;
-	u32 told,tnow,tcnt=0;
-	u32 reload=SysTick->LOAD;				//LOAD的值	    	 
-	ticks=nus*fac_us; 						//需要的节拍数 
-	told=SysTick->VAL;        				//刚进入时的计数器值
+	u32 told, tnow, tcnt = 0;
+	u32 reload = SysTick->LOAD;				//LOAD的值	    	 
+	ticks = nus * fac_us; 						//需要的节拍数 
+	told = SysTick->VAL;        				//刚进入时的计数器值
 	while(1)
 	{
-		tnow=SysTick->VAL;	
-		if(tnow!=told)
+		tnow = SysTick->VAL;	
+		if(tnow != told)
 		{	    
-			if(tnow<told)
-				tcnt+=told-tnow;	//这里注意一下SYSTICK是一个递减的计数器就可以了.
+			if(tnow < told)
+				tcnt += told-tnow;	//这里注意一下SYSTICK是一个递减的计数器就可以了.
 			else 
-				tcnt+=reload-tnow+told;	    
-			told=tnow;
-			if(tcnt>=ticks)break;			//时间超过/等于要延迟的时间,则退出.
+				tcnt += reload-tnow+told;	    
+			told = tnow;
+			if(tcnt >= ticks) //时间超过/等于要延迟的时间,则退出.
+				break;			
 		}  
-	};										    
+	}
+
 }  
+
 //延时nms
 //nms:要延时的ms数
 //nms:0~65535
@@ -77,13 +82,13 @@ void delay_ms(u32 nms)
 {	
 	if(xTaskGetSchedulerState()!=taskSCHEDULER_NOT_STARTED)//系统已经运行
 	{		
-		if(nms>=fac_ms)						//延时的时间大于OS的最少时间周期 
+		if(nms >= fac_ms)						//延时的时间大于OS的最少时间周期 
 		{ 
-   			vTaskDelay(nms/fac_ms);	 		//FreeRTOS延时
+   			vTaskDelay(nms / fac_ms);	 		//FreeRTOS延时
 		}
-		nms%=fac_ms;						//OS已经无法提供这么小的延时了,采用普通方式延时    
+		nms %= fac_ms;						//OS已经无法提供这么小的延时了,采用普通方式延时    
 	}
-	delay_us((u32)(nms*1000));				//普通方式延时
+	delay_us((u32)(nms*1000));				//ms延时精度不够, 普通方式 us 延时
 }
 
 //延时nms,不会引起任务调度
@@ -91,7 +96,7 @@ void delay_ms(u32 nms)
 void delay_xms(u32 nms)
 {
 	u32 i;
-	for(i=0;i<nms;i++) 
+	for(i = 0; i < nms; i++) 
 		delay_us(1000);
 }
 

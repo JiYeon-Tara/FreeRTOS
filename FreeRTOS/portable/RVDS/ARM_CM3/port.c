@@ -473,6 +473,7 @@ void xPortSysTickHandler( void )
 		{
 			/* A context switch is required.  Context switching is performed in
 			the PendSV interrupt.  Pend the PendSV interrupt. */
+			//进行了上下文切换
 			portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;
 		}
 	}

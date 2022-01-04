@@ -15,6 +15,7 @@
         "timers.h": "c",
         "queue.h": "c",
         "semphr.h": "c",
-        "str_operation.h": "c"
+        "str_operation.h": "c",
+        "freertos.h": "c"
     }
 }
