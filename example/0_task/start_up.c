@@ -9,13 +9,14 @@
 #include "thread_algo.h"
 #include "thread_key.h"
 #include "thread_dual_comm.h"
+#include "thread_monitor.h"
+#include "thread_manager.h"
 /**************************** global varible ******************************/
 TaskHandle_t StartTask_Handler;     //任务句柄
 
 /**************************** macro definition ******************************/
 
 /**************************** macro definition ******************************/
-
 
 /**
  * @brief hardware_init
@@ -55,6 +56,16 @@ void start_task(void *pvParameters)
     taskENTER_CRITICAL();           //进入临界区,临界段代码保护
 
     //
+    // Manager task
+    //
+    xTaskCreate((TaskFunction_t )thread_manager_task,     
+                (const char*    )"manager_task",   
+                (uint16_t       )MANAGER_STK_SIZE, 
+                (void*          )NULL,
+                (UBaseType_t    )MANAGER_TASK_PRIO,
+                (TaskHandle_t*  )&ManagerTask_Handler); 
+
+    //
     //创建LED0任务
     //
     xTaskCreate((TaskFunction_t )led0_task,     	
@@ -67,12 +78,12 @@ void start_task(void *pvParameters)
     //
     //创建LED1任务
     //
-    // xTaskCreate((TaskFunction_t )led1_task,     
-    //             (const char*    )"led1_task",   
-    //             (uint16_t       )LED1_STK_SIZE, 
-    //             (void*          )NULL,
-    //             (UBaseType_t    )LED1_TASK_PRIO,
-    //             (TaskHandle_t*  )&LED1Task_Handler); 
+    xTaskCreate((TaskFunction_t )led1_task,     
+                (const char*    )"led1_task",   
+                (uint16_t       )LED1_STK_SIZE, 
+                (void*          )NULL,
+                (UBaseType_t    )LED1_TASK_PRIO,
+                (TaskHandle_t*  )&LED1Task_Handler); 
 
     //
     // key task
@@ -103,30 +114,39 @@ void start_task(void *pvParameters)
                 (void*          )NULL,
                 (UBaseType_t    )THREAD_UI_PRIO,
                 (TaskHandle_t*  )&Thread_UI_Handler); 
-     
-    // 当任务退出 while(1) 时, 一定要删除任务
-    vTaskDelete(StartTask_Handler); //删除开始任务
 
     //
     // dual_comm_task  
     //
-    xTaskCreate((TaskFunction_t )dual_comm_task,     
-                (const char*    )"thread_dual_comm",   
-                (uint16_t       )DUAL_COMM_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )DUAL_COMM_TASK_PRIO,
-                (TaskHandle_t*  )&DualCommTask_Handler); 
+    // xTaskCreate((TaskFunction_t )dual_comm_task,     
+    //             (const char*    )"thread_dual_comm",   
+    //             (uint16_t       )DUAL_COMM_STK_SIZE, 
+    //             (void*          )NULL,
+    //             (UBaseType_t    )DUAL_COMM_TASK_PRIO,
+    //             (TaskHandle_t*  )&DualCommTask_Handler); 
     //
     // static create task
     // xTaskCreateStatic() 的返回值是任务句柄
     //
-    ThreadAlgo_Handler = xTaskCreateStatic(	(TaskFunction_t )thread_algo_enery,
-                                            (const char*    )"thread_algo",
-                                            (uint16_t       )THREAD_ALGO_STK_SIZE,
-                                            ( void *        )NULL,
-                                            (UBaseType_t    )THREAD_ALGO_PRIO,
-                                            (StackType_t*   )ThreadAlgoStack,
-                                            (StaticTask_t*  )&ThreadAlgoTCB );
+    // ThreadAlgo_Handler = xTaskCreateStatic(	(TaskFunction_t )thread_algo_enery,
+    //                                         (const char*    )"thread_algo",
+    //                                         (uint16_t       )THREAD_ALGO_STK_SIZE,
+    //                                         ( void *        )NULL,
+    //                                         (UBaseType_t    )THREAD_ALGO_PRIO,
+    //                                         (StackType_t*   )ThreadAlgoStack,
+    //                                         (StaticTask_t*  )&ThreadAlgoTCB );
+    
+    //
+    // monitor thread
+    //
+    monitor_binary_handle = xTaskCreateStatic(	(TaskFunction_t )thread_monitor_enery,
+                                                (const char*    )"thread_monitor",
+                                                (uint16_t       )THREAD_MONITOR_STK_SIZE,
+                                                ( void *        )NULL,
+                                                (UBaseType_t    )THREAD_MOINITOR_PRIO,
+                                                (StackType_t*   )ThreadMonitorStack,
+                                                (StaticTask_t*  )&ThreadMonitorTCB );
+        
 
 
     // 当任务退出 while(1) 时, 一定要删除任务

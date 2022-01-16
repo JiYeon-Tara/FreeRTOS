@@ -2,6 +2,7 @@
 #define __LED0_THREAD_H__
 #include "sys.h"
 #include "FreeRTOS.h"
+#include "semphr.h"
 #include "task.h"
 #include "led.h"
 

@@ -67,7 +67,7 @@ void thread_algo_enery(void *pvParameters) //ÈÎÎñº¯Êý
 
     while(1)
     {
-        printf("Thread_algo running...\r\n");
+        //printf("Thread_algo running...\r\n");
         vTaskDelay(2000);
     }
 }

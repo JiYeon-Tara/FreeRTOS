@@ -18,7 +18,7 @@
 /**************************** global varible ******************************/
 TaskHandle_t DualCommTask_Handler;      //任务句柄
 xQueueHandle Dual_Comm_Queue;           //消息队列句柄
-SemaphoreHandle_t BinarySemaphore;      //二值信号量
+SemaphoreHandle_t BinarySemaphore;      //二值信号量 -> 会导致"优先级翻转", 使用互斥信号量
 xTimerHandle g_timer_handle;            //定时器句柄
 /**************************** macro definition ******************************/
 //用于串口控制 LED 的命令
@@ -29,8 +29,6 @@ xTimerHandle g_timer_handle;            //定时器句柄
 #define COMMAND_ERR 0xFF
 
 /**************************** macro definition ******************************/
-
-
 
 /**
  * @brief hardware_init
@@ -69,12 +67,12 @@ static void resource_init()
     BinarySemaphore = xSemaphoreCreateBinary();
 
     //初始化定时器
-    g_timer_handle = xTimerCreate((const char*)"periodic_timer",
-                                  (TickType_t)1000,
-                                  (UBaseType_t)pdTRUE,
-                                  (void*)1,
-                                  (TimerCallbackFunction_t)periodic_timer_cb);
-    xTimerStart(g_timer_handle, 0);
+    // g_timer_handle = xTimerCreate((const char*)"periodic_timer",
+    //                               (TickType_t)1000,
+    //                               (UBaseType_t)pdTRUE,
+    //                               (void*)1,
+    //                               (TimerCallbackFunction_t)periodic_timer_cb);
+    // xTimerStart(g_timer_handle, 0);
 }
 
 /**

@@ -22,7 +22,7 @@ static int lcd_discolor[14] = { WHITE, BLACK, BLUE, BRED,
                         GREEN, CYAN, YELLOW, BROWN, 
                         BRRED, GRAY };
 extern xQueueHandle Key_Queue;          //消息队列句柄, from thread_key.c
-extern xQueueHandle Dual_Comm_Queue;          //消息队列句柄, from thread_dual_comm.c
+extern xQueueHandle Dual_Comm_Queue;    //消息队列句柄, from thread_dual_comm.c
 /**************************** macro definition ******************************/
 
 /**************************** macro definition ******************************/
@@ -32,7 +32,7 @@ TaskHandle_t Thread_UI_Handler; //任务句柄
 
 static void thread_ui_hardware_init()
 {
-    LCD_Init();         //初始化 LCD
+    LCD_Init(); //初始化 LCD
 
     return;
 }
@@ -73,10 +73,16 @@ void thread_ui_entry(void *pvParameters)
             uint8_t key_val;
             //
             // 要通过 xQueueReceive 的返回值进行判断
+            // UI 线程每 2s 才可以处理一个队列中的一个消息
+            // key thread 会将消息都放到一个队列里, 慢慢处理(太快的话队列还是会爆)
+            // 这里使用一直阻塞读队列的方式, 可以使用 任务通知 + 队列的方式, 队列中塞入数据, 就发个通知, 让 UI 线程去处理
+            // #define UI_THREAD_MSG_QUEUE_READY    0x00000001
+            // xTaskNotify()
             //
-            if(xQueueReceive(Key_Queue, &key_val, 10) == pdTRUE) //portMAX_DELAY
+            if(xQueueReceive(Key_Queue, &key_val, portMAX_DELAY) == pdTRUE) //portMAX_DELAY, 阻塞等待
             {
                 printf("ui_thread receive key val = %d\r\n", key_val);
+                vTaskDelay(2000);   // 模拟 UI 线程 2s 才可以处理一次消息
                 //UI show string
                 //LCD_fill();
             }
@@ -103,7 +109,7 @@ void thread_ui_entry(void *pvParameters)
 
         num++; //任务执 1 行次数加 1 注意 num 加到 255 的时候会清零！！
         //LED0 =! LED0;
-        printf("任务 1 已经执行：%d 次\r\n", num);
+        //printf("任务 1 已经执行：%d 次\r\n", num);
         if(num==5) 
         {
             //vTaskDelete(Task2Task_Handler);//任务 1 执行 5 次删除任务 2 (4)

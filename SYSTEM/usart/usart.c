@@ -1,5 +1,8 @@
 #include "sys.h"
 #include "usart.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
+
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //V1.3修改说明 
 //支持适应不同频率下的串口波特率设置.
@@ -14,6 +17,10 @@
 //V1.5修改说明
 //1,增加了对UCOSII的支持
 ////////////////////////////////////////////////////////////////////////////////// 	 
+
+/**************************** global varible declaration ******************************/
+extern SemaphoreHandle_t monitor_binary_handle;    //二值信号量
+
 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
@@ -83,7 +90,7 @@ void uart_init(u32 bound)
 
 	//Usart1 NVIC 配置
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=3 ;//抢占优先级3
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3 ;//抢占优先级3
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;		//子优先级3
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化VIC寄存器
@@ -106,6 +113,7 @@ void uart_init(u32 bound)
 void USART1_IRQHandler(void)
 {
 	u8 Res;
+	BaseType_t xHigherPriorityTaskWoken;
 
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾), 回车, 换行
 	{
@@ -136,6 +144,16 @@ void USART1_IRQHandler(void)
 		}   		 
 	}
 
+	//
+	// 释放信号量
+	// 这里触发中断出现问题, 可以用 GDB 调试一下看看
+	// Error:..\..\FreeRTOS\portable\RVDS\ARM_CM3\port.c,714
+	//
+	// if(USART_RX_STA&0x8000 && monitor_binary_handle!=NULL)
+	// {
+	// 	xSemaphoreGiveFromISR(monitor_binary_handle, &xHigherPriorityTaskWoken);
+	// 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);	//需要得话进行一次任务切换
+	// }
 	return; 
 } 
 

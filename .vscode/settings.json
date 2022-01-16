@@ -16,6 +16,8 @@
         "queue.h": "c",
         "semphr.h": "c",
         "str_operation.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "string.h": "c",
+        "usart.h": "c"
     }
 }
