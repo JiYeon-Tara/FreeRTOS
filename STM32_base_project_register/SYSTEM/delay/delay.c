@@ -5,18 +5,6 @@
 #include "includes.h"					//ucos 使用	  
 #endif
 //////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK STM32开发板
-//使用SysTick的普通计数模式对延迟进行管理（适合STM32F10x系列）
-//包括delay_us,delay_ms
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//创建日期:2010/1/1
-//版本：V1.8
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2009-2019
-//All rights reserved
-//********************************************************************************
 //V1.2修改说明
 //修正了中断中调用出现死循环的错误
 //防止延时不准确,采用do while结构!
@@ -43,7 +31,7 @@
 //delay_intnesting改为：delay_osintnesting
 ////////////////////////////////////////////////////////////////////////////////// 	 
 
-static u8  fac_us=0;							//us延时倍乘数			   
+static u8  fac_us=0;							//us延时倍乘数, 每个 Tick 代表的 us 延时时间, 个 us 需要的 systick 数
 static u16 fac_ms=0;							//ms延时倍乘数,在ucos下,代表每个节拍的ms数
 	
 	
@@ -110,7 +98,7 @@ void delay_ostimedly(u32 ticks)
  
 //systick中断服务函数,使用OS时用到
 void SysTick_Handler(void)
-{	
+{
 	if(delay_osrunning==1)					//OS开始跑了,才执行正常的调度处理
 	{
 		OSIntEnter();						//进入中断
@@ -119,28 +107,30 @@ void SysTick_Handler(void)
 	}
 }
 #endif
-			   
-//初始化延迟函数
-//当使用OS的时候,此函数会初始化OS的时钟节拍
-//SYSTICK的时钟固定为HCLK时钟的1/8
-//SYSCLK:系统时钟
-void delay_init(u8 SYSCLK)
+
+/**
+ * @brief 初始化延迟函数, 当使用OS的时候,此函数会初始化OS的时钟节拍
+ * 
+ * @param HCLK 外部高速时钟,系统时钟, SYSTICK的时钟固定为HCLK时钟的1/8, 单位 Hz
+ */
+void delay_init(uint32_t HCLK)
 {
-#if SYSTEM_SUPPORT_OS 						//如果需要支持OS.
+#if SYSTEM_SUPPORT_OS 			            //如果需要支持OS.
 	u32 reload;
 #endif
- 	SysTick->CTRL&=~(1<<2);					//SYSTICK使用外部时钟源	 
-	fac_us=SYSCLK/8;						//不论是否使用OS,fac_us都需要使用
-#if SYSTEM_SUPPORT_OS 						//如果需要支持OS.
-	reload=SYSCLK/8;						//每秒钟的计数次数 单位为K	   
-	reload*=1000000/delay_ostickspersec;	//根据delay_ostickspersec设定溢出时间
+ 	SysTick->CTRL &= ~(1<<2);				//SYSTICK使用外部时钟源 SysTick->CTRL, bit[2]:0-内部时钟, 1-外部时钟;
+    //每个 us 需要的 systick 数
+	fac_us = HCLK / (8 * 1000000);						//不论是否使用OS,fac_us都需要使用, SYSTICK的时钟固定为HCLK时钟的1/8
+#if SYSTEM_SUPPORT_OS 						//如果需要支持OS. 这里不对吧?
+	reload = HCLK/8;						//每秒钟的计数次数 单位为K	   
+	reload *= 1000000/delay_ostickspersec;	//根据delay_ostickspersec设定溢出时间
 											//reload为24位寄存器,最大值:16777216,在72M下,约合1.86s左右	
-	fac_ms=1000/delay_ostickspersec;		//代表OS可以延时的最少单位	   
-	SysTick->CTRL|=1<<1;   					//开启SYSTICK中断
-	SysTick->LOAD=reload; 					//每1/delay_ostickspersec秒中断一次	
-	SysTick->CTRL|=1<<0;   					//开启SYSTICK    
+	fac_ms = 1000/delay_ostickspersec;		//代表OS可以延时的最少单位	   
+	SysTick->CTRL |= 1<<1;   					//开启SYSTICK中断
+	SysTick->LOAD = reload; 					//每1/delay_ostickspersec秒中断一次	
+	SysTick->CTRL |= 1<<0;   					//开启SYSTICK    
 #else
-	fac_ms=(u16)fac_us*1000;				//非OS下,代表每个ms需要的systick时钟数   
+	fac_ms = (u16)fac_us * 1000;				//非OS下,代表每个ms需要的systick时钟数   
 #endif
 }								    
 
@@ -150,20 +140,23 @@ void delay_init(u8 SYSCLK)
 void delay_us(u32 nus)
 {		
 	u32 ticks;
-	u32 told,tnow,tcnt=0;
-	u32 reload=SysTick->LOAD;				//LOAD的值	    	 
-	ticks=nus*fac_us; 						//需要的节拍数 
-	delay_osschedlock();					//阻止OS调度，防止打断us延时
-	told=SysTick->VAL;        				//刚进入时的计数器值
+	u32 told, tnow, tcnt = 0;               //unsigned int 类型 加到最大值之后又从 0 开始
+	u32 reload = SysTick->LOAD;				//LOAD的值	    	 
+	ticks = nus * fac_us; 						//需要的节拍数 
+	delay_osschedlock();					//阻止OS调度，防止打断us延时, 关闭任务调度???
+	told = SysTick->VAL;        		    //刚进入时的计数器值, "时钟摘取法", 而不是直接清零 SysTick->VAL, 重新倒计时
 	while(1)
 	{
-		tnow=SysTick->VAL;	
-		if(tnow!=told)
-		{	    
-			if(tnow<told)tcnt+=told-tnow;	//这里注意一下SYSTICK是一个递减的计数器就可以了.
-			else tcnt+=reload-tnow+told;	    
+		tnow = SysTick->VAL;	
+		if(tnow != told)
+		{
+			if(tnow < told)
+                tcnt += told - tnow;	//这里注意一下SYSTICK是一个递减的计数器就可以了.
+			else 
+                tcnt += reload - tnow + told;	    
 			told=tnow;
-			if(tcnt>=ticks)break;			//时间超过/等于要延迟的时间,则退出.
+			if(tcnt >= ticks)
+                break;			//时间超过/等于要延迟的时间,则退出.
 		}  
 	};
 	delay_osschedunlock();					//恢复OS调度									    
@@ -172,7 +165,7 @@ void delay_us(u32 nus)
 //nms:要延时的ms数
 void delay_ms(u16 nms)
 {	
-	if(delay_osrunning&&delay_osintnesting==0)//如果OS已经在跑了,并且不是在中断里面(中断里面不能任务调度)	    
+	if(delay_osrunning && delay_osintnesting==0)//如果OS已经在跑了,并且不是在中断里面(中断里面不能任务调度)	    
 	{		 
 		if(nms>=fac_ms)						//延时的时间大于OS的最少时间周期 
 		{ 
@@ -186,37 +179,43 @@ void delay_ms(u16 nms)
 //延时nus
 //nus为要延时的us数.		    								   
 void delay_us(u32 nus)
-{		
+{
 	u32 temp;	    	 
-	SysTick->LOAD=nus*fac_us; 				//时间加载	  		 
-	SysTick->VAL=0x00;        				//清空计数器
-	SysTick->CTRL=0x01 ;      				//开始倒数 	 
+	SysTick->LOAD = nus * fac_us; 				//时间加载， 计算要延时的时间对应的 systick count 		 
+	SysTick->VAL = 0x00;        				//清空计数器
+	SysTick->CTRL = 0x01 ;      				//开始倒数 	 
 	do
 	{
-		temp=SysTick->CTRL;
-	}while((temp&0x01)&&!(temp&(1<<16)));	//等待时间到达   
-	SysTick->CTRL=0x00;      	 			//关闭计数器
-	SysTick->VAL =0X00;       				//清空计数器	 
+		temp = SysTick->CTRL;
+	}while((temp&0x01) && !(temp&(1<<16)));	//等待时间到达，不用 OS 时采用死等的方式
+	SysTick->CTRL = 0x00;      	 			//关闭计数器
+	SysTick->VAL = 0X00;       				//清空计数器	 
 }
-//延时nms
-//注意nms的范围
-//SysTick->LOAD为24位寄存器,所以,最大延时为:
-//nms<=0xffffff*8*1000/SYSCLK
-//SYSCLK单位为Hz,nms单位为ms
-//对72M条件下,nms<=1864 
+
+/**
+ * @brief 延时nms
+ * 
+ * @param nms SysTick->LOAD为24位寄存器,所以,最大延时为:
+ *            nms <= 0xffffff*8*1000/SYSCLK
+ *            SYSCLK单位为Hz,nms单位为ms(对72M条件下,nms<=1864)
+ */
 void delay_ms(u16 nms)
-{	 		  	  
+{
 	u32 temp;		   
-	SysTick->LOAD=(u32)nms*fac_ms;			//时间加载(SysTick->LOAD为24bit)
-	SysTick->VAL =0x00;           			//清空计数器
-	SysTick->CTRL=0x01 ;          			//开始倒数  
+	SysTick->LOAD = (u32)nms * fac_ms;			//时间加载(SysTick->LOAD为24bit)
+    // 不使用 OS 时, systick 计时器没有被用到, 所以可以随意修改, 当普通硬件定时器用了;
+    // 使用 OS 时, systick 要做 OS 的时钟源, 所以不可以随意修改 -> "时钟摘取法";
+	SysTick->VAL = 0x00;           			//清空计数器, systick 是一个倒计时定时器
+	SysTick->CTRL = 0x01 ;          			//开始倒数  
 	do
 	{
-		temp=SysTick->CTRL;
-	}while((temp&0x01)&&!(temp&(1<<16)));	//等待时间到达   
-	SysTick->CTRL=0x00;      	 			//关闭计数器
-	SysTick->VAL =0X00;       				//清空计数器	  	    
-} 
+		temp = SysTick->CTRL;
+	}while((temp&0x01) && !(temp&(1<<16)));	//等待时间到达   
+	SysTick->CTRL= 0x00;      	 			//关闭计数器，通过计数器实现定时的目的
+	SysTick->VAL = 0X00;       				//清空计数器	  	    
+
+    return;
+}
 #endif 
 
 

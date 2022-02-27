@@ -141,10 +141,12 @@ typedef struct
        uint32_t RESERVED3[24];                                   
   __IO uint32_t IABR[8];                      /*!< Offset: 0x200  Interrupt Active bit Register           */
        uint32_t RESERVED4[56];                                   
+  
+  //高抢占优先级的中断可以打断低抢占优先级的中断, 而相同抢占优先级的中断, 高响应优先级的中断可以打断低响应优先级的中断
   __IO uint8_t  IP[240];                      /*!< Offset: 0x300  Interrupt Priority Register (8Bit wide) */
        uint32_t RESERVED5[644];                                  
   __O  uint32_t STIR;                         /*!< Offset: 0xE00  Software Trigger Interrupt Register     */
-}  NVIC_Type;                                               
+} NVIC_Type;                                               
 /*@}*/ /* end of group CMSIS_CM3_NVIC */
 
 

@@ -19,8 +19,8 @@
 #define LED1 PDout(2)	// PD2	
 
 void LED_Init(void);	//≥ı ºªØ	
-void LED_Set();
-void LED_Reset();
+void LED_Set(void);
+void LED_Reset(void);
 
 void GPIO_Set(GPIO_TypeDef *gpio, uint8_t pin_num, uint8_t val);
 void GPIO_Reset(GPIO_TypeDef *gpio, uint8_t pin_num, uint8_t val);

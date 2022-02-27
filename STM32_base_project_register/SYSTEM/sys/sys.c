@@ -24,7 +24,8 @@
 
 
 /**
- * @brief 设置向量表偏移地址
+ * @brief 设置向量表的基地址以及偏移地址
+ * 		  NVIC 的偏移地址
  * 
  * @param NVIC_VectTab  基址
  * @param Offset 偏移量	
@@ -33,30 +34,28 @@
 void MY_NVIC_SetVectorTable(u32 NVIC_VectTab, u32 Offset)	 
 { 	  
 	//用于标识向量表是在CODE区还是在RAM区 	 
-	SCB->VTOR = NVIC_VectTab|(Offset & (u32)0x1FFFFF80);//设置NVIC的向量表偏移寄存器
+	SCB->VTOR = NVIC_VectTab | (Offset & (u32)0x1FFFFF80);//设置NVIC的向量表偏移寄存器
 
 	return;
 }
 
-//
-//NVIC_Group:
 /**
- * @brief 设置NVIC分组
+ * @brief 设置NVIC分组 NVIC_Group:
  * 
  * @param NVIC_Group NVIC分组 0~4 总共5组
  * @return void
- * 		   AIRCR bit[10:8]		 
+ * 		   AIRCR bit[10:8]
  */
 void MY_NVIC_PriorityGroupConfig(u8 NVIC_Group)	 
 { 
-	u32 temp, temp1;	  
-	temp1 = (~NVIC_Group) & 0x07;//取后三位
+	u32 AIRCR_val, temp1;	  
+	temp1 = (~NVIC_Group) & 0x07; //取后三位, 这里为什么要取反呢???
 	temp1 <<= 8;
-	temp = SCB->AIRCR;  //读取先前的设置
-	temp &= 0X0000F8FF; //清空先前分组 0xF8 = 1111 1000
-	temp |= 0X05FA0000; //写入钥匙
-	temp |= temp1;	   
-	SCB->AIRCR = temp;  //设置分组	    	  				   
+	AIRCR_val = SCB->AIRCR;  //读取先前的设置, bit[10-8]
+	AIRCR_val &= 0X0000F8FF; //清空先前分组 0xF8 = 1111 1000
+	AIRCR_val |= 0X05FA0000; //写入钥匙
+	AIRCR_val |= temp1;	   
+	SCB->AIRCR = AIRCR_val;  //设置分组	    	  				   
 
 	return;
 }
@@ -79,9 +78,9 @@ void MY_NVIC_PriorityGroupConfig(u8 NVIC_Group)
             //组4:4位抢占优先级,0位响应优先级
             //NVIC_SubPriority和NVIC_PreemptionPriority的原则是,数值越小,越优先
 
-        这个 NVIC 初始化的操作有点东西, 虽说只是实现了初始化赋值寄存器的功能!!!
+        	这个 NVIC 初始化的操作有点东西, 虽说只是实现了初始化赋值寄存器的功能!!!
  */
-void MY_NVIC_Init(u8 NVIC_PreemptionPriority,u8 NVIC_SubPriority,u8 NVIC_Channel,u8 NVIC_Group)	 
+void MY_NVIC_Init(u8 NVIC_PreemptionPriority, u8 NVIC_SubPriority, u8 NVIC_Channel, u8 NVIC_Group)	 
 { 
 	u32 temp;	
 	MY_NVIC_PriorityGroupConfig(NVIC_Group);//设置分组, SCB->AIRCR : bit[10:8]
@@ -105,13 +104,13 @@ void MY_NVIC_Init(u8 NVIC_PreemptionPriority,u8 NVIC_SubPriority,u8 NVIC_Channel
  * 	  	  该函数一次只能配置1个IO口,多个IO口,需多次调用
  * 		  该函数会自动开启对应中断,以及屏蔽线   
  */
-void Ex_NVIC_Config(u8 GPIOx, u8 BITx, u8 TRIM) 
+void GPIO_NVIC_Config(u8 GPIOx, u8 BITx, u8 TRIM) 
 {
 	u8 EXTADDR;
 	u8 EXTOFFSET;
 	EXTADDR = BITx / 4;		//得到中断寄存器组的编号, EXTICR 的编号, EXTICR[4]
 	EXTOFFSET = (BITx % 4) * 4; 
-	RCC->APB2ENR |= 0x01;	//使能io复用时钟			 
+	RCC->APB2ENR |= 0x01;	//使能io复用时钟，辅助功能 IO 时钟使能
 	AFIO->EXTICR[EXTADDR] &= ~(0x000F << EXTOFFSET);	//清除原来设置！！！
 	AFIO->EXTICR[EXTADDR] |= GPIOx << EXTOFFSET;//EXTI.BITx映射到GPIOx.BITx 
 	//自动设置
@@ -121,6 +120,7 @@ void Ex_NVIC_Config(u8 GPIOx, u8 BITx, u8 TRIM)
         EXTI->FTSR |= 1 << BITx;//line BITx上事件下降沿触发
 	if(TRIM & 0x02)
         EXTI->RTSR |= 1 << BITx;//line BITx上事件上升降沿触发
+
 	if(TRIM & 0x03){			
 		;						//任意电平触发
 	}
@@ -138,28 +138,30 @@ void MYRCC_DeInit(void)
 {	
  	RCC->APB1RSTR = 0x00000000;//复位结束			 
 	RCC->APB2RSTR = 0x00000000; 
-	  
   	RCC->AHBENR = 0x00000014;  //睡眠模式闪存和SRAM时钟使能, 其他关闭.	  
   	RCC->APB2ENR = 0x00000000; //外设时钟关闭.			   
   	RCC->APB1ENR = 0x00000000;   
-	RCC->CR |= 0x00000001;     //使能内部高速时钟HSION	 															 
+	RCC->CR |= 0x00000001;     //使能内部高速时钟HSION, 系统刚上电的时候使用的是内部高速时钟, 之后会切换为外部高速时钟							 
 	RCC->CFGR &= 0xF8FF0000;   //复位SW[1:0],HPRE[3:0],PPRE1[2:0],PPRE2[2:0],ADCPRE[1:0],MCO[2:0]					 
 	RCC->CR &= 0xFEF6FFFF;     //复位HSEON,CSSON,PLLON
 	RCC->CR &= 0xFFFBFFFF;     //复位HSEBYP	   	  
 	RCC->CFGR &= 0xFF80FFFF;   //复位PLLSRC, PLLXTPRE, PLLMUL[3:0] and USBPRE 
 	RCC->CIR = 0x00000000;     //关闭所有中断		 
-	//配置向量表				  
+	//配置向量表
+	
+	//这两个配置有什么区别 ???
 #ifdef  VECT_TAB_RAM
 	MY_NVIC_SetVectorTable(0x20000000, 0x0);	//内部 RAM 区
 #else   
-	MY_NVIC_SetVectorTable(0x08000000,0x0);		//Code 区
+	MY_NVIC_SetVectorTable(0x08000000, 0x0);		//Code 区
 #endif
 
 	return;
 }
 
-//THUMB指令不支持汇编内联
-//采用如下方法实现执行汇编指令WFI  
+//THUMB指令不支持 "汇编内联"———— 在 C 语言中直接使用汇编
+//采用如下方法实现执行汇编指令WFI
+// __ASM volatile("assemble language");
 void WFI_SET(void)
 {
 	__ASM volatile("wfi");		  
@@ -178,27 +180,36 @@ void INTX_ENABLE(void)
 //addr:栈顶地址
 __asm void MSR_MSP(u32 addr) 
 {
+	//move special register to register
+	//MSP -> R0
     MSR MSP, r0 			//set Main Stack value
     BX r14
 }
 
-//进入待机模式	  
+/**
+ * @brief 进入待机模式	  
+ * 
+ */
 void Sys_Standby(void)
 {
-	SCB->SCR |= 1 << 2;//使能SLEEPDEEP位 (SYS->CTRL)	   
-  	RCC->APB1ENR |= 1 << 28;     //使能电源时钟	    
- 	PWR->CSR |= 1 << 8;          //设置WKUP用于唤醒
-	PWR->CR |= 1 << 2;           //清除Wake-up 标志
-	PWR->CR |= 1 << 1;           //PDDS置位		  
+	SCB->SCR |= (1 << 2);//使能SLEEPDEEP位 (SYS->CTRL)	   
+  	RCC->APB1ENR |= (1 << 28);     //使能电源时钟	    
+ 	PWR->CSR |= (1 << 8);          //设置WKUP用于唤醒
+	PWR->CR |= (1 << 2);           //清除Wake-up 标志
+	PWR->CR |= (1 << 1);           //PDDS置位		  
 	WFI_SET();				 //执行WFI指令
 
 	return;		 
 }
 
-//系统软复位   
+/**
+ * @brief 系统软复位   
+ * 
+ */
 void Sys_Soft_Reset(void)
 {   
 	SCB->AIRCR = 0X05FA0000 | (u32)0x04;	  //0x05FA 0000 是编辑SCB 的密钥
+	//SCB->AIRCR = 0x05FA0000 | (u32)(1<<2);	//bit[2] 产生软件复位
 
 	return;
 }
@@ -220,14 +231,17 @@ void JTAG_Set(u8 mode)
 	return;
 }
 
-//系统时钟初始化函数
-//pll:选择的倍频数，从2开始，最大值为16		 
+/**
+ * @brief 系统时钟初始化函数
+ * 
+ * @param PLL 选择的倍频数，从2开始，最大值为16		
+ */
 void Stm32_Clock_Init(u8 PLL)
 {
 	unsigned char temp=0;   
 	MYRCC_DeInit();		  	//复位并配置向量表 NVIC
- 	RCC->CR |= 0x00010000;  //外部高速时钟使能HSEON, 1 << 16
-	while(!(RCC->CR >> 17))	//HSE RDY : bit[17]
+ 	RCC->CR |= 0x00010000;  //外部高速时钟使能HSEON, 1 << 16, HSI(RC) ——> HSE(crystal)
+	while(!(RCC->CR >> 17))	//HSE RDY flag : bit[17], RCC & (1 << 17)
 		;//等待外部时钟就绪
 	RCC->CFGR = 0X00000400; //APB1=DIV2; APB2=DIV1(一分频 = 不分频); AHB=DIV1;
 	PLL -= 2;				  //抵消2个单位（因为是从2开始的，设置0就是2）???
