@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2022
  * 
  */
+
 #include "exti.h"
 #include "board.h"
 #include "led.h"
@@ -65,7 +66,8 @@ void EXTI9_5_IRQHandler(void)
 {
     delay_ms(10);
     if(KEY0 == 0){
-        LED0 = !LED0; // button 0
+        LED0 = !LED0;   // button 0
+        IWDG_Feed();    // fedd watch dog
     }
 
     EXTI->PR = (1 << 5);    //clear interrupt flag

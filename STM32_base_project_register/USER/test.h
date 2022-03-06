@@ -17,7 +17,8 @@
 #include "key.h" 
 #include "service_usart.h"
 #include "board.h"
-
+#include "watch_dog_timer.h"
+#include "timer.h"
 
 #endif
 

@@ -45,7 +45,7 @@ u8 KEY_Scan(u8 mode)
 	if(mode)
         key_up = 1;  //支持连按	
 	  
-    if(key_up && (KEY0==0 || KEY1==0 /*|| WK_UP==1*/))
+    if(key_up && (KEY0==0 || KEY1==0 /*|| WK_UP==1*/)) //KEY_UP按键有问题
     {
         delay_ms(10);//去抖动 
         key_up = 0;
@@ -66,25 +66,3 @@ u8 KEY_Scan(u8 mode)
  *        配置 GPIO 时钟 -> 配置为输入 -> 配置中断 -> 打开中断
  * 		  写中断服务函数
  */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

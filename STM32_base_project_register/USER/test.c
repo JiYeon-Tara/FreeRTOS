@@ -9,7 +9,10 @@ int main(void)
 	KEY_Init();
 	EXTI_Init();
 	printf("intialized.");
-	//watch intialization
+	
+	//IWDG_Init(4, 615); // watch dog intialization
+	//WWDG_Init(0X7F,0X5F,3);	//计数器值为7f,窗口寄存器为5f,分频数为8	 
+	TIM3_Int_Init(9999, 7199);	//10Khz的计数频率，计数到5000为500ms  
 
 	while(1)
 	{

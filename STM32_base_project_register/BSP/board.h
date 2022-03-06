@@ -32,5 +32,15 @@
 #define WKUP_SUB_PRIORITY           0
 #define WKUP_NVIC_GROUP             2
 
+//WWDT
+#define WWDT_PRIEMPTION_PRIORITY    2
+#define WWDT_SUB_PRIORITY           3
+#define WWDT_NVIC_GROUP             2
+
+//Timr3
+#define TIM3_PRIEMPTION_PRIORITY    1
+#define TIM3_SUB_PRIORITY           3
+#define TIM3_NVIC_GROUP             2
+
 #endif
 
