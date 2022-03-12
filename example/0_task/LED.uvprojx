@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\BSP\LED;..\..\SYSTEM\delay;..\..\SYSTEM\sys;..\..\SYSTEM\usart;..\0_task;..\..\STM32F10x_FWLib\inc;..\..\CORE;..\..\FreeRTOS\include;..\..\FreeRTOS\portable\RVDS\ARM_CM3;..\..\Thread;..\..\BOARD_PERIPHERAL\TIMER;..\..\BOARD_PERIPHERAL\USART;..\..\BSP\LCD;..\..\BSP\KEY;..\..\BOARD_PERIPHERAL\EXTI;..\..\utils</IncludePath>
+              <IncludePath>..\..\BSP\LED;..\..\SYSTEM\delay;..\..\SYSTEM\sys;..\..\SYSTEM\usart;..\0_task;..\..\STM32F10x_FWLib\inc;..\..\CORE;..\..\FreeRTOS\include;..\..\FreeRTOS\portable\RVDS\ARM_CM3;..\..\Thread;..\..\BOARD_PERIPHERAL\TIMER;..\..\BOARD_PERIPHERAL\USART;..\..\BSP\LCD;..\..\BSP\KEY;..\..\BOARD_PERIPHERAL\EXTI;..\..\utils;..\..\BSP\BEEP</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -414,6 +414,11 @@
               <FileName>lcd.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BSP\LCD\lcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>beep.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\BSP\BEEP\beep.c</FilePath>
             </File>
           </Files>
         </Group>
