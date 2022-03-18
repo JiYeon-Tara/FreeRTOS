@@ -19,6 +19,8 @@
 #include "board.h"
 #include "watch_dog_timer.h"
 #include "timer.h"
+#include "ILI9341.h"
+#include "ssd_1306.h"
 
 #endif
 

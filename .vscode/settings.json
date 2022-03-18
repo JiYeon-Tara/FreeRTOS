@@ -4,6 +4,7 @@
         "service_usart.h": "c",
         "usart.h": "c",
         "18b20.h": "c",
-        "led.h": "c"
+        "led.h": "c",
+        "test.h": "c"
     }
 }

@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB</IncludePath>
+              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\KEY;..\BOARD_PERIPHERAL\LED;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -373,16 +373,6 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>Source Group 1</GroupName>
-          <Files>
-            <File>
-              <FileName>startup_stm32f10x_hd.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\startup_stm32f10x_hd.s</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>USER</GroupName>
           <Files>
             <File>
@@ -416,14 +406,14 @@
           <GroupName>BSP</GroupName>
           <Files>
             <File>
-              <FileName>key.c</FileName>
+              <FileName>ILI9341.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\KEY\key.c</FilePath>
+              <FilePath>..\BSP\LCD\ILI9341.c</FilePath>
             </File>
             <File>
-              <FileName>led.c</FileName>
+              <FileName>18b20.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\LED\led.c</FilePath>
+              <FilePath>..\BSP\TEMP_18B20\18b20.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -432,6 +422,58 @@
         </Group>
         <Group>
           <GroupName>CORE</GroupName>
+          <Files>
+            <File>
+              <FileName>startup_stm32f10x_hd.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\startup_stm32f10x_hd.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>BOARD_PERIPHERAL</GroupName>
+          <Files>
+            <File>
+              <FileName>exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\EXTI\exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\KEY\key.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\LED\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\TIMER\timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>watch_dog_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\WDT\watch_dog_timer.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Service</GroupName>
+          <Files>
+            <File>
+              <FileName>service_bt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Service\BT\service_bt.c</FilePath>
+            </File>
+            <File>
+              <FileName>serviec_usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Service\USART\serviec_usart.c</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>
