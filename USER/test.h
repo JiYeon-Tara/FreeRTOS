@@ -21,6 +21,7 @@
 #include "timer.h"
 #include "ILI9341.h"
 #include "ssd_1306.h"
+#include "usmart.h"
 
 #endif
 

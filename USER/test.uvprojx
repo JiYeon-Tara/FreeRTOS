@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\KEY;..\BOARD_PERIPHERAL\LED;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL</IncludePath>
+              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\KEY;..\BOARD_PERIPHERAL\LED;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -472,6 +472,26 @@
               <FileName>serviec_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Service\USART\serviec_usart.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>third_party</GroupName>
+          <Files>
+            <File>
+              <FileName>usmart_str.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\third_party\USMART\usmart_str.c</FilePath>
+            </File>
+            <File>
+              <FileName>usmart_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\third_party\USMART\usmart_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>usmart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\third_party\USMART\usmart.c</FilePath>
             </File>
           </Files>
         </Group>
