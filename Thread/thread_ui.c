@@ -41,11 +41,11 @@ static void thread_ui_hardware_init()
 static void thread_ui_software_init()
 {
     POINT_COLOR = RED;
-    LCD_ShowString(30, 10, 200, 16, 16, "ATK STM32F103/F407");
-    LCD_ShowString(30, 30, 200, 16, 16, "FreeRTOS Examp 6-1");
-    LCD_ShowString(30, 50, 200, 16, 16, "Task Creat and Del");
-    LCD_ShowString(30, 70, 200, 16, 16, "ATOM@ALIENTEK");
-    LCD_ShowString(30, 90, 200, 16, 16, "2016/11/25");
+    LCD_ShowString(30, 10, 200, 16, 16, "NingXia");
+    LCD_ShowString(30, 30, 200, 16, 16, "YinChuan");
+    LCD_ShowString(30, 50, 200, 16, 16, "Weather:sunny");
+    // LCD_ShowString(30, 70, 200, 16, 16, "");
+    // LCD_ShowString(30, 90, 200, 16, 16, "2016/11/25");
 
     return;
 }

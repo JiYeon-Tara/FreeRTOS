@@ -11,6 +11,7 @@
 #include "thread_manager.h"
 #include "sys.h"
 #include "usart.h"
+#include "rtc.h"
 /**************************** task info ******************************/
 TaskHandle_t ManagerTask_Handler;   //ÈÎÎñ¾ä±ú
 
@@ -29,7 +30,9 @@ EventGroupHandle_t manager_event_group; //ÊÂ¼ş±êÖ¾×é, ¿ÉÒÔÓÃÓÚÒ»¸öÈÎÎñ/ÊÂ¼şÓë¶à¸
  */
 static void hardware_init()
 {
-
+    printf("%s\r\n", __func__);
+    while(RTC_Init()); // µÈ´ı RTC ³õÊ¼»¯³É¹¦
+    RTC_Set(2022, 4, 23, 8, 47, 0);
     return;
 }
 
@@ -68,6 +71,7 @@ void thread_manager_task(void *pvParameters)
     while(1)
     {
         printf("manager thread running...\r\n");
+        Disp_Time(0, 0, 0); // ¿ÉÒÔ·¢ÏûÏ¢¸ø UI Ïß³ÌÈÃ UI ÏÔÊ¾
         vTaskDelay(1000);
     }
 }

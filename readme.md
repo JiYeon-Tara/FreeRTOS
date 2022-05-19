@@ -52,10 +52,6 @@ QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize);
 
 互斥信号量
 
-
-
-
-
 ##### 问题:串口中释放信号量，出现如下错误：
 
 **还没有解决**
@@ -83,6 +79,112 @@ QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize);
 ##### 事件标志组
 
 信号量只能同步单个任务与事件，某个任务需要与多个任务或者事件进行同步时——事件标志组；
+
+
+
+##### 2. 使用外部设备 DEVICE_EXPORT ( Linux 驱动中会见到这种写法, FreeRTOS 驱动模仿 Linux)
+
+**DEVICE_EXPORT**
+
+service 层代码分上层API 和 下层 API， 下层API供驱动底层调用，上层API 供应用层调用，是不是Linux的service也是这样实现的？（大概率是，毕竟以前都是做手机的）
+
+https://zhuanlan.zhihu.com/p/356482765
+
+
+
+```C
+// dev_bt_spp.c 中
+bt_spp_drv_io_t user_bt_spp_ops = 
+{
+  	// .init
+  	.spp_send = user_spp_send,
+ 	.spp_recv = user_spp_recv,
+	// .deinit
+};
+DEVICE_EXPORT(dev_bt_spp_link, &user_bt_spp_ops);
+```
+
+service 库中:
+
+device_bt_spp.h
+
+```C
+// 操作接口
+typedef struct
+{
+  	bool (*spp_send)(BT_SPP_HANDLER_E handler, uint8_t channel, uint8_t *p_data, uint 16_t len);
+  	// 定义其它操作接口, init, deinit, send, recv, 典型的 Linux 驱动写法
+}
+
+// abstract device type
+typedef struct
+{
+  	const char *name;	//device name
+	const bt_spp_drv_io_t *ops;	// device IO of BT SPP
+} bt_spp_drv_type_t;  // 抽象设备类型
+```
+
+dev_bt_spp.c
+
+```C
+bt_spp_drv_type_t g_bt_spp_deviec;
+// dev_bt_spp.c
+void dev_bt_spp_link(const void *pdriver)
+{
+  	g_bt_spp_device.name = "Dev-bt-spp";
+  	g_bt_spp_device.ops  = (bt_spp_drv_io_t*)pdriver;
+}
+```
+
+用户接口方面：不直接调用底层接口，通过封装好的 user_xx_yy 接口
+
+user_bt_spp.c
+
+```C
+// 发送函数（供上层用户调用的接口）
+void user_spp_send(BT_SPP_HANDLER_E handler, uint8_t channel, uint8_t *p_data, uint16_t len)
+{
+  	// 根据不同的 Hander, channel 封装不同包头的数据 发送到 bt_send_thread 的队列中 
+}
+
+bt_spp_drv_io_t user_bt_spp_ops = 
+{
+  	.spp_send = user_spp_send,
+};
+DEVICE_EXPORT(dev_bt_spp_link, &user_bt_spp_ops); // 关键操作
+```
+
+**DEVICE_EXPORT 内部是如何实现的?**
+
+spp_def.h
+
+```C
+// function define of abstract device
+typedef void (*dev_ops_link)(const void *ops_ptr);
+
+// 设备描述
+typedef struct _dev_desc
+{
+  	const char 			*func_name;
+  	const void 			*ops_ptr;
+  	const dev_ops_link	func;
+} dev_desc_t;
+#define _DEVICE_EXPORT(fn, ops_ptr, level) \
+	const char _dev_init_##fn##_name[] = #fn; \ // ## 字符串拼接, # 将其它值变成字符串
+	const dev_desc_t _dev_desc_##fn __attribute__((used, section(".device_init.$"level)))= \
+							{_dev_init_##fn##_name, ops_ptr, &fn} // 看不懂的地方
+
+// (function name, operation_pointer)
+#define DEVICE_EXPORT(fn, ops_ptr) _DEVICE_EXPORT(fn, ops_ptr, "f") // C 语言中使用可变参数的方式
+```
+
+
+
+##### 5.不同的协议支持不同的应用场景——如何通过一条底层链路（蓝牙链路）支持多种不同的应用场景（向大佬万杰多学习）
+
+```C
+void proto_data_recv(HANDLER_E handler, uint8_t channel, uint8_t *p_data, uint 32_t len);
+```
 
 
 

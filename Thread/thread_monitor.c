@@ -63,11 +63,11 @@ static void resource_init()
  */
 void thread_monitor_enery(void *pvParameters)
 {
-    BaseType_t ret = pdFALSE;
-    uint8_t len = 0;    //接收到数据长度
-    uint8_t cmdVal = COMMAND_ERR;
+    //BaseType_t ret = pdFALSE;
+    //uint8_t len = 0;    //接收到数据长度
+    //uint8_t cmdVal = COMMAND_ERR;
     //uint8_t *cmdStr = NULL; //指向接收到数据的指针
-    uint8_t cmdStr[256];
+    //uint8_t cmdStr[256];
     
     hardware_init();
     resource_init();

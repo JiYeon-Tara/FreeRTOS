@@ -18,6 +18,7 @@
         "str_operation.h": "c",
         "freertos.h": "c",
         "string.h": "c",
-        "usart.h": "c"
+        "usart.h": "c",
+        "rtc.h": "c"
     }
 }

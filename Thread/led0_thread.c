@@ -49,10 +49,10 @@ static void resource_init()
 //LED1任务入口函数
 void led0_task(void *pvParameters)
 {
-    uint8_t len = 0;
-    uint8_t CommandVal = COMMAND_ERR;
-    uint8_t *pCommandStr;
-    uint8_t semaCnt;
+//    uint8_t len = 0;
+//    uint8_t CommandVal = COMMAND_ERR;
+//    uint8_t *pCommandStr;
+//    uint8_t semaCnt;
     hardware_init();
     resource_init();
     software_init();

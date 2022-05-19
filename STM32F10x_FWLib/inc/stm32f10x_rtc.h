@@ -103,11 +103,11 @@
 void RTC_ITConfig(uint16_t RTC_IT, FunctionalState NewState);
 void RTC_EnterConfigMode(void);
 void RTC_ExitConfigMode(void);
-uint32_t  RTC_GetCounter(void);
+uint32_t RTC_GetCounter(void);
 void RTC_SetCounter(uint32_t CounterValue);
 void RTC_SetPrescaler(uint32_t PrescalerValue);
 void RTC_SetAlarm(uint32_t AlarmValue);
-uint32_t  RTC_GetDivider(void);
+uint32_t RTC_GetDivider(void);
 void RTC_WaitForLastTask(void);
 void RTC_WaitForSynchro(void);
 FlagStatus RTC_GetFlagStatus(uint16_t RTC_FLAG);

@@ -20,7 +20,47 @@
 
 
 
-##### 1.条件编译的重要性
+---
+
+##### TODO:
+
+**1.内存池的概念究竟是怎么回事？？？**
+
+只能看到定义内存池，但是找不到在哪里声明，怎么对应的呢？我怎么知道使用的是哪一块内存池？？？
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486316719339.png)
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486317682699.png)
+
+仅仅是分配了内存池（内部其实就是pvPortMalloc），没有指向它的指针，如果free的呢？？？
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486317275663.png)
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486520302319.png)
+
+为什么可以这么用呀？怎么关联内存池和指针之间的关系呢？
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486524474482.png)
+
+终于找到原因了：传递的就是指针，把数据指针塞到队列里，队列里的指针指向的是堆内存，不会被释放（必须用户自己释放）
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486526631924.png)
+
+接收数据塞入队列并发送：
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486530668141.png)
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486531064861.png)
+
+
+
+#####  2. 以驱动的方式实现
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486545883239.png)
+
+---
+
+##### 1.条件编译的重要性                                                 
 
 ```C
 //通过条件编译的方式来控制编译后代码的大小
@@ -73,6 +113,139 @@ int main()
 
 
 3.ARM 架构：
+
+
+
+#####  4.线程间通信举例
+
+```C
+//thread.h
+typedef struct
+{
+  	uint16_t msg_id; //
+  	uint16_t msg_len;
+} thread_msg_head_t; //线程间通信的消息头
+
+// 线程间通信的消息示例, 实际 buf 大小根据实际情况定义
+typedef struct
+{
+  	thread_msg_head_t head;
+  	uint8_t msg_buf[1024];
+} thread_msg_t;
+```
+
+通过 msg_id 将队列中的消息进行区分：
+
+```C
+//thread_bt.c
+#define THREAD_BT_MSG_BUF_SIZE 	(4)
+
+//任务通知
+enum
+{
+  	//THREAD_BT_M_MSG_NOTIFY_DATA_RECV = 0x00000001;	// 数据接收
+}
+
+//消息 id
+typedef enum
+{
+  	THREAD_BT_MSG_ID_BT_RESET	= 1, 	// 芯片复位	
+} THREAD_BT_MSG_ID_E; //(给 thread_bt 队列里塞数据需要这个东西)
+
+// 消息
+typedef struct
+{
+  	thread_msg_head_t head;
+  	uint8_t msg_buf[THREAD_MSG_BUF_SIZE];
+} thread_bt_msg_t;
+```
+
+之所以区分是为了不同的应用场景：
+
+```C
+// 线程入口函数
+void thread_loop(void)
+{
+  	xTaskNotifyWait(0, 0xFFFFFFFF, &notifyValue, osWaitForever);
+  	dog_resume(dog_h); // 启动看门狗
+  	if(notifyValue & SYSTEM_TASK_NOTIFY_MSG_READY)
+    {
+      	_thread_service_msg(); // 正常消息处理的部分
+    }
+  	if(notifyValue & SYSTEM_TASK_NOTIFY_SYNC)
+    {
+      	_thread_exit();
+      	while(1)
+        {
+          	osDelay(osWaitForever);
+        }
+    }
+}
+
+// 从队列中取数据
+void _thread_service_msg()
+{
+  	uint32_t ret;
+  	thread_bt_msg_t *p_msg = NULL; // 使用内存池中的内存, 所以不需要动态分配内存
+  
+  	while(1)
+    {
+      	ret = osMessageGet(g_thread_bt.h_message_queue, &p_msg, 0);
+      	if((ret != osEventMessage) || (p_msg == NULL)) // ERROR
+        {
+          	break;
+        }
+      	
+      	switch(p_msg->head.msg_id) // 通过这里来区分不同的应用场景
+        {
+          case THREAD_BT_MSG_ID_RESET:
+          {
+			  break;
+          }
+            
+          default:
+            	break;
+        }
+    }
+  	osPoolFress(g_thread_bt.h_poolID, p_msg);
+}
+```
+
+
+
+##### 5.log 的使用
+
+方便快捷的打开不需要的log的方法
+
+```C
+#if 1
+#define BT_LOG_D(...) LOG_D(##__VA_ARGS__)
+#define BT_LOG_E(...) LOG_E(##__VA_ARGS__)
+#else
+#define BT_LOG_D(...)
+#define BT_LOG_E(...)
+#endif
+```
+
+
+
+##### 6.串口中断接收这部分 ？？？
+
+![img](C:\Users\qz\AppData\Local\Temp\企业微信截图_16486283476283.png)
+
+
+
+##### 7.枚举类型
+
+```C
+typedef enum
+{
+  	BT_SPP_HANDLER_UNKNOWN = 0, 	// unknown
+  	BT_SPP_HANDLER_TEST_APP,		// test APP
+  	BT_SPP_HANDLER_APP,				// formal APP
+  	BT_SPP_HANDLER_TV,				// TV
+} SPP_HANDLER_E;	// 枚举类型 enumerate, 变量结尾 XX_YY_ZZ_E
+```
 
 
 
