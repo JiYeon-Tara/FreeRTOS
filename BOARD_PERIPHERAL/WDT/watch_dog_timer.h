@@ -10,10 +10,18 @@
  */
 #ifndef __WATCH_TIMER_H__
 #define __WATCH_TIMER_H__
+#include "board_config.h"
 #include "sys.h"
 
+//WWDT
+#if WATCH_DOG_TIMER_ENABLE
+#define WWDT_PRIEMPTION_PRIORITY    2
+#define WWDT_SUB_PRIORITY           3
+#define WWDT_NVIC_GROUP             2
+#endif
+
 /**
- * @brief  ÈçºÎÍ¨¹ýÒ»¸öÓ²¼þ¿´ÃÅ¹·ÊµÏÖ¶à¸öÈí¼þ¿´ÃÅ¹·???????????????????????????????????
+ * @brief  ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ò»ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½ï¿½Å¹ï¿½Êµï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¹ï¿½???????????????????????????????????
  * 
  * @param prer 
  * @param rlr 
@@ -21,7 +29,7 @@
 void IWDG_Init(u8 prer, u16 rlr);
 void WWDG_Init(u8 tr,u8 wr,u8 fprer);
 void WWDG_Set_Counter(u8 cnt);
-
+void IWDG_Feed(void);
 
 #endif 
 

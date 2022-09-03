@@ -5,6 +5,13 @@
         "usart.h": "c",
         "18b20.h": "c",
         "led.h": "c",
-        "test.h": "c"
+        "test.h": "c",
+        "board_config.h": "c",
+        "usmart.h": "c",
+        "bsp_config.h": "c",
+        "gpio.h": "c",
+        "key_stm.h": "c",
+        "ssd_1306.h": "c",
+        "watch_dog_timer.h": "c"
     }
 }

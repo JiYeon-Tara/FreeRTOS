@@ -147,8 +147,8 @@ __Vectors_Size  EQU  __Vectors_End - __Vectors
 Reset_Handler   PROC
                 EXPORT  Reset_Handler             [WEAK]
                 IMPORT  __main
-				;¼Ä´æÆ÷°æ±¾´úÂë£¬ÒòÎªÃ»ÓÐÓÃµ½SystemInitº¯Êý£¬ËùÒÔ×¢ÊÍµôÒÔÏÂ´úÂëÎª·ÀÖ¹±¨´í£¡
-				;¿âº¯Êý°æ±¾´úÂë£¬½¨Òé¼ÓÉÏÕâÀï£¨Íâ²¿±ØÐëÊµÏÖSystemInitº¯Êý£©£¬ÒÔ³õÊ¼»¯stm32Ê±ÖÓµÈ¡£
+				;å¯„å­˜å™¨ç‰ˆæœ¬ä»£ç , æ²¡æœ‰ç”¨åˆ° SystemInit å‡½æ•°, æ‰€ä»¥æ³¨é‡ŠæŽ‰ä¸‹é¢çš„ä»£ç , é˜²æ­¢æŠ¥é”™
+                ;åº“å‡½æ•°ç‰ˆæœ¬ä»£ç , å»ºè®®åŠ ä¸Šè¿™é‡Œ(å¤–éƒ¨å¿…é¡»å®žçŽ° SystemInit), ä»¥åˆå§‹åŒ– stm32 æ—¶é’Ÿç­‰
                 ;IMPORT  SystemInit			
                 ;LDR     R0, =SystemInit	
                 ;BLX     R0                  

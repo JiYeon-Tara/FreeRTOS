@@ -1,8 +1,8 @@
 /**
  * @file timer.h
  * @author your name (you@domain.com)
- * @brief Í¨ÓÃ¶¨Ê±Æ÷ÒÔ¼°¸ß¼¶¶¨Ê±Æ÷µÄÊ¹ÓÃ
- *        ¶¨Ê±Æ÷µÄ¹¦ÄÜ±È½Ï¶à, ÊäÈë²¶»ñ, Êä³ö¿ØÖÆ£¨PWMÊä³öµÈµÈ£©
+ * @brief é€šç”¨å®šæ—¶å™¨ä»¥åŠé«˜çº§å®šæ—¶å™¨çš„ä½¿ç”¨
+ *        å®šæ—¶å™¨çš„åŠŸèƒ½æ¯”è¾ƒå¤š, è¾“å…¥æ•è·, è¾“å‡ºæ§åˆ¶ï¼ˆPWMè¾“å‡ºç­‰ç­‰ï¼‰
  * @version 0.1
  * @date 2022-03-06
  * 
@@ -12,7 +12,14 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 #include "sys.h"
-#include "board.h"
+#include "board_config.h"
+
+//Timr3
+#if TIMER_ENABLE
+#define TIM3_PRIEMPTION_PRIORITY    1
+#define TIM3_SUB_PRIORITY           3
+#define TIM3_NVIC_GROUP             2
+#endif
 
 void TIM3_Int_Init(u16 arr, u16 psc);
 

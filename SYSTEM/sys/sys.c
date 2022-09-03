@@ -1,183 +1,192 @@
 #include "sys.h" 
 
 //********************************************************************************
-//V1.4ĞŞ¸ÄËµÃ÷
-//°ÑNVIC KOÁË,Ã»ÓĞÊ¹ÓÃÈÎºÎ¿âÎÄ¼ş!
-//¼ÓÈëÁËJTAG_Setº¯Êı
+//V1.4ä¿®æ”¹è¯´æ˜
+//æŠŠNVIC KOäº†,æ²¡æœ‰ä½¿ç”¨ä»»ä½•åº“æ–‡ä»¶!
+//åŠ å…¥äº†JTAG_Setå‡½æ•°
 //V1.5 20120322
-//Ôö¼Óvoid INTX_DISABLE(void)ºÍvoid INTX_ENABLE(void)Á½¸öº¯Êı
+//å¢åŠ void INTX_DISABLE(void)å’Œvoid INTX_ENABLE(void)ä¸¤ä¸ªå‡½æ•°
 //V1.6 20120412
-//1,Ôö¼ÓMSR_MSPº¯Êı												    
-//2,ĞŞ¸ÄVECT_TAB_RAMµÄÄ¬ÈÏÆ«ÒÆ,ÉèÖÃÎª0.
+//1,å¢åŠ MSR_MSPå‡½æ•°												    
+//2,ä¿®æ”¹VECT_TAB_RAMçš„é»˜è®¤åç§»,è®¾ç½®ä¸º0.
 //V1.7 20120818
-//1,Ìí¼ÓucosÖ§³ÖÅäÖÃºêSYSTEM_SUPPORT_UCOS
-//2,ĞŞ¸ÄÁË×¢ÊÍ
-//3,È¥µôÁË²»³£ÓÃº¯ÊıBKP_Write
+//1,æ·»åŠ ucosæ”¯æŒé…ç½®å®SYSTEM_SUPPORT_UCOS
+//2,ä¿®æ”¹äº†æ³¨é‡Š
+//3,å»æ‰äº†ä¸å¸¸ç”¨å‡½æ•°BKP_Write
 //V1.8 20131120
-//1,ĞŞ¸ÄÍ·ÎÄ¼şÎªstm32f10x.h,²»ÔÙÊ¹ÓÃstm32f10x_lib.h¼°ÆäÏà¹ØÍ·ÎÄ¼ş
+//1,ä¿®æ”¹å¤´æ–‡ä»¶ä¸ºstm32f10x.h,ä¸å†ä½¿ç”¨stm32f10x_lib.håŠå…¶ç›¸å…³å¤´æ–‡ä»¶
 //V1.9 20150109
-//1,ĞŞ¸ÄÍ·ÎÄ¼şÎªMY_NVIC_Initº¯Êı²¿·Ö´úÂëÒÔÖ§³ÖÏòÁ¿ºÅ´óÓÚ63µÄÖĞ¶ÏµÄÉèÖÃ
-//2,ĞŞ¸ÄWFI_SET/INTX_DISABLE/INTX_ENABLEµÈº¯ÊıµÄÊµÏÖ·½Ê½
+//1,ä¿®æ”¹å¤´æ–‡ä»¶ä¸ºMY_NVIC_Initå‡½æ•°éƒ¨åˆ†ä»£ç ä»¥æ”¯æŒå‘é‡å·å¤§äº63çš„ä¸­æ–­çš„è®¾ç½®
+//2,ä¿®æ”¹WFI_SET/INTX_DISABLE/INTX_ENABLEç­‰å‡½æ•°çš„å®ç°æ–¹å¼
 //V2.0 20150322
-//ĞŞ¸ÄSYSTEM_SUPPORT_UCOSÎªSYSTEM_SUPPORT_OS
+//ä¿®æ”¹SYSTEM_SUPPORT_UCOSä¸ºSYSTEM_SUPPORT_OS
 ////////////////////////////////////////////////////////////////////////////////// 	  
 
 
 /**
- * @brief ÉèÖÃÏòÁ¿±íµÄ»ùµØÖ·ÒÔ¼°Æ«ÒÆµØÖ·
- * 		  NVIC µÄÆ«ÒÆµØÖ·
+ * @brief è®¾ç½®å‘é‡è¡¨çš„åŸºåœ°å€ä»¥åŠåç§»åœ°å€
+ * 		  NVIC çš„åç§»åœ°å€
  * 
- * @param NVIC_VectTab  »ùÖ·
- * @param Offset Æ«ÒÆÁ¿	
+ * @param NVIC_VectTab  åŸºå€
+ * @param Offset åç§»é‡	
  * @return * void 
  */
 void MY_NVIC_SetVectorTable(u32 NVIC_VectTab, u32 Offset)	 
 { 	  
-	//ÓÃÓÚ±êÊ¶ÏòÁ¿±íÊÇÔÚCODEÇø»¹ÊÇÔÚRAMÇø 	 
-	SCB->VTOR = NVIC_VectTab | (Offset & (u32)0x1FFFFF80);//ÉèÖÃNVICµÄÏòÁ¿±íÆ«ÒÆ¼Ä´æÆ÷
+	//ç”¨äºæ ‡è¯†å‘é‡è¡¨æ˜¯åœ¨CODEåŒºè¿˜æ˜¯åœ¨RAMåŒº 	 
+	SCB->VTOR = NVIC_VectTab | (Offset & (u32)0x1FFFFF80);//è®¾ç½®NVICçš„å‘é‡è¡¨åç§»å¯„å­˜å™¨
 
 	return;
 }
 
 /**
- * @brief ÉèÖÃNVIC·Ö×é NVIC_Group:
+ * @brief è®¾ç½®NVICåˆ†ç»„ NVIC_Group:
  * 
- * @param NVIC_Group NVIC·Ö×é 0~4 ×Ü¹²5×é
+ * @param NVIC_Group NVICåˆ†ç»„ 0~4 æ€»å…±5ç»„
  * @return void
  * 		   AIRCR bit[10:8]
  */
 void MY_NVIC_PriorityGroupConfig(u8 NVIC_Group)	 
 { 
 	u32 AIRCR_val, temp1;	  
-	temp1 = (~NVIC_Group) & 0x07; //È¡ºóÈıÎ», ÕâÀïÎªÊ²Ã´ÒªÈ¡·´ÄØ???
+	temp1 = (~NVIC_Group) & 0x07; //å–åä¸‰ä½, è¿™é‡Œä¸ºä»€ä¹ˆè¦å–åå‘¢???
 	temp1 <<= 8;
-	AIRCR_val = SCB->AIRCR;  //¶ÁÈ¡ÏÈÇ°µÄÉèÖÃ, bit[10-8]
-	AIRCR_val &= 0X0000F8FF; //Çå¿ÕÏÈÇ°·Ö×é 0xF8 = 1111 1000
-	AIRCR_val |= 0X05FA0000; //Ğ´ÈëÔ¿³×
+	AIRCR_val = SCB->AIRCR;  //è¯»å–å…ˆå‰çš„è®¾ç½®, bit[10-8]
+	AIRCR_val &= 0X0000F8FF; //æ¸…ç©ºå…ˆå‰åˆ†ç»„ 0xF8 = 1111 1000
+	AIRCR_val |= 0X05FA0000; //å†™å…¥é’¥åŒ™
 	AIRCR_val |= temp1;	   
-	SCB->AIRCR = AIRCR_val;  //ÉèÖÃ·Ö×é	    	  				   
+	SCB->AIRCR = AIRCR_val;  //è®¾ç½®åˆ†ç»„	    	  				   
 
 	return;
 }
 
 /**
- * @brief ÉèÖÃNVIC 
+ * @brief è®¾ç½®NVIC 
  * 
- * @param NVIC_PreemptionPriority ÇÀÕ¼ÓÅÏÈ¼¶
- * @param NVIC_SubPriority ÏìÓ¦ÓÅÏÈ¼¶
- * @param NVIC_Channel ÖĞ¶Ï±àºÅ
- * @param NVIC_Group ÖĞ¶Ï·Ö×é 0~4
+ * @param NVIC_PreemptionPriority æŠ¢å ä¼˜å…ˆçº§
+ * @param NVIC_SubPriority å“åº”ä¼˜å…ˆçº§
+ * @param NVIC_Channel ä¸­æ–­ç¼–å·, å¯¹åº”å“ªä¸ªä¸­æ–­çº¿, èŠ¯ç‰‡å›ºå®šçš„
+ * @param NVIC_Group ä¸­æ–­åˆ†ç»„ 0~4
  * @return * void 
- * @desc: NVIC->IP ¼Ä´æÆ÷, Ã¿Ò»¸öÖĞ¶Ï¶ÔÓ¦Ò»¸ö 8 Î»µÄ¼Ä´æÆ÷, Õâ¸ö¼Ä´æÆ÷Ö»ÓĞ µÍ4Î»ÓĞĞ§, bit[3:0]:[ÇÀÕ¼ÓÅÏÈ¼¶:×ÓÓÅÏÈ¼¶]
- *          //×¢ÒâÓÅÏÈ¼¶²»ÄÜ³¬¹ıÉè¶¨µÄ×éµÄ·¶Î§!·ñÔò»áÓĞÒâÏë²»µ½µÄ´íÎó
-            //×é»®·Ö:
-            //×é0:0Î»ÇÀÕ¼ÓÅÏÈ¼¶,4Î»ÏìÓ¦ÓÅÏÈ¼¶
-            //×é1:1Î»ÇÀÕ¼ÓÅÏÈ¼¶,3Î»ÏìÓ¦ÓÅÏÈ¼¶
-            //×é2:2Î»ÇÀÕ¼ÓÅÏÈ¼¶,2Î»ÏìÓ¦ÓÅÏÈ¼¶
-            //×é3:3Î»ÇÀÕ¼ÓÅÏÈ¼¶,1Î»ÏìÓ¦ÓÅÏÈ¼¶
-            //×é4:4Î»ÇÀÕ¼ÓÅÏÈ¼¶,0Î»ÏìÓ¦ÓÅÏÈ¼¶
-            //NVIC_SubPriorityºÍNVIC_PreemptionPriorityµÄÔ­ÔòÊÇ,ÊıÖµÔ½Ğ¡,Ô½ÓÅÏÈ
+ * @desc: NVIC->IP å¯„å­˜å™¨, æ¯ä¸€ä¸ªä¸­æ–­å¯¹åº”ä¸€ä¸ª 8 ä½çš„å¯„å­˜å™¨, è¿™ä¸ªå¯„å­˜å™¨åªæœ‰ ä½4ä½æœ‰æ•ˆ, bit[3:0]:[æŠ¢å ä¼˜å…ˆçº§:å­ä¼˜å…ˆçº§]
+ *          //æ³¨æ„ä¼˜å…ˆçº§ä¸èƒ½è¶…è¿‡è®¾å®šçš„ç»„çš„èŒƒå›´!å¦åˆ™ä¼šæœ‰æ„æƒ³ä¸åˆ°çš„é”™è¯¯
+            //ç»„åˆ’åˆ†:
+            //ç»„0:0ä½æŠ¢å ä¼˜å…ˆçº§,4ä½å“åº”ä¼˜å…ˆçº§
+            //ç»„1:1ä½æŠ¢å ä¼˜å…ˆçº§,3ä½å“åº”ä¼˜å…ˆçº§
+            //ç»„2:2ä½æŠ¢å ä¼˜å…ˆçº§,2ä½å“åº”ä¼˜å…ˆçº§
+            //ç»„3:3ä½æŠ¢å ä¼˜å…ˆçº§,1ä½å“åº”ä¼˜å…ˆçº§
+            //ç»„4:4ä½æŠ¢å ä¼˜å…ˆçº§,0ä½å“åº”ä¼˜å…ˆçº§
+            //NVIC_SubPriorityå’ŒNVIC_PreemptionPriorityçš„åŸåˆ™æ˜¯,æ•°å€¼è¶Šå°,è¶Šä¼˜å…ˆ
 
-        	Õâ¸ö NVIC ³õÊ¼»¯µÄ²Ù×÷ÓĞµã¶«Î÷, ËäËµÖ»ÊÇÊµÏÖÁË³õÊ¼»¯¸³Öµ¼Ä´æÆ÷µÄ¹¦ÄÜ!!!
+        	è¿™ä¸ª NVIC åˆå§‹åŒ–çš„æ“ä½œæœ‰ç‚¹ä¸œè¥¿, è™½è¯´åªæ˜¯å®ç°äº†åˆå§‹åŒ–èµ‹å€¼å¯„å­˜å™¨çš„åŠŸèƒ½!!!
  */
 void MY_NVIC_Init(u8 NVIC_PreemptionPriority, u8 NVIC_SubPriority, u8 NVIC_Channel, u8 NVIC_Group)	 
 { 
 	u32 temp;	
-	MY_NVIC_PriorityGroupConfig(NVIC_Group);//ÉèÖÃ·Ö×é, SCB->AIRCR : bit[10:8]
+	MY_NVIC_PriorityGroupConfig(NVIC_Group);//è®¾ç½®åˆ†ç»„, SCB->AIRCR : bit[10:8]
 	temp = NVIC_PreemptionPriority << (4 - NVIC_Group);	  
 	temp |= NVIC_SubPriority & (0x0f >> NVIC_Group);
-	temp &= 0xf;								//È¡µÍËÄÎ»  1111
-	NVIC->ISER[NVIC_Channel/32] |= (1 << NVIC_Channel % 32);//Ê¹ÄÜÖĞ¶ÏÎ»(ÒªÇå³ıµÄ»°,Ïà·´²Ù×÷¾ÍOK) 
-	NVIC->IP[NVIC_Channel] |= temp << 4;		//ÉèÖÃÏìÓ¦ÓÅÏÈ¼¶ºÍÇÀ¶ÏÓÅÏÈ¼¶   	   
+	temp &= 0xf;								//å–ä½å››ä½  1111
+	NVIC->ISER[NVIC_Channel/32] |= (1 << NVIC_Channel % 32);//ä½¿èƒ½ä¸­æ–­ä½(è¦æ¸…é™¤çš„è¯,ç›¸åæ“ä½œå°±OK) 
+	NVIC->IP[NVIC_Channel] |= temp << 4;		//è®¾ç½®å“åº”ä¼˜å…ˆçº§å’ŒæŠ¢æ–­ä¼˜å…ˆçº§   	   
 
     return; 	  				   
 } 
 
 /**
- * @brief Íâ²¿ÖĞ¶ÏÅäÖÃº¯Êı
+ * @brief å¤–éƒ¨ä¸­æ–­é…ç½®å‡½æ•°
+ * 		  eg:GPIO_NVIC_Config(PC, pin5, 1);	// GPIO_NVIC_Config(2, 5, 1);
  * 
- * @param GPIOx 0~6,´ú±íGPIOA~G
- * @param BITx  ĞèÒªÊ¹ÄÜGPIOÖĞµÄÄÄÒ»¸ö¶Ë¿Ú;
- * @param TRIM  ´¥·¢Ä£Ê½,1,ÏÂÉıÑØ;2,ÉÏ½µÑØ;3£¬ÈÎÒâµçÆ½´¥·¢
+ * @param GPIOx 0~6,ä»£è¡¨GPIOA~G
+ * @param BITx  éœ€è¦ä½¿èƒ½GPIOä¸­çš„å“ªä¸€ä¸ªç«¯å£;
+ * @param TRIM  trigger mode, è§¦å‘æ¨¡å¼:1,ä¸‹å‡æ²¿;2,ä¸Šé™æ²¿;3ï¼Œä»»æ„ç”µå¹³è§¦å‘
  * @return * void 
- * @desc: Ö»Õë¶ÔGPIOA~G;²»°üÀ¨PVD,RTCºÍUSB»½ĞÑÕâÈı¸ö
- * 	  	  ¸Ãº¯ÊıÒ»´ÎÖ»ÄÜÅäÖÃ1¸öIO¿Ú,¶à¸öIO¿Ú,Ğè¶à´Îµ÷ÓÃ
- * 		  ¸Ãº¯Êı»á×Ô¶¯¿ªÆô¶ÔÓ¦ÖĞ¶Ï,ÒÔ¼°ÆÁ±ÎÏß   
+ * @desc: åªé’ˆå¯¹GPIOA~G;ä¸åŒ…æ‹¬PVD,RTCå’ŒUSBå”¤é†’è¿™ä¸‰ä¸ª
+ * 	  	  è¯¥å‡½æ•°ä¸€æ¬¡åªèƒ½é…ç½®1ä¸ªIOå£,å¤šä¸ªIOå£,éœ€å¤šæ¬¡è°ƒç”¨
+ * 		  è¯¥å‡½æ•°ä¼šè‡ªåŠ¨å¼€å¯å¯¹åº”ä¸­æ–­,ä»¥åŠå±è”½çº¿   
  */
 void GPIO_NVIC_Config(u8 GPIOx, u8 BITx, u8 TRIM) 
 {
 	u8 EXTADDR;
 	u8 EXTOFFSET;
-	EXTADDR = BITx / 4;		//µÃµ½ÖĞ¶Ï¼Ä´æÆ÷×éµÄ±àºÅ, EXTICR µÄ±àºÅ, EXTICR[4]
+	EXTADDR = BITx / 4;		// å¾—åˆ°ä¸­æ–­å¯„å­˜å™¨ç»„çš„ç¼–å·, EXTICR çš„ç¼–å·, EXTICR[4]
 	EXTOFFSET = (BITx % 4) * 4; 
-	RCC->APB2ENR |= 0x01;	//Ê¹ÄÜio¸´ÓÃÊ±ÖÓ£¬¸¨Öú¹¦ÄÜ IO Ê±ÖÓÊ¹ÄÜ
-	AFIO->EXTICR[EXTADDR] &= ~(0x000F << EXTOFFSET);	//Çå³ıÔ­À´ÉèÖÃ£¡£¡£¡
-	AFIO->EXTICR[EXTADDR] |= GPIOx << EXTOFFSET;//EXTI.BITxÓ³Éäµ½GPIOx.BITx 
-	//×Ô¶¯ÉèÖÃ
-	EXTI->IMR |= 1 << BITx;//  ¿ªÆôline BITxÉÏµÄÖĞ¶Ï
-	//EXTI->EMR |= 1<<BITx;//²»ÆÁ±Îline BITxÉÏµÄÊÂ¼ş (Èç¹û²»ÆÁ±ÎÕâ¾ä,ÔÚÓ²¼şÉÏÊÇ¿ÉÒÔµÄ,µ«ÊÇÔÚÈí¼ş·ÂÕæµÄÊ±ºòÎŞ·¨½øÈëÖĞ¶Ï!)
- 	if(TRIM & 0x01)
-        EXTI->FTSR |= 1 << BITx;//line BITxÉÏÊÂ¼şÏÂ½µÑØ´¥·¢
-	if(TRIM & 0x02)
-        EXTI->RTSR |= 1 << BITx;//line BITxÉÏÊÂ¼şÉÏÉı½µÑØ´¥·¢
+	RCC->APB2ENR |= 0x01;	// ä½¿èƒ½ioå¤ç”¨æ—¶é’Ÿï¼Œè¾…åŠ©åŠŸèƒ½ IO æ—¶é’Ÿä½¿èƒ½
+	AFIO->EXTICR[EXTADDR] &= ~(0x000F << EXTOFFSET);	//æ¸…é™¤åŸæ¥è®¾ç½®ï¼ï¼ï¼
+	AFIO->EXTICR[EXTADDR] |= GPIOx << EXTOFFSET;// EXTI.BITxæ˜ å°„åˆ°GPIOx.BITx 
+	//è‡ªåŠ¨è®¾ç½®
+	EXTI->IMR |= 1 << BITx;//  å¼€å¯line BITxä¸Šçš„ä¸­æ–­
+	//EXTI->EMR |= 1<<BITx;//ä¸å±è”½line BITxä¸Šçš„äº‹ä»¶ (å¦‚æœä¸å±è”½è¿™å¥,åœ¨ç¡¬ä»¶ä¸Šæ˜¯å¯ä»¥çš„,ä½†æ˜¯åœ¨è½¯ä»¶ä»¿çœŸçš„æ—¶å€™æ— æ³•è¿›å…¥ä¸­æ–­!)
 
-	if(TRIM & 0x03){			
-		;						//ÈÎÒâµçÆ½´¥·¢
+ 	if(TRIM & 0x01) // 0000 0001
+        EXTI->FTSR |= 1 << BITx;//line BITxä¸Šäº‹ä»¶ä¸‹é™æ²¿è§¦å‘
+	if(TRIM & 0x02) // 0000 0010
+        EXTI->RTSR |= 1 << BITx;//line BITxä¸Šäº‹ä»¶ä¸Šå‡é™æ²¿è§¦å‘
+
+	if(TRIM & 0x03){ // 0x03 :0000 0011, åœ¨å‰é¢å·²ç»é…ç½®
+		;						//ä»»æ„ç”µå¹³è§¦å‘
 	}
-	else{
-		//printf("ERROR input.");
-		;
-	}
+
+	// if(TRIM == 0x01){ // falling trigger
+	// 	EXTI->FISR |= 1 << BITx;
+	// }
+	// else if(TRIM == 0x02){ // rising trigger
+	// 	EXTI->RISR |= 1 << BITx;
+	// }
+	// else if(TRIM == 0x03){ // both edge
+	// 	EXTI->FISR |= 1 << BITx;
+	// 	EXTI->RISR |= 1 << BITx;
+	// }
 
     return;
 } 	
 
-//²»ÄÜÔÚÕâÀïÖ´ĞĞËùÓĞÍâÉè¸´Î»!·ñÔòÖÁÉÙÒıÆğ´®¿Ú²»¹¤×÷.		    
-//°ÑËùÓĞÊ±ÖÓ¼Ä´æÆ÷¸´Î»		  
+//ä¸èƒ½åœ¨è¿™é‡Œæ‰§è¡Œæ‰€æœ‰å¤–è®¾å¤ä½!å¦åˆ™è‡³å°‘å¼•èµ·ä¸²å£ä¸å·¥ä½œ.		    
+//æŠŠæ‰€æœ‰æ—¶é’Ÿå¯„å­˜å™¨å¤ä½		  
 void MYRCC_DeInit(void)
 {	
- 	RCC->APB1RSTR = 0x00000000;//¸´Î»½áÊø			 
+ 	RCC->APB1RSTR = 0x00000000;//å¤ä½ç»“æŸ			 
 	RCC->APB2RSTR = 0x00000000; 
-  	RCC->AHBENR = 0x00000014;  //Ë¯ÃßÄ£Ê½ÉÁ´æºÍSRAMÊ±ÖÓÊ¹ÄÜ, ÆäËû¹Ø±Õ.	  
-  	RCC->APB2ENR = 0x00000000; //ÍâÉèÊ±ÖÓ¹Ø±Õ.			   
+  	RCC->AHBENR = 0x00000014;  //ç¡çœ æ¨¡å¼é—ªå­˜å’ŒSRAMæ—¶é’Ÿä½¿èƒ½, å…¶ä»–å…³é—­.	  
+  	RCC->APB2ENR = 0x00000000; //å¤–è®¾æ—¶é’Ÿå…³é—­.			   
   	RCC->APB1ENR = 0x00000000;   
-	RCC->CR |= 0x00000001;     //Ê¹ÄÜÄÚ²¿¸ßËÙÊ±ÖÓHSION, ÏµÍ³¸ÕÉÏµçµÄÊ±ºòÊ¹ÓÃµÄÊÇÄÚ²¿¸ßËÙÊ±ÖÓ, Ö®ºó»áÇĞ»»ÎªÍâ²¿¸ßËÙÊ±ÖÓ							 
-	RCC->CFGR &= 0xF8FF0000;   //¸´Î»SW[1:0],HPRE[3:0],PPRE1[2:0],PPRE2[2:0],ADCPRE[1:0],MCO[2:0]					 
-	RCC->CR &= 0xFEF6FFFF;     //¸´Î»HSEON,CSSON,PLLON
-	RCC->CR &= 0xFFFBFFFF;     //¸´Î»HSEBYP	   	  
-	RCC->CFGR &= 0xFF80FFFF;   //¸´Î»PLLSRC, PLLXTPRE, PLLMUL[3:0] and USBPRE 
-	RCC->CIR = 0x00000000;     //¹Ø±ÕËùÓĞÖĞ¶Ï		 
-	//ÅäÖÃÏòÁ¿±í
+	RCC->CR |= 0x00000001;     //ä½¿èƒ½å†…éƒ¨é«˜é€Ÿæ—¶é’ŸHSION, ç³»ç»Ÿåˆšä¸Šç”µçš„æ—¶å€™ä½¿ç”¨çš„æ˜¯å†…éƒ¨é«˜é€Ÿæ—¶é’Ÿ, ä¹‹åä¼šåˆ‡æ¢ä¸ºå¤–éƒ¨é«˜é€Ÿæ—¶é’Ÿ							 
+	RCC->CFGR &= 0xF8FF0000;   //å¤ä½SW[1:0],HPRE[3:0],PPRE1[2:0],PPRE2[2:0],ADCPRE[1:0],MCO[2:0]					 
+	RCC->CR &= 0xFEF6FFFF;     //å¤ä½HSEON,CSSON,PLLON
+	RCC->CR &= 0xFFFBFFFF;     //å¤ä½HSEBYP	   	  
+	RCC->CFGR &= 0xFF80FFFF;   //å¤ä½PLLSRC, PLLXTPRE, PLLMUL[3:0] and USBPRE 
+	RCC->CIR = 0x00000000;     //å…³é—­æ‰€æœ‰ä¸­æ–­		 
+	//é…ç½®å‘é‡è¡¨
 	
-	//ÕâÁ½¸öÅäÖÃÓĞÊ²Ã´Çø±ğ ???
+	//è¿™ä¸¤ä¸ªé…ç½®æœ‰ä»€ä¹ˆåŒºåˆ« ???
 #ifdef  VECT_TAB_RAM
-	MY_NVIC_SetVectorTable(0x20000000, 0x0);	//ÄÚ²¿ RAM Çø
+	MY_NVIC_SetVectorTable(0x20000000, 0x0);	//å†…éƒ¨ RAM åŒº
 #else   
-	MY_NVIC_SetVectorTable(0x08000000, 0x0);		//Code Çø
+	MY_NVIC_SetVectorTable(0x08000000, 0x0);		//Code åŒº
 #endif
 
 	return;
 }
 
-//THUMBÖ¸Áî²»Ö§³Ö "»ã±àÄÚÁª"¡ª¡ª¡ª¡ª ÔÚ C ÓïÑÔÖĞÖ±½ÓÊ¹ÓÃ»ã±à
-//²ÉÓÃÈçÏÂ·½·¨ÊµÏÖÖ´ĞĞ»ã±àÖ¸ÁîWFI
+//THUMBæŒ‡ä»¤ä¸æ”¯æŒ "æ±‡ç¼–å†…è”"â€”â€”â€”â€” åœ¨ C è¯­è¨€ä¸­ç›´æ¥ä½¿ç”¨æ±‡ç¼–
+//é‡‡ç”¨å¦‚ä¸‹æ–¹æ³•å®ç°æ‰§è¡Œæ±‡ç¼–æŒ‡ä»¤WFI
 // __ASM volatile("assemble language");
 void WFI_SET(void)
 {
 	__ASM volatile("wfi");		  
 }
-//¹Ø±ÕËùÓĞÖĞ¶Ï
+//å…³é—­æ‰€æœ‰ä¸­æ–­
 void INTX_DISABLE(void)
 {		  
 	__ASM volatile("cpsid i");
 }
-//¿ªÆôËùÓĞÖĞ¶Ï
+//å¼€å¯æ‰€æœ‰ä¸­æ–­
 void INTX_ENABLE(void)
 {
 	__ASM volatile("cpsie i");		  
 }
-//ÉèÖÃÕ»¶¥µØÖ·
-//addr:Õ»¶¥µØÖ·
+//è®¾ç½®æ ˆé¡¶åœ°å€
+//addr:æ ˆé¡¶åœ°å€
 __asm void MSR_MSP(u32 addr) 
 {
 	//move special register to register
@@ -187,35 +196,35 @@ __asm void MSR_MSP(u32 addr)
 }
 
 /**
- * @brief ½øÈë´ı»úÄ£Ê½	  
+ * @brief è¿›å…¥å¾…æœºæ¨¡å¼	  
  * 
  */
 void Sys_Standby(void)
 {
-	SCB->SCR |= (1 << 2);//Ê¹ÄÜSLEEPDEEPÎ» (SYS->CTRL)	   
-  	RCC->APB1ENR |= (1 << 28);     //Ê¹ÄÜµçÔ´Ê±ÖÓ	    
- 	PWR->CSR |= (1 << 8);          //ÉèÖÃWKUPÓÃÓÚ»½ĞÑ
-	PWR->CR |= (1 << 2);           //Çå³ıWake-up ±êÖ¾
-	PWR->CR |= (1 << 1);           //PDDSÖÃÎ»		  
-	WFI_SET();				 //Ö´ĞĞWFIÖ¸Áî
+	SCB->SCR |= (1 << 2);//ä½¿èƒ½SLEEPDEEPä½ (SYS->CTRL)	   
+  	RCC->APB1ENR |= (1 << 28);     //ä½¿èƒ½ç”µæºæ—¶é’Ÿ	    
+ 	PWR->CSR |= (1 << 8);          //è®¾ç½®WKUPç”¨äºå”¤é†’
+	PWR->CR |= (1 << 2);           //æ¸…é™¤Wake-up æ ‡å¿—
+	PWR->CR |= (1 << 1);           //PDDSç½®ä½		  
+	WFI_SET();				 //æ‰§è¡ŒWFIæŒ‡ä»¤
 
 	return;		 
 }
 
 /**
- * @brief ÏµÍ³Èí¸´Î»   
+ * @brief ç³»ç»Ÿè½¯å¤ä½   
  * 
  */
 void Sys_Soft_Reset(void)
 {   
-	SCB->AIRCR = 0X05FA0000 | (u32)0x04;	  //0x05FA 0000 ÊÇ±à¼­SCB µÄÃÜÔ¿
-	//SCB->AIRCR = 0x05FA0000 | (u32)(1<<2);	//bit[2] ²úÉúÈí¼ş¸´Î»
+	SCB->AIRCR = 0X05FA0000 | (u32)0x04;	  //0x05FA 0000 æ˜¯ç¼–è¾‘SCB çš„å¯†é’¥
+	//SCB->AIRCR = 0x05FA0000 | (u32)(1<<2);	//bit[2] äº§ç”Ÿè½¯ä»¶å¤ä½
 
 	return;
 }
 
-//JTAGÄ£Ê½ÉèÖÃ,ÓÃÓÚÉèÖÃJTAGµÄÄ£Ê½
-//mode:jtag,swdÄ£Ê½ÉèÖÃ;00,È«Ê¹ÄÜ;01,Ê¹ÄÜSWD;10,È«¹Ø±Õ;	   
+//JTAGæ¨¡å¼è®¾ç½®,ç”¨äºè®¾ç½®JTAGçš„æ¨¡å¼
+//mode:jtag,swdæ¨¡å¼è®¾ç½®;00,å…¨ä½¿èƒ½;01,ä½¿èƒ½SWD;10,å…¨å…³é—­;	   
 //#define JTAG_SWD_DISABLE   0X02
 //#define SWD_ENABLE         0X01
 //#define JTAG_SWD_ENABLE    0X00		  
@@ -223,39 +232,39 @@ void JTAG_Set(u8 mode)
 {
 	u32 temp;
 	temp=mode;
-	temp<<=25;
-	RCC->APB2ENR|=1<<0;     //¿ªÆô¸¨ÖúÊ±ÖÓ	   
-	AFIO->MAPR&=0XF8FFFFFF; //Çå³ıMAPRµÄ[26:24]
-	AFIO->MAPR|=temp;       //ÉèÖÃjtagÄ£Ê½
+	temp <<= 25;
+	RCC->APB2ENR |= 1 << 0;     // å¼€å¯è¾…åŠ©æ—¶é’Ÿ	   
+	AFIO->MAPR &= 0XF8FFFFFF; 	// æ¸…é™¤MAPRçš„[26:24]
+	AFIO->MAPR |= temp;       	//è®¾ç½®jtagæ¨¡å¼
 
 	return;
 }
 
 /**
- * @brief ÏµÍ³Ê±ÖÓ³õÊ¼»¯º¯Êı
+ * @brief ç³»ç»Ÿæ—¶é’Ÿåˆå§‹åŒ–å‡½æ•°
  * 
- * @param PLL Ñ¡ÔñµÄ±¶ÆµÊı£¬´Ó2¿ªÊ¼£¬×î´óÖµÎª16		
+ * @param PLL é€‰æ‹©çš„å€é¢‘æ•°ï¼Œä»2å¼€å§‹ï¼Œæœ€å¤§å€¼ä¸º16		
  */
 void Stm32_Clock_Init(u8 PLL)
 {
 	unsigned char temp=0;   
-	MYRCC_DeInit();		  	//¸´Î»²¢ÅäÖÃÏòÁ¿±í NVIC
- 	RCC->CR |= 0x00010000;  //Íâ²¿¸ßËÙÊ±ÖÓÊ¹ÄÜHSEON, 1 << 16, HSI(RC) ¡ª¡ª> HSE(crystal)
+	MYRCC_DeInit();		  	//å¤ä½å¹¶é…ç½®å‘é‡è¡¨ NVIC
+ 	RCC->CR |= 0x00010000;  //å¤–éƒ¨é«˜é€Ÿæ—¶é’Ÿä½¿èƒ½HSEON, 1 << 16, HSI(RC) â€”â€”> HSE(crystal)
 	while(!(RCC->CR >> 17))	//HSE RDY flag : bit[17], RCC & (1 << 17)
-		;//µÈ´ıÍâ²¿Ê±ÖÓ¾ÍĞ÷
-	RCC->CFGR = 0X00000400; //APB1=DIV2; APB2=DIV1(Ò»·ÖÆµ = ²»·ÖÆµ); AHB=DIV1;
-	PLL -= 2;				  //µÖÏû2¸öµ¥Î»£¨ÒòÎªÊÇ´Ó2¿ªÊ¼µÄ£¬ÉèÖÃ0¾ÍÊÇ2£©???
-	RCC->CFGR |= PLL << 18;   //ÉèÖÃPLLÖµ 2~16
-	RCC->CFGR |= 1 << 16;	  //PLLSRC, 1, HSE ×÷ÎªÊ±ÖÓÔ´ 
-	FLASH->ACR |= 0x32;	  //FLASH 2¸öÑÓÊ±ÖÜÆÚ
+		;//ç­‰å¾…å¤–éƒ¨æ—¶é’Ÿå°±ç»ª
+	RCC->CFGR = 0X00000400; //APB1=DIV2; APB2=DIV1(ä¸€åˆ†é¢‘ = ä¸åˆ†é¢‘); AHB=DIV1;
+	PLL -= 2;				  //æŠµæ¶ˆ2ä¸ªå•ä½ï¼ˆå› ä¸ºæ˜¯ä»2å¼€å§‹çš„ï¼Œè®¾ç½®0å°±æ˜¯2ï¼‰???
+	RCC->CFGR |= PLL << 18;   //è®¾ç½®PLLå€¼ 2~16
+	RCC->CFGR |= 1 << 16;	  //PLLSRC, 1, HSE ä½œä¸ºæ—¶é’Ÿæº 
+	FLASH->ACR |= 0x32;	  //FLASH 2ä¸ªå»¶æ—¶å‘¨æœŸ
 	RCC->CR |= 0x01000000;  //PLLON
 	while(!(RCC->CR>>25))
-		;//µÈ´ıPLLËø¶¨
-	RCC->CFGR |= 0x00000002;//PLL×÷ÎªÏµÍ³Ê±ÖÓ	 
-	while(temp != 0x02)     //µÈ´ıPLL×÷ÎªÏµÍ³Ê±ÖÓÉèÖÃ³É¹¦, RCC->CFGR[3:2] -> SWS, 0x02 - Ê¹ÓÃ PLL ×÷ÎªÏµÍ³Ê±ÖÓ
+		;//ç­‰å¾…PLLé”å®š
+	RCC->CFGR |= 0x00000002;//PLLä½œä¸ºç³»ç»Ÿæ—¶é’Ÿ	 
+	while(temp != 0x02)     //ç­‰å¾…PLLä½œä¸ºç³»ç»Ÿæ—¶é’Ÿè®¾ç½®æˆåŠŸ, RCC->CFGR[3:2] -> SWS, 0x02 - ä½¿ç”¨ PLL ä½œä¸ºç³»ç»Ÿæ—¶é’Ÿ
 	{   
-		temp = RCC->CFGR >> 2;	//CRGR[3:2], SWS, ±íÊ¾ÏµÍ³Ê±ÖÓµÄÇĞ»»×´Ì¬, ÓÉÓ²¼şset or reset 
-		temp &= 0x03;			//µÍÁ½Î»
+		temp = RCC->CFGR >> 2;	//CRGR[3:2], SWS, è¡¨ç¤ºç³»ç»Ÿæ—¶é’Ÿçš„åˆ‡æ¢çŠ¶æ€, ç”±ç¡¬ä»¶set or reset 
+		temp &= 0x03;			//ä½ä¸¤ä½
 	}
 
 	return;

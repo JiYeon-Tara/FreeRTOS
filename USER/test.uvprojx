@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\KEY;..\BOARD_PERIPHERAL\LED;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART</IncludePath>
+              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART;..\BOARD_PERIPHERAL;..\BSP\LED;..\BSP;..\BOARD_PERIPHERAL\GPIO;..\BSP\KEY;..\USER</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -380,6 +380,11 @@
               <FileType>1</FileType>
               <FilePath>.\test.c</FilePath>
             </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\main.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -415,6 +420,16 @@
               <FileType>1</FileType>
               <FilePath>..\BSP\TEMP_18B20\18b20.c</FilePath>
             </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\LED\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>key_stm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\KEY\key_stm.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -439,16 +454,6 @@
               <FilePath>..\BOARD_PERIPHERAL\EXTI\exti.c</FilePath>
             </File>
             <File>
-              <FileName>key.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BOARD_PERIPHERAL\KEY\key.c</FilePath>
-            </File>
-            <File>
-              <FileName>led.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BOARD_PERIPHERAL\LED\led.c</FilePath>
-            </File>
-            <File>
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BOARD_PERIPHERAL\TIMER\timer.c</FilePath>
@@ -457,6 +462,11 @@
               <FileName>watch_dog_timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BOARD_PERIPHERAL\WDT\watch_dog_timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio_stm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\GPIO\gpio_stm.c</FilePath>
             </File>
           </Files>
         </Group>

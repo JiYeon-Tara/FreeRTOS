@@ -14,14 +14,21 @@
 #include "usart.h"		
 #include "delay.h"	
 #include "led.h" 
-#include "key.h" 
+#include "key_stm.h" 
 #include "service_usart.h"
-#include "board.h"
 #include "watch_dog_timer.h"
 #include "timer.h"
 #include "ILI9341.h"
 #include "ssd_1306.h"
 #include "usmart.h"
+#include "exti.h"
+
+
+void bsp_init();
+void led_test();
+void key_test();
+void usart_test();
+void watch_dog_test();
 
 #endif
 

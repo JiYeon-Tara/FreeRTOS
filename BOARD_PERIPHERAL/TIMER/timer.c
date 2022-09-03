@@ -2,31 +2,31 @@
 #include "led.h"
 
 /**
- * @brief Í¨ÓÃ¶¨Ê±Æ÷ÖÐ¶Ï³õÊ¼»¯
- *        ÕâÀïÊ±ÖÓÑ¡ÔñÎªAPB1µÄ2±¶£¬¶øAPB1Îª36M
- * @param[in]  arr ×Ô¶¯ÖØ×°Öµ
- * @param[in]  psc Ê±ÖÓÔ¤·ÖÆµÊý
+ * @brief é€šç”¨å®šæ—¶å™¨ä¸­æ–­åˆå§‹åŒ–
+ *        è¿™é‡Œæ—¶é’Ÿé€‰æ‹©ä¸ºAPB1çš„2å€ï¼Œè€ŒAPB1ä¸º36M
+ * @param[in]  arr è‡ªåŠ¨é‡è£…å€¼
+ * @param[in]  psc æ—¶é’Ÿé¢„åˆ†é¢‘æ•°
  */
 void TIM3_Int_Init(u16 arr, u16 psc)
 {
-	RCC->APB1ENR |= 1<<1;	//TIM3Ê±ÖÓÊ¹ÄÜ    
- 	TIM3->ARR = arr;  	//Éè¶¨¼ÆÊýÆ÷×Ô¶¯ÖØ×°Öµ 
-	TIM3->PSC = psc;  	//Ô¤·ÖÆµÆ÷ÉèÖÃ
-	TIM3->DIER |= 1<<0;   //ÔÊÐí¸üÐÂÖÐ¶Ï				
-	TIM3->CR1 |= 1<<0;    //Ê¹ÄÜ¶¨Ê±Æ÷3
-  	MY_NVIC_Init(TIM3_PRIEMPTION_PRIORITY, TIM3_SUB_PRIORITY, TIM3_IRQn, TIM3_NVIC_GROUP); //ÇÀÕ¼1£¬×ÓÓÅÏÈ¼¶3£¬×é2									 
+	RCC->APB1ENR |= 1<<1;	//TIM3æ—¶é’Ÿä½¿èƒ½    
+ 	TIM3->ARR = arr;  	//è®¾å®šè®¡æ•°å™¨è‡ªåŠ¨é‡è£…å€¼ 
+	TIM3->PSC = psc;  	//é¢„åˆ†é¢‘å™¨è®¾ç½®
+	TIM3->DIER |= 1<<0;   //å…è®¸æ›´æ–°ä¸­æ–­				
+	TIM3->CR1 |= 1<<0;    //ä½¿èƒ½å®šæ—¶å™¨3
+  	MY_NVIC_Init(TIM3_PRIEMPTION_PRIORITY, TIM3_SUB_PRIORITY, TIM3_IRQn, TIM3_NVIC_GROUP); //æŠ¢å 1ï¼Œå­ä¼˜å…ˆçº§3ï¼Œç»„2									 
 }
 
 /**
- * @brief ¶¨Ê±Æ÷3ÖÐ¶Ï·þÎñ³ÌÐò
+ * @brief å®šæ—¶å™¨3ä¸­æ–­æœåŠ¡ç¨‹åº
  * 
  */
 void TIM3_IRQHandler(void)
 { 		    		  			    
-	if(TIM3->SR & 0X0001)//Òç³öÖÐ¶Ï
+	if(TIM3->SR & 0X0001)//æº¢å‡ºä¸­æ–­
 	{
 		LED1 =! LED1;			    				   				     	    	
 	}				   
-	TIM3->SR &= ~(1<<0);//Çå³ýÖÐ¶Ï±êÖ¾Î» 	    
+	TIM3->SR &= ~(1<<0);//æ¸…é™¤ä¸­æ–­æ ‡å¿—ä½ 	    
 }
 

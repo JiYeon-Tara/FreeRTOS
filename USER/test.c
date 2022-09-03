@@ -1,26 +1,49 @@
 #include "test.h"
+#include "board_config.h"
+#include "bsp_config.h"
+
  
-int main(void)
-{			
-	uint8_t ix = 0;
-	Stm32_Clock_Init(9); 	//ÏµÍ³Ê±ÖÓÉèÖÃ
-	delay_init(72000000);	     //ÑÓÊ±³õÊ¼»¯ 
-	uart_init(72000000, 9600);	 //´®¿Ú³õÊ¼»¯Îª9600
-	LED_Init();		  	 //³õÊ¼»¯ÓëLEDÁ¬½ÓµÄÓ²¼ş½Ó¿Ú
-	KEY_Init();
-	EXTI_Init();
-	LCD_Init(); 		//¸Ğ¾õÕâ¸ö°å×ÓÅÜ¸öLCDÆÁÒÑ¾­ÓĞµãĞÄÓĞÓà¶øÁ¦²»×ãÁË, ¿ÉÒÔÓÅ»¯Âğ?
-	usmart_dev.init(72); //³õÊ¼»¯ USMART
+// Program Size: Code=14966 RO-data=7166 RW-data=408 ZI-data=1848  
+// FromELF: creating hex file...
+// "..\OBJ\test.axf" - 0 Error(s), 13 Warning(s).
+// Build Time Elapsed:  00:00:01
+/**
+ * @brief ç¼–è¯‘ä¿¡æ¯è§£é‡Š, ä»£ç å ç”¨ flash:14966 + 7166 = 22132 bytes
+ * å ç”¨ SRAM å¤§å°:1848 + 408 = 1856 bytes
+ * 
+ * code è¡¨ç¤ºç¨‹åºå ç”¨ flash å¤§å°
+ * RO-data è¡¨ç¤ºç¨‹åºå®šä¹‰çš„å¸¸é‡(flash)
+ * RW-data è¡¨ç¤ºç¨‹åºå®šä¹‰çš„å·²ç»åˆå§‹åŒ–çš„å˜é‡
+ * ZI-data è¡¨ç¤ºæœªè¢«åˆå§‹åŒ–çš„å˜é‡
+ * 
+ * startup_stm32f10x_hd.s ä¸­, å®šä¹‰äº†å †æ ˆ(heap + stack) æ€»å¤§å° 0x600 = 1536 bytes, 
+ * 
+ */
+
+
+void bsp_init()
+{
+	Stm32_Clock_Init(9); 		 //ç³»ç»Ÿæ—¶é’Ÿè®¾ç½®
+	delay_init(72000000);	     //å»¶æ—¶åˆå§‹åŒ–
+	uart_init(72000000, 9600);	 //ä¸²å£åˆå§‹åŒ–ä¸º9600
+	LED_Init();					 // LED Init
+	EXTI_Init(); 				 // key and exit initialization
+}
+
+int fun(void)
+{
+	// LCD_Init(); 		//æ„Ÿè§‰è¿™ä¸ªæ¿å­è·‘ä¸ªLCDå±å·²ç»æœ‰ç‚¹å¿ƒæœ‰ä½™è€ŒåŠ›ä¸è¶³äº†, å¯ä»¥ä¼˜åŒ–å—?
+	// usmart_dev.init(72); //åˆå§‹åŒ– USMART
 	
-	//IWDG_Init(4, 615); // watch dog intialization
-	//WWDG_Init(0X7F,0X5F,3);	//¼ÆÊıÆ÷ÖµÎª7f,´°¿Ú¼Ä´æÆ÷Îª5f,·ÖÆµÊıÎª8	 
-	TIM3_Int_Init(9999, 7199);	//10KhzµÄ¼ÆÊıÆµÂÊ£¬¼ÆÊıµ½5000Îª500ms  
-	printf("intialized.");
+	// //IWDG_Init(4, 615); // watch dog intialization
+	// //WWDG_Init(0X7F,0X5F,3);	//è®¡æ•°å™¨å€¼ä¸º7f,çª—å£å¯„å­˜å™¨ä¸º5f,åˆ†é¢‘æ•°ä¸º8	 
+	// TIM3_Int_Init(9999, 7199);	//10Khzçš„è®¡æ•°é¢‘ç‡ï¼Œè®¡æ•°åˆ°5000ä¸º500ms  
+
 	while(1)
 	{
 		//open watch dog
-		uart1_print_recv_msg(S_USART1);
-		LCD_Test(&ix);
+		// uart1_print_recv_msg(S_USART1);
+		// LCD_Test(&ix);
 		// printf("%d\n", KEY_Scan(1));
 		// if(cmd == "circle loop"){
 		// 	while(1);	//dog will bark
@@ -30,12 +53,93 @@ int main(void)
 		
 		//printf("thread running...\n");
 		//delay_ms(1000);
-	}
+#if LED_ENABLE
 
-	
+#endif
+	}
 }
 
+void led_test()
+{
+	LED_Init();		  	 //åˆå§‹åŒ–ä¸LEDè¿æ¥çš„ç¡¬ä»¶æ¥å£
+	LED_Reset();
+	delay_ms(5000);
+	LED_Set();
+	delay_ms(5000);
+}
 
+void key_test()
+{
+#if LOOP_KEY_ENABLE	
+	uint8_t val;
+
+	LED_Init();
+	KEY_Init();
+	uart_init(72000000, 9600);
+
+	while(1){
+		val = KEY_Scan(SINGLE_SHOT_MODE);
+		// printf("val:%d\n", val);
+		switch(val){
+			case KEY0_PRES:
+			{
+				printf("val:%d\n", val);
+				LED_Reset();
+				break;
+			}
+			case KEY1_PRES:
+			{
+				printf("val:%d\n", val);
+				LED_Set();
+				break;
+			}
+			case WKUP_PRES:
+			{
+				printf("val:%d\n", val);
+				LED_Reset();
+				delay_ms(5000);
+				LED_Set();
+				delay_ms(5000);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+#else if INT_KEY_ENABLE
+	EXTI_Init();
+#endif
+}
+
+void usart_test()
+{
+#if USART1_ENABLE
+	uint8_t len;
+	uint8_t ix = 0;
+
+	uart_init(72000000, 9600);	 //ä¸²å£åˆå§‹åŒ–ä¸º9600
+	LED_Init();
+	KEY_Init();
+
+	while(1)
+	{
+		if(USART_RX_STA & UART_RX_COMPLETE){
+			len = USART_RX_STA & UART_GET_RX_LEN;
+			printf("recv len:%d\n", len);
+			for(ix = 0; ix < len; ++ix){
+				printf("%c", USART_RX_BUF[ix]);
+			}
+			printf("\r\n");
+			USART_RX_STA = 0;
+		}
+	}
+#endif
+}
+
+void watch_dog_test()
+{
+	
+}
 
 
 

@@ -15,15 +15,15 @@
   *          is using in the C source code, usually in main.c. This file contains:
   *           - Configuration section that allows to select:
   *              - The device used in the target application
-  *              - To use or not the peripheral�s drivers in application code(i.e. 
-  *                code will be based on direct access to peripheral�s registers 
+  *              - To use or not the peripheral�s drivers in application code(i.e. 
+  *                code will be based on direct access to peripheral�s registers 
   *                rather than drivers API), this option is controlled by 
   *                "#define USE_STDPERIPH_DRIVER"
   *              - To change few application-specific parameters such as the HSE 
   *                crystal frequency
   *           - Data structures and the address mapping for all peripherals
   *           - Peripheral's registers declarations and bits definition
-  *           - Macros to access peripheral�s registers hardware
+  *           - Macros to access peripheral�s registers hardware
   *
   ******************************************************************************
   * @attention
@@ -956,7 +956,6 @@ typedef struct
 /** 
   * @brief Flexible Static Memory Controller Bank2
   */
-  
 typedef struct
 {
   __IO uint32_t PCR2;
@@ -970,7 +969,6 @@ typedef struct
 /** 
   * @brief Flexible Static Memory Controller Bank3
   */
-  
 typedef struct
 {
   __IO uint32_t PCR3;
@@ -984,7 +982,6 @@ typedef struct
 /** 
   * @brief Flexible Static Memory Controller Bank4
   */
-  
 typedef struct
 {
   __IO uint32_t PCR4;
@@ -995,18 +992,17 @@ typedef struct
 } FSMC_Bank4_TypeDef; 
 
 /** 
-  * @brief General Purpose I/O
+  * @brief General Purpose I/O, 具体哪一位是什么作用, 需要参考数据手册
   */
-
 typedef struct
 {
-  __IO uint32_t CRL;
-  __IO uint32_t CRH;
-  __IO uint32_t IDR;
-  __IO uint32_t ODR;
-  __IO uint32_t BSRR;
-  __IO uint32_t BRR;
-  __IO uint32_t LCKR;
+  __IO uint32_t CRL;  // control register low
+  __IO uint32_t CRH;  // control register high
+  __IO uint32_t IDR;  // input data register
+  __IO uint32_t ODR;  // ouput data register
+  __IO uint32_t BSRR; // Bit Set Reset Register
+  __IO uint32_t BRR;  // Bit Reset Register
+  __IO uint32_t LCKR; // Lock Config Register
 } GPIO_TypeDef;
 
 /** 

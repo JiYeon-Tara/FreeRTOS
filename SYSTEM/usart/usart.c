@@ -1,32 +1,33 @@
 #include "usart.h"	  
 
 ////////////////////////////////////////////////////////////////////////////////// 	 
-//Èç¹ûÊ¹ÓÃucos,Ôò°üÀ¨ÏÂÃæµÄÍ·ÎÄ¼ş¼´¿É.
+//å¦‚æœä½¿ç”¨ucos,åˆ™åŒ…æ‹¬ä¸‹é¢çš„å¤´æ–‡ä»¶å³å¯.
 #if SYSTEM_SUPPORT_OS
-#include "includes.h"					//ucos Ê¹ÓÃ	  
+#include "includes.h"					//ucos ä½¿ç”¨	  
 #endif
-//V1.3ĞŞ¸ÄËµÃ÷ 
-//Ö§³ÖÊÊÓ¦²»Í¬ÆµÂÊÏÂµÄ´®¿Ú²¨ÌØÂÊÉèÖÃ.
-//¼ÓÈëÁË¶ÔprintfµÄÖ§³Ö
-//Ôö¼ÓÁË´®¿Ú½ÓÊÕÃüÁî¹¦ÄÜ.
-//ĞŞÕıÁËprintfµÚÒ»¸ö×Ö·û¶ªÊ§µÄbug
-//V1.4ĞŞ¸ÄËµÃ÷
-//1,ĞŞ¸Ä´®¿Ú³õÊ¼»¯IOµÄbug
-//2,ĞŞ¸ÄÁËUSART_RX_STA,Ê¹µÃ´®¿Ú×î´ó½ÓÊÕ×Ö½ÚÊıÎª2µÄ14´Î·½
-//3,Ôö¼ÓÁËUSART_REC_LEN,ÓÃÓÚ¶¨Òå´®¿Ú×î´óÔÊĞí½ÓÊÕµÄ×Ö½ÚÊı(²»´óÓÚ2µÄ14´Î·½)
-//4,ĞŞ¸ÄÁËEN_USART1_RXµÄÊ¹ÄÜ·½Ê½
-//V1.5ĞŞ¸ÄËµÃ÷
-//1,Ôö¼ÓÁË¶ÔUCOSIIµÄÖ§³Ö
-//V1.6ĞŞ¸ÄËµÃ÷ 20150109
-//uart_initº¯ÊıÈ¥µôÁË¿ªÆôPEÖĞ¶Ï
-//V1.7ĞŞ¸ÄËµÃ÷ 20150322
-//ĞŞ¸ÄOS_CRITICAL_METHODºêÅĞ¶ÏÎª£ºSYSTEM_SUPPORT_OS
+//V1.3ä¿®æ”¹è¯´æ˜ 
+//æ”¯æŒé€‚åº”ä¸åŒé¢‘ç‡ä¸‹çš„ä¸²å£æ³¢ç‰¹ç‡è®¾ç½®.
+//åŠ å…¥äº†å¯¹printfçš„æ”¯æŒ
+//å¢åŠ äº†ä¸²å£æ¥æ”¶å‘½ä»¤åŠŸèƒ½.
+//ä¿®æ­£äº†printfç¬¬ä¸€ä¸ªå­—ç¬¦ä¸¢å¤±çš„bug
+//V1.4ä¿®æ”¹è¯´æ˜
+//1,ä¿®æ”¹ä¸²å£åˆå§‹åŒ–IOçš„bug
+//2,ä¿®æ”¹äº†USART_RX_STA,ä½¿å¾—ä¸²å£æœ€å¤§æ¥æ”¶å­—èŠ‚æ•°ä¸º2çš„14æ¬¡æ–¹
+//3,å¢åŠ äº†USART_REC_LEN,ç”¨äºå®šä¹‰ä¸²å£æœ€å¤§å…è®¸æ¥æ”¶çš„å­—èŠ‚æ•°(ä¸å¤§äº2çš„14æ¬¡æ–¹)
+//4,ä¿®æ”¹äº†EN_USART1_RXçš„ä½¿èƒ½æ–¹å¼
+//V1.5ä¿®æ”¹è¯´æ˜
+//1,å¢åŠ äº†å¯¹UCOSIIçš„æ”¯æŒ
+//V1.6ä¿®æ”¹è¯´æ˜ 20150109
+//uart_initå‡½æ•°å»æ‰äº†å¼€å¯PEä¸­æ–­
+//V1.7ä¿®æ”¹è¯´æ˜ 20150322
+//ä¿®æ”¹OS_CRITICAL_METHODå®åˆ¤æ–­ä¸ºï¼šSYSTEM_SUPPORT_OS
 ////////////////////////////////////////////////////////////////////////////////// 	  
- 
-//¼ÓÈëÒÔÏÂ´úÂë,Ö§³Öprintfº¯Êı,¶ø²»ĞèÒªÑ¡Ôñuse MicroLIB	  
+
+
+//åŠ å…¥ä»¥ä¸‹ä»£ç ,æ”¯æŒprintfå‡½æ•°,è€Œä¸éœ€è¦é€‰æ‹©use MicroLIB	  
 #if 1
 #pragma import(__use_no_semihosting)             
-//±ê×¼¿âĞèÒªµÄÖ§³Öº¯Êı                 
+//æ ‡å‡†åº“éœ€è¦çš„æ”¯æŒå‡½æ•°                 
 struct __FILE 
 { 
 	int handle; 
@@ -34,129 +35,155 @@ struct __FILE
 	/* standard output using printf() for debugging, no file handling */ 
 	/* is required. */ 
 }; 
-/* FILE is typedef¡¯ d in stdio.h. */ 
+/* FILE is typedefâ€™ d in stdio.h. */ 
 FILE __stdout;   
 
-//¶¨Òå_sys_exit()ÒÔ±ÜÃâÊ¹ÓÃ°ëÖ÷»úÄ£Ê½    
+//å®šä¹‰_sys_exit()ä»¥é¿å…ä½¿ç”¨åŠä¸»æœºæ¨¡å¼    
 _sys_exit(int x) 
 { 
 	x = x; 
 } 
 
-//ÖØ¶¨Ïòfputcº¯Êı
-//printfµÄÊä³ö£¬Ö¸Ïòfputc£¬ÓÉfputcÊä³öµ½´®¿Ú
-//ÕâÀïÊ¹ÓÃ´®¿Ú1(USART1)Êä³öprintfĞÅÏ¢
+// é‡å®šå‘fputcå‡½æ•°
+// printfçš„è¾“å‡ºï¼ŒæŒ‡å‘fputcï¼Œç”±fputcè¾“å‡ºåˆ°ä¸²å£
+// printf() è¿˜æ˜¯é€šè¿‡è°ƒç”¨ fputc(char ch, æ ‡å‡†è¾“å‡ºæµ)
+// è¿™é‡Œä½¿ç”¨ä¸²å£1(USART1)è¾“å‡ºprintfä¿¡æ¯
 int fputc(int ch, FILE *f)
-{      
-	while((USART1->SR&0X40) == 0)
-		;//µÈ´ıÉÏÒ»´Î´®¿ÚÊı¾İ·¢ËÍÍê³É  
-	USART1->DR = (u8) ch;      	//Ğ´DR,´®¿Ú1½«·¢ËÍÊı¾İ
+{
+	while((USART1->SR & 0X40) == 0) // 0100 0000, bit[6], TX complete flag bit
+		;//ç­‰å¾…ä¸Šä¸€æ¬¡ä¸²å£æ•°æ®å‘é€å®Œæˆ  
+	USART1->DR = (u8) ch;      	//å†™DR,ä¸²å£1å°†å‘é€æ•°æ®
 	return ch;
 }
 #endif 
-//end
-//////////////////////////////////////////////////////////////////
 
-#if EN_USART1_RX   //Èç¹ûÊ¹ÄÜÁË½ÓÊÕ
-//×¢Òâ,¶ÁÈ¡USARTx->SRÄÜ±ÜÃâÄªÃûÆäÃîµÄ´íÎó   	
-u8 USART_RX_BUF[USART_REC_LEN];     //½ÓÊÕ»º³å,×î´óUSART_REC_LEN¸ö×Ö½Ú.
-//½ÓÊÕ×´Ì¬
-//bit15£¬	½ÓÊÕÍê³É±êÖ¾
-//bit14£¬	½ÓÊÕµ½0x0d
-//bit13~0£¬	½ÓÊÕµ½µÄÓĞĞ§×Ö½ÚÊıÄ¿
-u16 USART_RX_STA=0;       //½ÓÊÕ×´Ì¬±ê¼Ç
+
+#if EN_USART1_RX   //å¦‚æœä½¿èƒ½äº†æ¥æ”¶
+//æ³¨æ„,è¯»å–USARTx->SRèƒ½é¿å…è«åå…¶å¦™çš„é”™è¯¯   	
+uint8_t USART_RX_BUF[USART_REC_LEN];     // æ¥æ”¶ç¼“å†²,æœ€å¤§USART_REC_LENä¸ªå­—èŠ‚.
+//æ¥æ”¶çŠ¶æ€
+//bit15ï¼Œ	æ¥æ”¶å®Œæˆæ ‡å¿—
+//bit14ï¼Œ	æ¥æ”¶åˆ°0x0d
+//bit13~0ï¼Œ	æ¥æ”¶åˆ°çš„æœ‰æ•ˆå­—èŠ‚æ•°ç›®
+uint16_t USART_RX_STA = 0;       //æ¥æ”¶çŠ¶æ€æ ‡è®°
 
 /**
- * @brief ´®¿Ú1ÖĞ¶Ï·şÎñ³ÌĞò
+ * @brief ä¸²å£1ä¸­æ–­æœåŠ¡ç¨‹åº
  * 
  * @desc: DCD USART1_IRQHandler
- * 		  (1)»Ø³µ: 0x0D 0x0A;
- * 		  (2)Èç¹ûÓĞ²Ù×÷ÏµÍ³, ÔòĞèÒª OSIntEnter(), OSInetExit();
- * 		  (3)ÔÚ startup_stm32f10x_hd.s ÖĞÓĞÉùÃ÷;
+ * 		  (1)å›è½¦: 0x0D 0x0A;
+ * 		  (2)å¦‚æœæœ‰æ“ä½œç³»ç»Ÿ, åˆ™éœ€è¦ OSIntEnter(), OSInetExit();
+ * 		  (3)åœ¨ startup_stm32f10x_hd.s ä¸­æœ‰å£°æ˜;
  */
 void USART1_IRQHandler(void)
 {
 	u8 res;	
 
-#if SYSTEM_SUPPORT_OS 		//Èç¹ûSYSTEM_SUPPORT_OSÎªÕæ£¬ÔòĞèÒªÖ§³ÖOS.
-	OSIntEnter();    
-#endif
-	if(USART1->SR & (1 << 5))	//SR bit[5], RXNE==1, ½ÓÊÕµ½Êı¾İ
-	{	 
-		res = USART1->DR; 		//UART1->DR Ö»ÓĞ bit[8:0] ÓĞĞ§
-		//res = USART1->DR & 0xFF; 
-		if((USART_RX_STA & 0x8000) == 0)//bit[15], ½ÓÊÕÎ´Íê³É, ±£´æµ½ USART_RX_BUF ¼´¿É
+// #if SYSTEM_SUPPORT_OS 		//å¦‚æœSYSTEM_SUPPORT_OSä¸ºçœŸï¼Œåˆ™éœ€è¦æ”¯æŒOS.
+// 	OSIntEnter();    
+// #endif
+	if(USART1->SR & (1 << 5))	//SR bit[5], RXNE==1, æ¥æ”¶åˆ°æ•°æ®
+	{
+		// ä»æ•°æ®å¯„å­˜å™¨ä¸­å–å‡ºæ•°æ®
+		res = USART1->DR; 		//UART1->DR åªæœ‰ bit[8:0] æœ‰æ•ˆ
+		//res = USART1->DR & 0xFF;
+ 
+		if((USART_RX_STA & 0x8000) == 0)	// bit[15], æ¥æ”¶æœªå®Œæˆ, ä¿å­˜åˆ° USART_RX_BUF å³å¯
 		{
-			if(USART_RX_STA & 0x4000)//bit[14], ½ÓÊÕµ½ÁË0x0d, Ã¿´Î½ÓÊÕÊı¾İ¶¼Òª \r\n ½áÎ², ·ñÔòÈÏÎª´íÎó
+			if(USART_RX_STA & 0x4000)	// bit[14], æ¥æ”¶åˆ°äº†0x0d, æ¯æ¬¡æ¥æ”¶æ•°æ®éƒ½è¦ \r\n ç»“å°¾, å¦åˆ™è®¤ä¸ºé”™è¯¯
 			{
-				if(res != 0x0a)
-					USART_RX_STA = 0;//½ÓÊÕ´íÎó,ÖØĞÂ¿ªÊ¼
+				if(res != 0x0A)
+					USART_RX_STA = 0;//æ¥æ”¶é”™è¯¯,é‡æ–°å¼€å§‹
 				else 
-					USART_RX_STA |= 0x8000;	//½ÓÊÕÍê³ÉÁË£¬ ÖÃÎ» bit[15]
+					USART_RX_STA |= 0x8000;	//æ¥æ”¶å®Œæˆäº†ï¼Œ ç½®ä½ bit[15]
 			}
-			else //»¹Ã»ÊÕµ½0X0D
+			else //è¿˜æ²¡æ”¶åˆ°0X0D
 			{	
-				if(res == 0x0d)				//µ±Ç°ÊÕµ½ 0x0D
+				if(res == 0x0d)				//å½“å‰æ”¶åˆ° 0x0D
 					USART_RX_STA |= 0x4000;
-				else						//»¹Ã»ÊÕµ½ 0x0D, ÊÇÆäËü×Ö½Ú
+				else						//è¿˜æ²¡æ”¶åˆ° 0x0D, æ˜¯å…¶å®ƒå­—èŠ‚
 				{
-					USART_RX_BUF[USART_RX_STA & 0X3FFF] = res;	//bit[13:0], ±£´æ½ÓÊÕµ½µÄÓĞĞ§×Ö½ÚÊıÄ¿, 0x3F 0011 1111
-					USART_RX_STA++;			//½ÓÊÕµ½µÄÓĞĞ§×Ö½ÚÊıÄ¿+1
-					if(USART_RX_STA > (USART_REC_LEN-1))		//ÊÕµ½Êı¾İÌ«¶à, ÈÏÎª´íÎó
-						USART_RX_STA = 0;//½ÓÊÕÊı¾İ´íÎó,ÖØĞÂ¿ªÊ¼½ÓÊÕ	  
+					uint16_t recvDataBytes = USART_RX_STA & UART_GET_RX_LEN;
+					// USART_RX_BUF[USART_RX_STA & 0X3FFF] = res;	// bit[13:0], ä¿å­˜æ¥æ”¶åˆ°çš„æœ‰æ•ˆå­—èŠ‚æ•°ç›®, 0x3F 0011 1111
+					USART_RX_BUF[recvDataBytes] = res;
+					++USART_RX_STA;			// æ¥æ”¶åˆ°çš„æœ‰æ•ˆå­—èŠ‚æ•°ç›®+1
+					if(USART_RX_STA > (USART_REC_LEN-1))		// æ”¶åˆ°æ•°æ®å¤ªå¤š, è®¤ä¸ºé”™è¯¯
+						USART_RX_STA = 0;	// æ¥æ”¶æ•°æ®é”™è¯¯,é‡æ–°å¼€å§‹æ¥æ”¶
 				}		 
 			}
 		}  		 									     
 	}
-#if SYSTEM_SUPPORT_OS 	//Èç¹ûSYSTEM_SUPPORT_OSÎªÕæ£¬ÔòĞèÒªÖ§³ÖOS.
-	OSIntExit();  											 
-#endif
+// #if SYSTEM_SUPPORT_OS 	//å¦‚æœSYSTEM_SUPPORT_OSä¸ºçœŸï¼Œåˆ™éœ€è¦æ”¯æŒOS.
+// 	OSIntExit();  											 
+// #endif
 
 	return;
 } 
-#endif		//end EN_USART1_RX								 
+#endif //end EN_USART1_RX								 
 
+
+//ç»„2ï¼Œæœ€ä½ä¼˜å…ˆçº§ï¼Œ æŠ¢å ä¼˜å…ˆçº§ å’Œ å­ä¼˜å…ˆçº§çš„å€¼éƒ½æ˜¯2
+#define UART1_PRIEMPTION_PRIORITY  3
+#define UART1_SUB_PRIORITY         3
+#define UART1_NVIC_GROUP           2	
 /** 
- * @brief ³õÊ¼»¯IO ´®¿Ú1
+ * @brief åˆå§‹åŒ–IO ä¸²å£1
  * 
- * @param pclk2 PCLK2Ê±ÖÓÆµÂÊ(hz)
- * @param bound ²¨ÌØÂÊ 
+ * @param pclk2 PCLK2æ—¶é’Ÿé¢‘ç‡(hz)
+ * @param baud æ³¢ç‰¹ç‡ 
  */
-void uart_init(u32 pclk2, u32 bound)
-{  	 
+void uart_init(u32 pclk2, u32 baud)
+{
 	float temp;
 	u16 mantissa;
 	u16 fraction;	 
 
-	temp = (float)(pclk2) / (bound * 16);//µÃµ½USARTDIV
-	mantissa = temp;				 //µÃµ½ÕûÊı²¿·Ö
-	fraction = (temp-mantissa) * 16; //µÃµ½Ğ¡Êı²¿·Ö	 
+	// æ ¹æ®æ³¢ç‰¹ç‡è®¡ç®—å¯„å­˜å™¨è®¾ç½®å‚æ•° ???
+	temp = (float)(pclk2) / (baud * 16);	// å¾—åˆ°USARTDIV
+	mantissa = temp;				 		// å¾—åˆ°æ•´æ•°éƒ¨åˆ†
+	fraction = (temp-mantissa) * 16; 		// å¾—åˆ°å°æ•°éƒ¨åˆ†	 
     mantissa <<= 4;
 	mantissa += fraction; 
-	RCC->APB2ENR |= 1 << 2;   //Ê¹ÄÜPORTA¿ÚÊ±ÖÓ  
-	RCC->APB2ENR |= 1 << 14;  //Ê¹ÄÜ´®¿ÚÊ±ÖÓ RCC->APB2ENR:bit[14]
-	GPIOA->CRH &= 0XFFFFF00F;//IO×´Ì¬ÉèÖÃ
-	GPIOA->CRH |= 0X000008B0;//IO×´Ì¬ÉèÖÃ 
-	RCC->APB2RSTR |= 1 << 14;   //¸´Î»´®¿Ú1, RCC->APB2RSTR:bit[14], Èí¼şÇåÁãÒÔ¼°¸´Î»
-	RCC->APB2RSTR &= ~(1 << 14);//Í£Ö¹¸´Î»	   	   
-	//²¨ÌØÂÊÉèÖÃ
- 	USART1->BRR = mantissa; // ²¨ÌØÂÊÉèÖÃ	 
-	USART1->CR1 |= 0X200C;  //1Î»Í£Ö¹,ÎŞĞ£ÑéÎ».
-#if EN_USART1_RX		  //Èç¹ûÊ¹ÄÜÁË½ÓÊÕ
-	//Ê¹ÄÜ½ÓÊÕÖĞ¶Ï 
-	USART1->CR1 |= 1 << 5;    //½ÓÊÕ»º³åÇø·Ç¿ÕÖĞ¶ÏÊ¹ÄÜ
 
-	//×é2£¬×îµÍÓÅÏÈ¼¶£¬ ÇÀÕ¼ÓÅÏÈ¼¶ ºÍ ×ÓÓÅÏÈ¼¶µÄÖµ¶¼ÊÇ2
-	#define UART1_PRIEMPTION_PRIORITY  3
-	#define UART1_SUB_PRIORITY         3
-	#define UART1_NVIC_GROUP           2	
-	MY_NVIC_Init(UART1_PRIEMPTION_PRIORITY, UART1_SUB_PRIORITY, USART1_IRQn, UART1_NVIC_GROUP);		
+	RCC->APB2ENR |= 1 << 2;   // ä½¿èƒ½PORTAå£æ—¶é’Ÿ, TXD(PA9), RXD(PA10)
+	RCC->APB2ENR |= 1 << 14;  // ä½¿èƒ½ä¸²å£æ—¶é’Ÿ RCC->APB2ENR:bit[14]
+	GPIOA->CRH &= 0XFFFFF00F; // IOçŠ¶æ€æ¸…é›¶
+	GPIOA->CRH |= 0X000008B0; // IOçŠ¶æ€è®¾ç½® 1000(pin10, RX, æ¨¡æ‹Ÿè¾“å…¥æ¨¡å¼) 1011(pin9, TX, å¤ç”¨åŠŸèƒ½æ¨æŒ½è¾“å‡ºæ¨¡å¼)
+	// APB2RSTR(å¤–è®¾å¤ä½å¯„å­˜å™¨)
+	RCC->APB2RSTR |= 1 << 14;   // å¤ä½ä¸²å£1, RCC->APB2RSTR:bit[14], è½¯ä»¶æ¸…é›¶ä»¥åŠå¤ä½
+	RCC->APB2RSTR &= ~(1 << 14);//åœæ­¢å¤ä½	   	   
+	//æ³¢ç‰¹ç‡è®¾ç½®
+ 	USART1->BRR = mantissa; // æ³¢ç‰¹ç‡å¯„å­˜å™¨è®¾ç½®	 
+	USART1->CR1 |= 0X200C;  // 1ä½åœæ­¢,æ— æ ¡éªŒä½. 0x200C - 0010 0000 0000 1100
+	// USART1->CR1 |= (1 << 13);
+	// è¿˜æœ‰ä¸²å£å‘é€å®Œæˆä¸­æ–­, ä»¥åŠå‘é€ç¼“å†²åŒºç©ºä¸­æ–­ç­‰å…¶ä»–ä¸²å£ä¸­æ–­å¯ä»¥ä½¿ç”¨
+	// UART1->CR1 , PEIE, TXEIE, TCIE...
+
+#if EN_USART1_RX		  //å¦‚æœä½¿èƒ½äº†æ¥æ”¶
+	//ä½¿èƒ½æ¥æ”¶ä¸­æ–­ 
+	USART1->CR1 |= 1 << 5;    //æ¥æ”¶ç¼“å†²åŒºéç©ºä¸­æ–­ä½¿èƒ½
+	MY_NVIC_Init(UART1_PRIEMPTION_PRIORITY, UART1_SUB_PRIORITY, USART1_IRQn, UART1_NVIC_GROUP);	// ä¸­æ–­çº¿æ˜¯å›ºå®šçš„, ä½†æ˜¯ä¸­æ–­ä¼˜å…ˆçº§å¯ä»¥è°ƒæ•´
 #endif
 
 	return;
 }
 
+// TODO:
 /**
- * @brief 
+ * @brief UART_DMA å¦‚ä½•å®ç° ??
  * 
  */
+
+
+
+// 
+/** 
+ * @brief AT å‘½ä»¤è§£æ
+ * 
+ * @param 
+ * @param 
+ */
+bool at_cmd_parse(const char *str1, const char *str2)
+{
+
+}
