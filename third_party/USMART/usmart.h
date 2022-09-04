@@ -2,71 +2,71 @@
 #define __USMART_H	  		  
 #include "usmart_str.h"
 //////////////////////////////////////////////////////////////////////////////////	 
-//USMART×ÊÔ´Õ¼ÓÃÇé¿ö@MDK 3.80A@2.0°æ±¾£º
-//FLASH:4K~K×Ö½Ú(Í¨¹ıUSMART_USE_HELPºÍUSMART_USE_WRFUNSÉèÖÃ)
-//SRAM:72×Ö½Ú(×îÉÙµÄÇé¿öÏÂ)
-//SRAM¼ÆËã¹«Ê½:   SRAM=PARM_LEN+72-4  ÆäÖĞPARM_LEN±ØĞë´óÓÚµÈÓÚ4.
-//Ó¦¸Ã±£Ö¤¶ÑÕ»²»Ğ¡ÓÚ100¸ö×Ö½Ú.
-////////////////////////////////////////////ÓÃ»§ÅäÖÃ²ÎÊı////////////////////////////////////////////////////	  
-#define MAX_FNAME_LEN 		30	//º¯ÊıÃû×î´ó³¤¶È£¬Ó¦¸ÃÉèÖÃÎª²»Ğ¡ÓÚ×î³¤º¯ÊıÃûµÄ³¤¶È¡£											   
-#define MAX_PARM 			10	//×î´óÎª10¸ö²ÎÊı ,ĞŞ¸Ä´Ë²ÎÊı,±ØĞëĞŞ¸Äusmart_exeÓëÖ®¶ÔÓ¦.
-#define PARM_LEN 			200	//ËùÓĞ²ÎÊıÖ®ºÍµÄ³¤¶È²»³¬¹ıPARM_LEN¸ö×Ö½Ú,×¢Òâ´®¿Ú½ÓÊÕ²¿·ÖÒªÓëÖ®¶ÔÓ¦(²»Ğ¡ÓÚPARM_LEN)
+//USMARTèµ„æºå ç”¨æƒ…å†µ@MDK 3.80A@2.0ç‰ˆæœ¬ï¼š
+//FLASH:4K~Kå­—èŠ‚(é€šè¿‡USMART_USE_HELPå’ŒUSMART_USE_WRFUNSè®¾ç½®)
+//SRAM:72å­—èŠ‚(æœ€å°‘çš„æƒ…å†µä¸‹)
+//SRAMè®¡ç®—å…¬å¼:   SRAM=PARM_LEN+72-4  å…¶ä¸­PARM_LENå¿…é¡»å¤§äºç­‰äº4.
+//åº”è¯¥ä¿è¯å †æ ˆä¸å°äº100ä¸ªå­—èŠ‚.
+////////////////////////////////////////////ç”¨æˆ·é…ç½®å‚æ•°////////////////////////////////////////////////////	  
+#define MAX_FNAME_LEN 		30	//å‡½æ•°åæœ€å¤§é•¿åº¦ï¼Œåº”è¯¥è®¾ç½®ä¸ºä¸å°äºæœ€é•¿å‡½æ•°åçš„é•¿åº¦ã€‚											   
+#define MAX_PARM 			10	//æœ€å¤§ä¸º10ä¸ªå‚æ•° ,ä¿®æ”¹æ­¤å‚æ•°,å¿…é¡»ä¿®æ”¹usmart_exeä¸ä¹‹å¯¹åº”.
+#define PARM_LEN 			200	//æ‰€æœ‰å‚æ•°ä¹‹å’Œçš„é•¿åº¦ä¸è¶…è¿‡PARM_LENä¸ªå­—èŠ‚,æ³¨æ„ä¸²å£æ¥æ”¶éƒ¨åˆ†è¦ä¸ä¹‹å¯¹åº”(ä¸å°äºPARM_LEN)
 
-#define USMART_ENTIMX_SCAN 	1	//Ê¹ÓÃTIMµÄ¶¨Ê±ÖĞ¶ÏÀ´É¨ÃèSCANº¯Êı,Èç¹ûÉèÖÃÎª0,ĞèÒª×Ô¼ºÊµÏÖ¸ôÒ»¶ÎÊ±¼äÉ¨ÃèÒ»´Îscanº¯Êı.
-								//×¢Òâ:Èç¹ûÒªÓÃruntimeÍ³¼Æ¹¦ÄÜ,±ØĞëÉèÖÃUSMART_ENTIMX_SCANÎª1!!!!
+#define USMART_ENTIMX_SCAN 	1	//ä½¿ç”¨TIMçš„å®šæ—¶ä¸­æ–­æ¥æ‰«æSCANå‡½æ•°,å¦‚æœè®¾ç½®ä¸º0,éœ€è¦è‡ªå·±å®ç°éš”ä¸€æ®µæ—¶é—´æ‰«æä¸€æ¬¡scanå‡½æ•°.
+								//æ³¨æ„:å¦‚æœè¦ç”¨runtimeç»Ÿè®¡åŠŸèƒ½,å¿…é¡»è®¾ç½®USMART_ENTIMX_SCANä¸º1!!!!
 								
-#define USMART_USE_HELP		1	//Ê¹ÓÃ°ïÖú£¬¸ÃÖµÉèÎª0£¬¿ÉÒÔ½ÚÊ¡½ü700¸ö×Ö½Ú£¬µ«ÊÇ½«µ¼ÖÂÎŞ·¨ÏÔÊ¾°ïÖúĞÅÏ¢¡£
-#define USMART_USE_WRFUNS	1	//Ê¹ÓÃ¶ÁĞ´º¯Êı,Ê¹ÄÜÕâÀï,¿ÉÒÔ¶ÁÈ¡ÈÎºÎµØÖ·µÄÖµ,»¹¿ÉÒÔĞ´¼Ä´æÆ÷µÄÖµ.
+#define USMART_USE_HELP		1	//ä½¿ç”¨å¸®åŠ©ï¼Œè¯¥å€¼è®¾ä¸º0ï¼Œå¯ä»¥èŠ‚çœè¿‘700ä¸ªå­—èŠ‚ï¼Œä½†æ˜¯å°†å¯¼è‡´æ— æ³•æ˜¾ç¤ºå¸®åŠ©ä¿¡æ¯ã€‚
+#define USMART_USE_WRFUNS	1	//ä½¿ç”¨è¯»å†™å‡½æ•°,ä½¿èƒ½è¿™é‡Œ,å¯ä»¥è¯»å–ä»»ä½•åœ°å€çš„å€¼,è¿˜å¯ä»¥å†™å¯„å­˜å™¨çš„å€¼.
 ///////////////////////////////////////////////END///////////////////////////////////////////////////////////
 
-#define USMART_OK 			0  //ÎŞ´íÎó
-#define USMART_FUNCERR 		1  //º¯Êı´íÎó
-#define USMART_PARMERR 		2  //²ÎÊı´íÎó
-#define USMART_PARMOVER 	3  //²ÎÊıÒç³ö
-#define USMART_NOFUNCFIND 	4  //Î´ÕÒµ½Æ¥Åäº¯Êı
+#define USMART_OK 			0  //æ— é”™è¯¯
+#define USMART_FUNCERR 		1  //å‡½æ•°é”™è¯¯
+#define USMART_PARMERR 		2  //å‚æ•°é”™è¯¯
+#define USMART_PARMOVER 	3  //å‚æ•°æº¢å‡º
+#define USMART_NOFUNCFIND 	4  //æœªæ‰¾åˆ°åŒ¹é…å‡½æ•°
 
-#define SP_TYPE_DEC      	0  //10½øÖÆ²ÎÊıÏÔÊ¾
-#define SP_TYPE_HEX       	1  //16½øÖÆ²ÎÊıÏÔÊ¾
+#define SP_TYPE_DEC      	0  //10è¿›åˆ¶å‚æ•°æ˜¾ç¤º
+#define SP_TYPE_HEX       	1  //16è¿›åˆ¶å‚æ•°æ˜¾ç¤º
 
- //º¯ÊıÃûÁĞ±í	 
+ //å‡½æ•°ååˆ—è¡¨	 
 struct _m_usmart_nametab
 {
-	void* func;			//º¯ÊıÖ¸Õë
-	const u8* name;		//º¯ÊıÃû(²éÕÒ´®)	 
+	void* func;			//å‡½æ•°æŒ‡é’ˆ
+	const u8* name;		//å‡½æ•°å(æŸ¥æ‰¾ä¸²)	 
 };
-//usmart¿ØÖÆ¹ÜÀíÆ÷
+//usmartæ§åˆ¶ç®¡ç†å™¨
 struct _m_usmart_dev
 {
-	struct _m_usmart_nametab *funs;	//º¯ÊıÃûÖ¸Õë
+	struct _m_usmart_nametab *funs;	//å‡½æ•°åæŒ‡é’ˆ
 
-	void (*init)(u8);				//³õÊ¼»¯
-	u8 (*cmd_rec)(u8*str);			//Ê¶±ğº¯ÊıÃû¼°²ÎÊı
-	void (*exe)(void); 				//Ö´ĞĞ 
-	void (*scan)(void);             //É¨Ãè
-	u8 fnum; 				  		//º¯ÊıÊıÁ¿
-	u8 pnum;                        //²ÎÊıÊıÁ¿
-	u8 id;							//º¯Êıid
-	u8 sptype;						//²ÎÊıÏÔÊ¾ÀàĞÍ(·Ç×Ö·û´®²ÎÊı):0,10½øÖÆ;1,16½øÖÆ;
-	u16 parmtype;					//²ÎÊıµÄÀàĞÍ
-	u8  plentbl[MAX_PARM];  		//Ã¿¸ö²ÎÊıµÄ³¤¶ÈÔİ´æ±í
-	u8  parm[PARM_LEN];  			//º¯ÊıµÄ²ÎÊı
-	u8 runtimeflag;					//0,²»Í³¼Æº¯ÊıÖ´ĞĞÊ±¼ä;1,Í³¼Æº¯ÊıÖ´ĞĞÊ±¼ä,×¢Òâ:´Ë¹¦ÄÜ±ØĞëÔÚUSMART_ENTIMX_SCANÊ¹ÄÜµÄÊ±ºò,²ÅÓĞÓÃ
-	u32 runtime;					//ÔËĞĞÊ±¼ä,µ¥Î»:0.1ms,×î´óÑÓÊ±Ê±¼äÎª¶¨Ê±Æ÷CNTÖµµÄ2±¶*0.1ms
+	void (*init)(u8);				//åˆå§‹åŒ–
+	u8 (*cmd_rec)(u8*str);			//è¯†åˆ«å‡½æ•°ååŠå‚æ•°
+	void (*exe)(void); 				//æ‰§è¡Œ 
+	void (*scan)(void);             //æ‰«æ
+	u8 fnum; 				  		//å‡½æ•°æ•°é‡
+	u8 pnum;                        //å‚æ•°æ•°é‡
+	u8 id;							//å‡½æ•°id
+	u8 sptype;						//å‚æ•°æ˜¾ç¤ºç±»å‹(éå­—ç¬¦ä¸²å‚æ•°):0,10è¿›åˆ¶;1,16è¿›åˆ¶;
+	u16 parmtype;					//å‚æ•°çš„ç±»å‹
+	u8  plentbl[MAX_PARM];  		//æ¯ä¸ªå‚æ•°çš„é•¿åº¦æš‚å­˜è¡¨
+	u8  parm[PARM_LEN];  			//å‡½æ•°çš„å‚æ•°
+	u8 runtimeflag;					//0,ä¸ç»Ÿè®¡å‡½æ•°æ‰§è¡Œæ—¶é—´;1,ç»Ÿè®¡å‡½æ•°æ‰§è¡Œæ—¶é—´,æ³¨æ„:æ­¤åŠŸèƒ½å¿…é¡»åœ¨USMART_ENTIMX_SCANä½¿èƒ½çš„æ—¶å€™,æ‰æœ‰ç”¨
+	u32 runtime;					//è¿è¡Œæ—¶é—´,å•ä½:0.1ms,æœ€å¤§å»¶æ—¶æ—¶é—´ä¸ºå®šæ—¶å™¨CNTå€¼çš„2å€*0.1ms
 };
 
-// CÓï·¨:Êı×éµÄÉùÃ÷,²»ĞèÒªÉùÃ÷¾ßÌå´óĞ¡ 
-extern struct _m_usmart_nametab usmart_nametab[];	//ÔÚusmart_config.cÀïÃæ¶¨Òå
-extern struct _m_usmart_dev usmart_dev;				//ÔÚusmart_config.cÀïÃæ¶¨Òå
+// Cè¯­æ³•:æ•°ç»„çš„å£°æ˜,ä¸éœ€è¦å£°æ˜å…·ä½“å¤§å° 
+extern struct _m_usmart_nametab usmart_nametab[];	//åœ¨usmart_config.cé‡Œé¢å®šä¹‰
+extern struct _m_usmart_dev usmart_dev;				//åœ¨usmart_config.cé‡Œé¢å®šä¹‰
 
 
-void usmart_init(u8 sysclk);//³õÊ¼»¯
-u8 usmart_cmd_rec(u8*str);	//Ê¶±ğ
-void usmart_exe(void);		//Ö´ĞĞ
-void usmart_scan(void);     //É¨Ãè
-u32 read_addr(u32 addr);	//¶ÁÈ¡Ö¸¶¨µØÖ·µÄÖµ
-void write_addr(u32 addr,u32 val);//ÔÚÖ¸¶¨µØÖ·Ğ´ÈëÖ¸¶¨µÄÖµ
-u32 usmart_get_runtime(void);	//»ñÈ¡ÔËĞĞÊ±¼ä
-void usmart_reset_runtime(void);//¸´Î»ÔËĞĞÊ±¼ä
+void usmart_init(u8 sysclk);//åˆå§‹åŒ–
+u8 usmart_cmd_rec(u8*str);	//è¯†åˆ«
+void usmart_exe(void);		//æ‰§è¡Œ
+void usmart_scan(void);     //æ‰«æ
+u32 read_addr(u32 addr);	//è¯»å–æŒ‡å®šåœ°å€çš„å€¼
+void write_addr(u32 addr,u32 val);//åœ¨æŒ‡å®šåœ°å€å†™å…¥æŒ‡å®šçš„å€¼
+u32 usmart_get_runtime(void);	//è·å–è¿è¡Œæ—¶é—´
+void usmart_reset_runtime(void);//å¤ä½è¿è¡Œæ—¶é—´
 
 #endif
 

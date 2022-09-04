@@ -12,6 +12,8 @@
         "gpio.h": "c",
         "key_stm.h": "c",
         "ssd_1306.h": "c",
-        "watch_dog_timer.h": "c"
+        "watch_dog_timer.h": "c",
+        "at_cmd_parse.h": "c",
+        "delay.h": "c"
     }
 }

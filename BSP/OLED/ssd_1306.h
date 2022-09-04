@@ -3,36 +3,36 @@
 #include "sys.h"
 #include "stdlib.h"	    
 //////////////////////////////////////////////////////////////////////////////////
-//1,ĞŞ¸ÄOLED_ShowCharº¯Êı,Ö§³Ö12/16/24×ÖÌå
-//2,ĞŞ¸ÄOLED_ShowStringº¯Êı,Ö§³Ö×ÖÌåÉèÖÃ
+//1,ä¿®æ”¹OLED_ShowCharå‡½æ•°,æ”¯æŒ12/16/24å­—ä½“
+//2,ä¿®æ”¹OLED_ShowStringå‡½æ•°,æ”¯æŒå­—ä½“è®¾ç½®
 ////////////////////////////////////////////////////////////////////////////////// 	  
 
-//OLEDÄ£Ê½ÉèÖÃ
-//0: 4Ïß´®ĞĞÄ£Ê½  £¨Ä£¿éµÄBS1£¬BS2¾ù½ÓGND£©
-//1: ²¢ĞĞ8080Ä£Ê½ £¨Ä£¿éµÄBS1£¬BS2¾ù½ÓVCC£©
+//OLEDæ¨¡å¼è®¾ç½®
+//0: 4çº¿ä¸²è¡Œæ¨¡å¼  ï¼ˆæ¨¡å—çš„BS1ï¼ŒBS2å‡æ¥GNDï¼‰
+//1: å¹¶è¡Œ8080æ¨¡å¼ ï¼ˆæ¨¡å—çš„BS1ï¼ŒBS2å‡æ¥VCCï¼‰
 #define OLED_MODE 1
 		    						  
-//-----------------OLED¶Ë¿Ú¶¨Òå----------------  					   
+//-----------------OLEDç«¯å£å®šä¹‰----------------  					   
 #define OLED_CS PCout(9)
-//#define OLED_RST  PBout(14)//ÔÚMINISTM32ÉÏÖ±½Ó½Óµ½ÁËSTM32µÄ¸´Î»½Å£¡	
+//#define OLED_RST  PBout(14)//åœ¨MINISTM32ä¸Šç›´æ¥æ¥åˆ°äº†STM32çš„å¤ä½è„šï¼	
 #define OLED_RS PCout(8)
 #define OLED_WR PCout(7)		  
 #define OLED_RD PCout(6)
 
-//PB0~7,×÷ÎªÊı¾İÏß
-#define DATAOUT(x) GPIOB->ODR=(GPIOB->ODR&0xff00)|(x&0x00FF); //Êä³ö
+//PB0~7,ä½œä¸ºæ•°æ®çº¿
+#define DATAOUT(x) GPIOB->ODR=(GPIOB->ODR&0xff00)|(x&0x00FF); //è¾“å‡º
   
-//Ê¹ÓÃ4Ïß´®ĞĞ½Ó¿ÚÊ±Ê¹ÓÃ 
+//ä½¿ç”¨4çº¿ä¸²è¡Œæ¥å£æ—¶ä½¿ç”¨ 
 #define OLED_SCLK PBout(0)
 #define OLED_SDIN PBout(1)
 		     
-#define OLED_CMD  0	//Ğ´ÃüÁî
-#define OLED_DATA 1	//Ğ´Êı¾İ
+#define OLED_CMD  0	//å†™å‘½ä»¤
+#define OLED_DATA 1	//å†™æ•°æ®
 
-// ¿ØÖÆÏà¹Ø¼Ä´æÆ÷µÄºê
+// æ§åˆ¶ç›¸å…³å¯„å­˜å™¨çš„å®
 
 
-//OLED¿ØÖÆÓÃº¯Êı
+//OLEDæ§åˆ¶ç”¨å‡½æ•°
 void OLED_WR_Byte(u8 dat,u8 cmd);	    
 void OLED_Display_On(void);
 void OLED_Display_Off(void);

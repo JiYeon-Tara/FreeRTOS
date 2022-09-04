@@ -175,15 +175,3 @@ void uart_init(u32 pclk2, u32 baud)
  */
 
 
-
-// 
-/** 
- * @brief AT 命令解析
- * 
- * @param 
- * @param 
- */
-bool at_cmd_parse(const char *str1, const char *str2)
-{
-
-}

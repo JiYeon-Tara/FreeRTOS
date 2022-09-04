@@ -1,6 +1,22 @@
 #include "test.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "board_config.h"
 #include "bsp_config.h"
+#include "sys.h"
+#include "usart.h"		
+#include "delay.h"	
+#include "led.h" 
+#include "key_stm.h" 
+#include "service_usart.h"
+#include "watch_dog_timer.h"
+#include "timer.h"
+#include "LCD.h"
+#include "ssd_1306.h"
+#include "usmart.h"
+#include "exti.h"
+#include "third_party_config.h"
+#include "at_cmd_parse.h"
 
  
 // Program Size: Code=14966 RO-data=7166 RW-data=408 ZI-data=1848  
@@ -23,11 +39,19 @@
 
 void bsp_init()
 {
+	uint8_t lcd_id[20];
+
 	Stm32_Clock_Init(9); 		 //系统时钟设置
 	delay_init(72000000);	     //延时初始化
 	uart_init(72000000, 9600);	 //串口初始化为9600
 	LED_Init();					 // LED Init
 	EXTI_Init(); 				 // key and exit initialization
+	
+
+	LCD_Init();
+	sprintf((char*)lcd_id, "LCD ID:%04X", lcddev.id);
+	LCD_ShowString(0, 0, 240, 16, 16, lcd_id);
+	
 }
 
 int fun(void)
@@ -39,8 +63,7 @@ int fun(void)
 	// //WWDG_Init(0X7F,0X5F,3);	//计数器值为7f,窗口寄存器为5f,分频数为8	 
 	// TIM3_Int_Init(9999, 7199);	//10Khz的计数频率，计数到5000为500ms  
 
-	while(1)
-	{
+	while(1){
 		//open watch dog
 		// uart1_print_recv_msg(S_USART1);
 		// LCD_Test(&ix);
@@ -121,8 +144,7 @@ void usart_test()
 	LED_Init();
 	KEY_Init();
 
-	while(1)
-	{
+	while(1){
 		if(USART_RX_STA & UART_RX_COMPLETE){
 			len = USART_RX_STA & UART_GET_RX_LEN;
 			printf("recv len:%d\n", len);
@@ -138,8 +160,40 @@ void usart_test()
 
 void watch_dog_test()
 {
+#if IWATCH_DOG_TEST_ENABLE
+	IWDG_Init(4, 625); // 溢出时间为 1s
+#else if WWATCH_DOG_TEST_ENABLE
 	
+#endif
 }
+
+void oled_screen_test()
+{
+
+}
+
+void lcd_screen_test()
+{
+	uint8_t lcd_id[20];
+
+	LCD_Init();
+	printf("LCD_Init\n");
+	sprintf((char*)lcd_id, "LCD ID:%04X", lcddev.id);
+
+	LCD_ShowString(0, 0, 240, 16, 16, lcd_id);
+	LCD_Draw_Circle(20, 20, 10);
+	LCD_DrawLine(40, 40, 80, 80);	
+}
+
+void at_cmd_test()
+{
+	char *str = "AT^START"; // receive from uart
+
+	at_cmd_parse(str);
+
+	return;
+}
+
 
 
 

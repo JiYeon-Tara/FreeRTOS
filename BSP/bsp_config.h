@@ -27,7 +27,16 @@
 #define UART1_TEST_ENABLE       0
 
 // watch dog
-#define WATCH_DOG_TEST_ENABLE   1
+#define IWATCH_DOG_TEST_ENABLE  0
+#define WWATCH_DOT_TEST_ENABLE  1
+// timer
+#define TIMER_TEST_ENABLE       0
+
+// OLED & LCD
+#define OLED_SCREEN_TEST        0
+#define LCD_SCREEN_TEST         0
+
+
 
 #endif
 

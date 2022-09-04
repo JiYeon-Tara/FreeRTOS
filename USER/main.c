@@ -22,8 +22,18 @@ int main()
     watch_dog_test();
 #endif
 
+#if LCD_SCREEN_TEST
+    lcd_screen_test();
+#endif
+
+    
+
     while(1){
-        
+#if AT_CMD_TEST_ENABLE
+        // receive from uart
+        at_cmd_test();
+#endif
+
     }
     return;
 }

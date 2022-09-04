@@ -10,25 +10,25 @@
  */
 #ifndef __TEST_H__
 #define __TEST_H__
-#include "sys.h"
-#include "usart.h"		
-#include "delay.h"	
-#include "led.h" 
-#include "key_stm.h" 
-#include "service_usart.h"
-#include "watch_dog_timer.h"
-#include "timer.h"
-#include "ILI9341.h"
-#include "ssd_1306.h"
-#include "usmart.h"
-#include "exti.h"
+#include <stdio.h>
+#include <stdlib.h>
 
+#include "board_config.h"
+#include "bsp_config.h"
+#include "LCD.h"
 
+//
 void bsp_init();
 void led_test();
 void key_test();
 void usart_test();
 void watch_dog_test();
+
+
+// third party test
+void at_cmd_test();
+void oled_screen_test();
+void lcd_screen_test();
 
 #endif
 

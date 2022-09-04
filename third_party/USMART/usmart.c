@@ -3,20 +3,20 @@
 #include "sys.h"
 
 //////////////////////////////////////////////////////////////////////////////////	 
-//1,Ôö¼ÓruntimeÏµÍ³Ö¸Áî,¿ÉÒÔÓÃÓÚÍ³¼Æº¯ÊıÖ´ĞĞÊ±¼ä.
-//ÓÃ·¨:
-//·¢ËÍ:runtime 1 ,Ôò¿ªÆôº¯ÊıÖ´ĞĞÊ±¼äÍ³¼Æ¹¦ÄÜ
-//·¢ËÍ:runtime 0 ,Ôò¹Ø±Õº¯ÊıÖ´ĞĞÊ±¼äÍ³¼Æ¹¦ÄÜ
-///runtimeÍ³¼Æ¹¦ÄÜ,±ØĞëÉèÖÃ:USMART_ENTIMX_SCAN Îª1,²Å¿ÉÒÔÊ¹ÓÃ!!
+//1,å¢åŠ runtimeç³»ç»ŸæŒ‡ä»¤,å¯ä»¥ç”¨äºç»Ÿè®¡å‡½æ•°æ‰§è¡Œæ—¶é—´.
+//ç”¨æ³•:
+//å‘é€:runtime 1 ,åˆ™å¼€å¯å‡½æ•°æ‰§è¡Œæ—¶é—´ç»Ÿè®¡åŠŸèƒ½
+//å‘é€:runtime 0 ,åˆ™å…³é—­å‡½æ•°æ‰§è¡Œæ—¶é—´ç»Ÿè®¡åŠŸèƒ½
+///runtimeç»Ÿè®¡åŠŸèƒ½,å¿…é¡»è®¾ç½®:USMART_ENTIMX_SCAN ä¸º1,æ‰å¯ä»¥ä½¿ç”¨!!
 /////////////////////////////////////////////////////////////////////////////////////
-//USMART×ÊÔ´Õ¼ÓÃÇé¿ö@MDK 3.80A@2.0°æ±¾£º
-//FLASH:4K~K×Ö½Ú(Í¨¹ıUSMART_USE_HELPºÍUSMART_USE_WRFUNSÉèÖÃ)
-//SRAM:72×Ö½Ú(×îÉÙµÄÇé¿öÏÂ)
-//SRAM¼ÆËã¹«Ê½:   SRAM=PARM_LEN+72-4  ÆäÖĞPARM_LEN±ØĞë´óÓÚµÈÓÚ4.
-//Ó¦¸Ã±£Ö¤¶ÑÕ»²»Ğ¡ÓÚ100¸ö×Ö½Ú.
-////////////////////////////////////////////ÓÃ»§ÅäÖÃ²ÎÊı////////////////////////////////////////////////////	
+//USMARTèµ„æºå ç”¨æƒ…å†µ@MDK 3.80A@2.0ç‰ˆæœ¬ï¼š
+//FLASH:4K~Kå­—èŠ‚(é€šè¿‡USMART_USE_HELPå’ŒUSMART_USE_WRFUNSè®¾ç½®)
+//SRAM:72å­—èŠ‚(æœ€å°‘çš„æƒ…å†µä¸‹)
+//SRAMè®¡ç®—å…¬å¼:   SRAM=PARM_LEN+72-4  å…¶ä¸­PARM_LENå¿…é¡»å¤§äºç­‰äº4.
+//åº”è¯¥ä¿è¯å †æ ˆä¸å°äº100ä¸ªå­—èŠ‚.
+////////////////////////////////////////////ç”¨æˆ·é…ç½®å‚æ•°////////////////////////////////////////////////////	
 
-// ÏµÍ³ÃüÁî
+// ç³»ç»Ÿå‘½ä»¤
 u8 *sys_cmd_tab[]=
 {
 	"?",
@@ -29,23 +29,23 @@ u8 *sys_cmd_tab[]=
 };	 
 
 /**
- * @brief ´¦ÀíÏµÍ³Ö¸ÁîµÄº¯Êı
+ * @brief å¤„ç†ç³»ç»ŸæŒ‡ä»¤çš„å‡½æ•°
  * 
- * @param str Òª´¦ÀíµÄÏµÍ³Ö¸Áî
- * @return u8 0,³É¹¦´¦Àí;ÆäËû,´íÎó´úÂë;
+ * @param str è¦å¤„ç†çš„ç³»ç»ŸæŒ‡ä»¤
+ * @return u8 0,æˆåŠŸå¤„ç†;å…¶ä»–,é”™è¯¯ä»£ç ;
  */
 u8 usmart_sys_cmd_exe(u8 *str)
 {
 	u8 i;
-	u8 sfname[MAX_FNAME_LEN];//´æ·Å±¾µØº¯ÊıÃû
+	u8 sfname[MAX_FNAME_LEN];//å­˜æ”¾æœ¬åœ°å‡½æ•°å
 	u8 pnum;
 	u8 rval;
 	u32 res;  
-	res = usmart_get_cmdname(str, sfname, &i, MAX_FNAME_LEN);//µÃµ½Ö¸Áî¼°Ö¸Áî³¤¶È
+	res = usmart_get_cmdname(str, sfname, &i, MAX_FNAME_LEN);//å¾—åˆ°æŒ‡ä»¤åŠæŒ‡ä»¤é•¿åº¦
 	if(res)
-		return USMART_FUNCERR;//´íÎóµÄÖ¸Áî 
+		return USMART_FUNCERR;//é”™è¯¯çš„æŒ‡ä»¤ 
 	str += i;	 	 			    
-	for(i=0; i<sizeof(sys_cmd_tab)/4; i++)//Ö§³ÖµÄÏµÍ³Ö¸Áî
+	for(i=0; i<sizeof(sys_cmd_tab)/4; i++)//æ”¯æŒçš„ç³»ç»ŸæŒ‡ä»¤
 	{
 		if(usmart_strcmp(sfname, sys_cmd_tab[i]) == 0)
 			break;
@@ -53,98 +53,98 @@ u8 usmart_sys_cmd_exe(u8 *str)
 	switch(i)
 	{					   
 		case 0:
-		case 1://°ïÖúÖ¸Áî
+		case 1://å¸®åŠ©æŒ‡ä»¤
 			printf("\r\n");
 #if USMART_USE_HELP
 			printf("------------------------USMART V3.1------------------------ \r\n");
-			printf("    USMARTÊÇÓÉALIENTEK¿ª·¢µÄÒ»¸öÁéÇÉµÄ´®¿Úµ÷ÊÔ»¥½»×é¼ş,Í¨¹ı \r\n");
-			printf("Ëü,Äã¿ÉÒÔÍ¨¹ı´®¿ÚÖúÊÖµ÷ÓÃ³ÌĞòÀïÃæµÄÈÎºÎº¯Êı,²¢Ö´ĞĞ.Òò´Ë,Äã¿É\r\n");
-			printf("ÒÔËæÒâ¸ü¸Äº¯ÊıµÄÊäÈë²ÎÊı(Ö§³ÖÊı×Ö(10/16½øÖÆ)¡¢×Ö·û´®¡¢º¯ÊıÈë\r\n");	  
-			printf("¿ÚµØÖ·µÈ×÷Îª²ÎÊı),µ¥¸öº¯Êı×î¶àÖ§³Ö10¸öÊäÈë²ÎÊı,²¢Ö§³Öº¯Êı·µ \r\n");
-			printf("»ØÖµÏÔÊ¾.ĞÂÔö²ÎÊıÏÔÊ¾½øÖÆÉèÖÃ¹¦ÄÜ,ĞÂÔö½øÖÆ×ª»»¹¦ÄÜ.\r\n");
-			printf("¼¼ÊõÖ§³Ö:www.openedv.com\r\n");
-			printf("USMARTÓĞ7¸öÏµÍ³ÃüÁî:\r\n");
-			printf("?:      »ñÈ¡°ïÖúĞÅÏ¢\r\n");
-			printf("help:   »ñÈ¡°ïÖúĞÅÏ¢\r\n");
-			printf("list:   ¿ÉÓÃµÄº¯ÊıÁĞ±í\r\n\n");
-			printf("id:     ¿ÉÓÃº¯ÊıµÄIDÁĞ±í\r\n\n");
-			printf("hex:    ²ÎÊı16½øÖÆÏÔÊ¾,ºó¸ú¿Õ¸ñ+Êı×Ö¼´Ö´ĞĞ½øÖÆ×ª»»\r\n\n");
-			printf("dec:    ²ÎÊı10½øÖÆÏÔÊ¾,ºó¸ú¿Õ¸ñ+Êı×Ö¼´Ö´ĞĞ½øÖÆ×ª»»\r\n\n");
-			printf("runtime:1,¿ªÆôº¯ÊıÔËĞĞ¼ÆÊ±;0,¹Ø±Õº¯ÊıÔËĞĞ¼ÆÊ±;\r\n\n");
-			printf("Çë°´ÕÕ³ÌĞò±àĞ´¸ñÊ½ÊäÈëº¯ÊıÃû¼°²ÎÊı²¢ÒÔ»Ø³µ¼ü½áÊø.\r\n");    
+			printf("    USMARTæ˜¯ç”±ALIENTEKå¼€å‘çš„ä¸€ä¸ªçµå·§çš„ä¸²å£è°ƒè¯•äº’äº¤ç»„ä»¶,é€šè¿‡ \r\n");
+			printf("å®ƒ,ä½ å¯ä»¥é€šè¿‡ä¸²å£åŠ©æ‰‹è°ƒç”¨ç¨‹åºé‡Œé¢çš„ä»»ä½•å‡½æ•°,å¹¶æ‰§è¡Œ.å› æ­¤,ä½ å¯\r\n");
+			printf("ä»¥éšæ„æ›´æ”¹å‡½æ•°çš„è¾“å…¥å‚æ•°(æ”¯æŒæ•°å­—(10/16è¿›åˆ¶)ã€å­—ç¬¦ä¸²ã€å‡½æ•°å…¥\r\n");	  
+			printf("å£åœ°å€ç­‰ä½œä¸ºå‚æ•°),å•ä¸ªå‡½æ•°æœ€å¤šæ”¯æŒ10ä¸ªè¾“å…¥å‚æ•°,å¹¶æ”¯æŒå‡½æ•°è¿” \r\n");
+			printf("å›å€¼æ˜¾ç¤º.æ–°å¢å‚æ•°æ˜¾ç¤ºè¿›åˆ¶è®¾ç½®åŠŸèƒ½,æ–°å¢è¿›åˆ¶è½¬æ¢åŠŸèƒ½.\r\n");
+			printf("æŠ€æœ¯æ”¯æŒ:www.openedv.com\r\n");
+			printf("USMARTæœ‰7ä¸ªç³»ç»Ÿå‘½ä»¤:\r\n");
+			printf("?:      è·å–å¸®åŠ©ä¿¡æ¯\r\n");
+			printf("help:   è·å–å¸®åŠ©ä¿¡æ¯\r\n");
+			printf("list:   å¯ç”¨çš„å‡½æ•°åˆ—è¡¨\r\n\n");
+			printf("id:     å¯ç”¨å‡½æ•°çš„IDåˆ—è¡¨\r\n\n");
+			printf("hex:    å‚æ•°16è¿›åˆ¶æ˜¾ç¤º,åè·Ÿç©ºæ ¼+æ•°å­—å³æ‰§è¡Œè¿›åˆ¶è½¬æ¢\r\n\n");
+			printf("dec:    å‚æ•°10è¿›åˆ¶æ˜¾ç¤º,åè·Ÿç©ºæ ¼+æ•°å­—å³æ‰§è¡Œè¿›åˆ¶è½¬æ¢\r\n\n");
+			printf("runtime:1,å¼€å¯å‡½æ•°è¿è¡Œè®¡æ—¶;0,å…³é—­å‡½æ•°è¿è¡Œè®¡æ—¶;\r\n\n");
+			printf("è¯·æŒ‰ç…§ç¨‹åºç¼–å†™æ ¼å¼è¾“å…¥å‡½æ•°ååŠå‚æ•°å¹¶ä»¥å›è½¦é”®ç»“æŸ.\r\n");    
 			printf("--------------------------ALIENTEK------------------------- \r\n");
 #else
-			printf("Ö¸ÁîÊ§Ğ§\r\n");
+			printf("æŒ‡ä»¤å¤±æ•ˆ\r\n");
 #endif
 			break;
-		case 2://²éÑ¯Ö¸Áî
+		case 2://æŸ¥è¯¢æŒ‡ä»¤
 			printf("\r\n");
-			printf("-------------------------º¯ÊıÇåµ¥--------------------------- \r\n");
+			printf("-------------------------å‡½æ•°æ¸…å•--------------------------- \r\n");
 			for(i=0; i<usmart_dev.fnum; i++)
 				printf("%s\r\n",usmart_dev.funs[i].name);
 			printf("\r\n");
 			break;	 
-		case 3://²éÑ¯ID
+		case 3://æŸ¥è¯¢ID
 			printf("\r\n");
-			printf("-------------------------º¯Êı ID --------------------------- \r\n");
+			printf("-------------------------å‡½æ•° ID --------------------------- \r\n");
 			for(i=0;i<usmart_dev.fnum;i++)
 			{
-				usmart_get_fname((u8*)usmart_dev.funs[i].name,sfname,&pnum,&rval);//µÃµ½±¾µØº¯ÊıÃû 
-				printf("%s id is:\r\n0X%08X\r\n",sfname,usmart_dev.funs[i].func); //ÏÔÊ¾ID
+				usmart_get_fname((u8*)usmart_dev.funs[i].name,sfname,&pnum,&rval);//å¾—åˆ°æœ¬åœ°å‡½æ•°å 
+				printf("%s id is:\r\n0X%08X\r\n",sfname,usmart_dev.funs[i].func); //æ˜¾ç¤ºID
 			}
 			printf("\r\n");
 			break;
-		case 4://hexÖ¸Áî
+		case 4://hexæŒ‡ä»¤
 			printf("\r\n");
 			usmart_get_aparm(str,sfname,&i);
-			if(i==0)//²ÎÊıÕı³£
+			if(i==0)//å‚æ•°æ­£å¸¸
 			{
-				i=usmart_str2num(sfname,&res);	   	//¼ÇÂ¼¸Ã²ÎÊı	
-				if(i==0)						  	//½øÖÆ×ª»»¹¦ÄÜ
+				i=usmart_str2num(sfname,&res);	   	//è®°å½•è¯¥å‚æ•°	
+				if(i==0)						  	//è¿›åˆ¶è½¬æ¢åŠŸèƒ½
 				{
-					printf("HEX:0X%X\r\n",res);	   	//×ªÎª16½øÖÆ
-				}else if(i!=4)return USMART_PARMERR;//²ÎÊı´íÎó.
-				else 				   				//²ÎÊıÏÔÊ¾Éè¶¨¹¦ÄÜ
+					printf("HEX:0X%X\r\n",res);	   	//è½¬ä¸º16è¿›åˆ¶
+				}else if(i!=4)return USMART_PARMERR;//å‚æ•°é”™è¯¯.
+				else 				   				//å‚æ•°æ˜¾ç¤ºè®¾å®šåŠŸèƒ½
 				{
-					printf("16½øÖÆ²ÎÊıÏÔÊ¾!\r\n");
+					printf("16è¿›åˆ¶å‚æ•°æ˜¾ç¤º!\r\n");
 					usmart_dev.sptype=SP_TYPE_HEX;  
 				}
 
 			}
 			else 
-				return USMART_PARMERR;			//²ÎÊı´íÎó.
+				return USMART_PARMERR;			//å‚æ•°é”™è¯¯.
 			printf("\r\n"); 
 			break;
-		case 5://decÖ¸Áî
+		case 5://decæŒ‡ä»¤
 			printf("\r\n");
 			usmart_get_aparm(str,sfname,&i);
-			if(i==0)//²ÎÊıÕı³£
+			if(i==0)//å‚æ•°æ­£å¸¸
 			{
-				i=usmart_str2num(sfname,&res);	   	//¼ÇÂ¼¸Ã²ÎÊı	
-				if(i==0)						   	//½øÖÆ×ª»»¹¦ÄÜ
+				i=usmart_str2num(sfname,&res);	   	//è®°å½•è¯¥å‚æ•°	
+				if(i==0)						   	//è¿›åˆ¶è½¬æ¢åŠŸèƒ½
 				{
-					printf("DEC:%lu\r\n",res);	   	//×ªÎª10½øÖÆ
-				}else if(i!=4)return USMART_PARMERR;//²ÎÊı´íÎó.
-				else 				   				//²ÎÊıÏÔÊ¾Éè¶¨¹¦ÄÜ
+					printf("DEC:%lu\r\n",res);	   	//è½¬ä¸º10è¿›åˆ¶
+				}else if(i!=4)return USMART_PARMERR;//å‚æ•°é”™è¯¯.
+				else 				   				//å‚æ•°æ˜¾ç¤ºè®¾å®šåŠŸèƒ½
 				{
-					printf("10½øÖÆ²ÎÊıÏÔÊ¾!\r\n");
+					printf("10è¿›åˆ¶å‚æ•°æ˜¾ç¤º!\r\n");
 					usmart_dev.sptype=SP_TYPE_DEC;  
 				}
 
 			}
 			else 
-				return USMART_PARMERR;			//²ÎÊı´íÎó. 
+				return USMART_PARMERR;			//å‚æ•°é”™è¯¯. 
 			printf("\r\n"); 
 			break;	 
-		case 6://runtimeÖ¸Áî,ÉèÖÃÊÇ·ñÏÔÊ¾º¯ÊıÖ´ĞĞÊ±¼ä
+		case 6://runtimeæŒ‡ä»¤,è®¾ç½®æ˜¯å¦æ˜¾ç¤ºå‡½æ•°æ‰§è¡Œæ—¶é—´
 			printf("\r\n");
 			usmart_get_aparm(str,sfname,&i);
-			if(i==0)//²ÎÊıÕı³£
+			if(i==0)//å‚æ•°æ­£å¸¸
 			{
-				i=usmart_str2num(sfname,&res);	   		//¼ÇÂ¼¸Ã²ÎÊı	
-				if(i==0)						   		//¶ÁÈ¡Ö¸¶¨µØÖ·Êı¾İ¹¦ÄÜ
+				i=usmart_str2num(sfname,&res);	   		//è®°å½•è¯¥å‚æ•°	
+				if(i==0)						   		//è¯»å–æŒ‡å®šåœ°å€æ•°æ®åŠŸèƒ½
 				{
-					if(USMART_ENTIMX_SCAN==0)printf("\r\nError! \r\nTo EN RunTime function,Please set USMART_ENTIMX_SCAN = 1 first!\r\n");//±¨´í
+					if(USMART_ENTIMX_SCAN==0)printf("\r\nError! \r\nTo EN RunTime function,Please set USMART_ENTIMX_SCAN = 1 first!\r\n");//æŠ¥é”™
 					else
 					{
 						usmart_dev.runtimeflag=res;
@@ -155,215 +155,215 @@ u8 usmart_sys_cmd_exe(u8 *str)
 					}
 				}
 				else 
-					return USMART_PARMERR;   			//Î´´ø²ÎÊı,»òÕß²ÎÊı´íÎó	 
+					return USMART_PARMERR;   			//æœªå¸¦å‚æ•°,æˆ–è€…å‚æ•°é”™è¯¯	 
  			}
 			else 
-				return USMART_PARMERR;				//²ÎÊı´íÎó. 
+				return USMART_PARMERR;				//å‚æ•°é”™è¯¯. 
 			printf("\r\n"); 
 			break;	    
-		default://·Ç·¨Ö¸Áî
+		default://éæ³•æŒ‡ä»¤
 			return USMART_FUNCERR;
 	}
 	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-//ÒÆÖ²×¢Òâ:±¾ÀıÊÇÒÔstm32ÎªÀı,Èç¹ûÒªÒÆÖ²µ½ÆäËûmcu,Çë×öÏàÓ¦ĞŞ¸Ä.
-//usmart_reset_runtime,Çå³ıº¯ÊıÔËĞĞÊ±¼ä,Á¬Í¬¶¨Ê±Æ÷µÄ¼ÆÊı¼Ä´æÆ÷ÒÔ¼°±êÖ¾Î»Ò»ÆğÇåÁã.²¢ÉèÖÃÖØ×°ÔØÖµÎª×î´ó,ÒÔ×î´óÏŞ¶ÈµÄÑÓ³¤¼ÆÊ±Ê±¼ä.
-//usmart_get_runtime,»ñÈ¡º¯ÊıÔËĞĞÊ±¼ä,Í¨¹ı¶ÁÈ¡CNTÖµ»ñÈ¡,ÓÉÓÚusmartÊÇÍ¨¹ıÖĞ¶Ïµ÷ÓÃµÄº¯Êı,ËùÒÔ¶¨Ê±Æ÷ÖĞ¶Ï²»ÔÙÓĞĞ§,´ËÊ±×î´óÏŞ¶È
-//Ö»ÄÜÍ³¼Æ2´ÎCNTµÄÖµ,Ò²¾ÍÊÇÇåÁãºó+Òç³öÒ»´Î,µ±Òç³ö³¬¹ı2´Î,Ã»·¨´¦Àí,ËùÒÔ×î´óÑÓÊ±,¿ØÖÆÔÚ:2*¼ÆÊıÆ÷CNT*0.1ms.¶ÔSTM32À´Ëµ,ÊÇ:13.1s×óÓÒ
-//ÆäËûµÄ:TIM4_IRQHandlerºÍTimer4_Init,ĞèÒª¸ù¾İMCUÌØµã×ÔĞĞĞŞ¸Ä.È·±£¼ÆÊıÆ÷¼ÆÊıÆµÂÊÎª:10Khz¼´¿É.ÁíÍâ,¶¨Ê±Æ÷²»Òª¿ªÆô×Ô¶¯ÖØ×°ÔØ¹¦ÄÜ!!
+//ç§»æ¤æ³¨æ„:æœ¬ä¾‹æ˜¯ä»¥stm32ä¸ºä¾‹,å¦‚æœè¦ç§»æ¤åˆ°å…¶ä»–mcu,è¯·åšç›¸åº”ä¿®æ”¹.
+//usmart_reset_runtime,æ¸…é™¤å‡½æ•°è¿è¡Œæ—¶é—´,è¿åŒå®šæ—¶å™¨çš„è®¡æ•°å¯„å­˜å™¨ä»¥åŠæ ‡å¿—ä½ä¸€èµ·æ¸…é›¶.å¹¶è®¾ç½®é‡è£…è½½å€¼ä¸ºæœ€å¤§,ä»¥æœ€å¤§é™åº¦çš„å»¶é•¿è®¡æ—¶æ—¶é—´.
+//usmart_get_runtime,è·å–å‡½æ•°è¿è¡Œæ—¶é—´,é€šè¿‡è¯»å–CNTå€¼è·å–,ç”±äºusmartæ˜¯é€šè¿‡ä¸­æ–­è°ƒç”¨çš„å‡½æ•°,æ‰€ä»¥å®šæ—¶å™¨ä¸­æ–­ä¸å†æœ‰æ•ˆ,æ­¤æ—¶æœ€å¤§é™åº¦
+//åªèƒ½ç»Ÿè®¡2æ¬¡CNTçš„å€¼,ä¹Ÿå°±æ˜¯æ¸…é›¶å+æº¢å‡ºä¸€æ¬¡,å½“æº¢å‡ºè¶…è¿‡2æ¬¡,æ²¡æ³•å¤„ç†,æ‰€ä»¥æœ€å¤§å»¶æ—¶,æ§åˆ¶åœ¨:2*è®¡æ•°å™¨CNT*0.1ms.å¯¹STM32æ¥è¯´,æ˜¯:13.1så·¦å³
+//å…¶ä»–çš„:TIM4_IRQHandlerå’ŒTimer4_Init,éœ€è¦æ ¹æ®MCUç‰¹ç‚¹è‡ªè¡Œä¿®æ”¹.ç¡®ä¿è®¡æ•°å™¨è®¡æ•°é¢‘ç‡ä¸º:10Khzå³å¯.å¦å¤–,å®šæ—¶å™¨ä¸è¦å¼€å¯è‡ªåŠ¨é‡è£…è½½åŠŸèƒ½!!
 
 #if USMART_ENTIMX_SCAN==1
-//¸´Î»runtime
-//ĞèÒª¸ù¾İËùÒÆÖ²µ½µÄMCUµÄ¶¨Ê±Æ÷²ÎÊı½øĞĞĞŞ¸Ä
+//å¤ä½runtime
+//éœ€è¦æ ¹æ®æ‰€ç§»æ¤åˆ°çš„MCUçš„å®šæ—¶å™¨å‚æ•°è¿›è¡Œä¿®æ”¹
 void usmart_reset_runtime(void)
 {
-	TIM4->SR&=~(1<<0);	//Çå³ıÖĞ¶Ï±êÖ¾Î» 
-	TIM4->ARR=0XFFFF;	//½«ÖØ×°ÔØÖµÉèÖÃµ½×î´ó
-	TIM4->CNT=0;		//Çå¿Õ¶¨Ê±Æ÷µÄCNT
+	TIM4->SR&=~(1<<0);	//æ¸…é™¤ä¸­æ–­æ ‡å¿—ä½ 
+	TIM4->ARR=0XFFFF;	//å°†é‡è£…è½½å€¼è®¾ç½®åˆ°æœ€å¤§
+	TIM4->CNT=0;		//æ¸…ç©ºå®šæ—¶å™¨çš„CNT
 	usmart_dev.runtime=0;	
 }
 
-//»ñµÃruntimeÊ±¼ä
-//·µ»ØÖµ:Ö´ĞĞÊ±¼ä,µ¥Î»:0.1ms,×î´óÑÓÊ±Ê±¼äÎª¶¨Ê±Æ÷CNTÖµµÄ2±¶*0.1ms
-//ĞèÒª¸ù¾İËùÒÆÖ²µ½µÄMCUµÄ¶¨Ê±Æ÷²ÎÊı½øĞĞĞŞ¸Ä
+//è·å¾—runtimeæ—¶é—´
+//è¿”å›å€¼:æ‰§è¡Œæ—¶é—´,å•ä½:0.1ms,æœ€å¤§å»¶æ—¶æ—¶é—´ä¸ºå®šæ—¶å™¨CNTå€¼çš„2å€*0.1ms
+//éœ€è¦æ ¹æ®æ‰€ç§»æ¤åˆ°çš„MCUçš„å®šæ—¶å™¨å‚æ•°è¿›è¡Œä¿®æ”¹
 u32 usmart_get_runtime(void)
 {
-	if(TIM4->SR&0X0001)//ÔÚÔËĞĞÆÚ¼ä,²úÉúÁË¶¨Ê±Æ÷Òç³ö
+	if(TIM4->SR&0X0001)//åœ¨è¿è¡ŒæœŸé—´,äº§ç”Ÿäº†å®šæ—¶å™¨æº¢å‡º
 	{
 		usmart_dev.runtime+=0XFFFF;
 	}
 	usmart_dev.runtime+=TIM4->CNT;
-	return usmart_dev.runtime;		//·µ»Ø¼ÆÊıÖµ
+	return usmart_dev.runtime;		//è¿”å›è®¡æ•°å€¼
 }
 
-//ÏÂÃæÕâÁ½¸öº¯Êı,·ÇUSMARTº¯Êı,·Åµ½ÕâÀï,½ö½ö·½±ãÒÆÖ². 
-//¶¨Ê±Æ÷4ÖĞ¶Ï·şÎñ³ÌĞò	 
+//ä¸‹é¢è¿™ä¸¤ä¸ªå‡½æ•°,éUSMARTå‡½æ•°,æ”¾åˆ°è¿™é‡Œ,ä»…ä»…æ–¹ä¾¿ç§»æ¤. 
+//å®šæ—¶å™¨4ä¸­æ–­æœåŠ¡ç¨‹åº	 
 void TIM4_IRQHandler(void)
 { 		    		  			    
-	if(TIM4->SR&0X0001)//Òç³öÖĞ¶Ï
+	if(TIM4->SR&0X0001)//æº¢å‡ºä¸­æ–­
 	{ 
-		usmart_dev.scan();	//Ö´ĞĞusmartÉ¨Ãè	
-		TIM4->CNT=0;		//Çå¿Õ¶¨Ê±Æ÷µÄCNT
-		TIM4->ARR=1000;		//»Ö¸´Ô­À´µÄÉèÖÃ
+		usmart_dev.scan();	//æ‰§è¡Œusmartæ‰«æ	
+		TIM4->CNT=0;		//æ¸…ç©ºå®šæ—¶å™¨çš„CNT
+		TIM4->ARR=1000;		//æ¢å¤åŸæ¥çš„è®¾ç½®
 	}				   
-	TIM4->SR&=~(1<<0);//Çå³ıÖĞ¶Ï±êÖ¾Î» 	    
+	TIM4->SR&=~(1<<0);//æ¸…é™¤ä¸­æ–­æ ‡å¿—ä½ 	    
 }
 
-//Ê¹ÄÜ¶¨Ê±Æ÷4,Ê¹ÄÜÖĞ¶Ï.
+//ä½¿èƒ½å®šæ—¶å™¨4,ä½¿èƒ½ä¸­æ–­.
 void Timer4_Init(u16 arr,u16 psc)
 {
-	RCC->APB1ENR|=1<<2;	//TIM4Ê±ÖÓÊ¹ÄÜ    
- 	TIM4->ARR=arr;  	//Éè¶¨¼ÆÊıÆ÷×Ô¶¯ÖØ×°Öµ  
-	TIM4->PSC=psc;  	//Ô¤·ÖÆµÆ÷7200,µÃµ½10KhzµÄ¼ÆÊıÊ±ÖÓ	
-	TIM4->DIER|=1<<0;   //ÔÊĞí¸üĞÂÖĞ¶Ï			  							    
-	TIM4->CR1|=0x01;    //Ê¹ÄÜ¶¨Ê±Æ÷2
-  	MY_NVIC_Init(3,3,TIM4_IRQn,2);//ÇÀÕ¼3£¬×ÓÓÅÏÈ¼¶3£¬×é2(×é2ÖĞÓÅÏÈ¼¶×îµÍµÄ)									 
+	RCC->APB1ENR|=1<<2;	//TIM4æ—¶é’Ÿä½¿èƒ½    
+ 	TIM4->ARR=arr;  	//è®¾å®šè®¡æ•°å™¨è‡ªåŠ¨é‡è£…å€¼  
+	TIM4->PSC=psc;  	//é¢„åˆ†é¢‘å™¨7200,å¾—åˆ°10Khzçš„è®¡æ•°æ—¶é’Ÿ	
+	TIM4->DIER|=1<<0;   //å…è®¸æ›´æ–°ä¸­æ–­			  							    
+	TIM4->CR1|=0x01;    //ä½¿èƒ½å®šæ—¶å™¨2
+  	MY_NVIC_Init(3,3,TIM4_IRQn,2);//æŠ¢å 3ï¼Œå­ä¼˜å…ˆçº§3ï¼Œç»„2(ç»„2ä¸­ä¼˜å…ˆçº§æœ€ä½çš„)									 
 }
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
-//³õÊ¼»¯´®¿Ú¿ØÖÆÆ÷
-//sysclk:ÏµÍ³Ê±ÖÓ£¨Mhz£©
+//åˆå§‹åŒ–ä¸²å£æ§åˆ¶å™¨
+//sysclk:ç³»ç»Ÿæ—¶é’Ÿï¼ˆMhzï¼‰
 void usmart_init(u8 sysclk)
 {
 #if USMART_ENTIMX_SCAN==1
-	Timer4_Init(1000,(u32)sysclk*100-1);//·ÖÆµ,Ê±ÖÓÎª10K ,100msÖĞ¶ÏÒ»´Î,×¢Òâ,¼ÆÊıÆµÂÊ±ØĞëÎª10Khz,ÒÔºÍruntimeµ¥Î»(0.1ms)Í¬²½.
+	Timer4_Init(1000,(u32)sysclk*100-1);//åˆ†é¢‘,æ—¶é’Ÿä¸º10K ,100msä¸­æ–­ä¸€æ¬¡,æ³¨æ„,è®¡æ•°é¢‘ç‡å¿…é¡»ä¸º10Khz,ä»¥å’Œruntimeå•ä½(0.1ms)åŒæ­¥.
 #endif
-	usmart_dev.sptype=1;	//Ê®Áù½øÖÆÏÔÊ¾²ÎÊı
+	usmart_dev.sptype=1;	//åå…­è¿›åˆ¶æ˜¾ç¤ºå‚æ•°
 }	
 
-//´ÓstrÖĞ»ñÈ¡º¯ÊıÃû,id,¼°²ÎÊıĞÅÏ¢
-//*str:×Ö·û´®Ö¸Õë.
-//·µ»ØÖµ:0,Ê¶±ğ³É¹¦;ÆäËû,´íÎó´úÂë.
+//ä»strä¸­è·å–å‡½æ•°å,id,åŠå‚æ•°ä¿¡æ¯
+//*str:å­—ç¬¦ä¸²æŒ‡é’ˆ.
+//è¿”å›å€¼:0,è¯†åˆ«æˆåŠŸ;å…¶ä»–,é”™è¯¯ä»£ç .
 u8 usmart_cmd_rec(u8*str) 
 {
-	u8 sta,i,rval;//×´Ì¬	 
+	u8 sta,i,rval;//çŠ¶æ€	 
 	u8 rpnum,spnum;
-	u8 rfname[MAX_FNAME_LEN];//Ôİ´æ¿Õ¼ä,ÓÃÓÚ´æ·Å½ÓÊÕµ½µÄº¯ÊıÃû  
-	u8 sfname[MAX_FNAME_LEN];//´æ·Å±¾µØº¯ÊıÃû
-	sta=usmart_get_fname(str,rfname,&rpnum,&rval);//µÃµ½½ÓÊÕµ½µÄÊı¾İµÄº¯ÊıÃû¼°²ÎÊı¸öÊı	  
-	if(sta)return sta;//´íÎó
+	u8 rfname[MAX_FNAME_LEN];//æš‚å­˜ç©ºé—´,ç”¨äºå­˜æ”¾æ¥æ”¶åˆ°çš„å‡½æ•°å  
+	u8 sfname[MAX_FNAME_LEN];//å­˜æ”¾æœ¬åœ°å‡½æ•°å
+	sta=usmart_get_fname(str,rfname,&rpnum,&rval);//å¾—åˆ°æ¥æ”¶åˆ°çš„æ•°æ®çš„å‡½æ•°ååŠå‚æ•°ä¸ªæ•°	  
+	if(sta)return sta;//é”™è¯¯
 	for(i=0;i<usmart_dev.fnum;i++)
 	{
-		sta=usmart_get_fname((u8*)usmart_dev.funs[i].name,sfname,&spnum,&rval);//µÃµ½±¾µØº¯ÊıÃû¼°²ÎÊı¸öÊı
-		if(sta)return sta;//±¾µØ½âÎöÓĞÎó	  
-		if(usmart_strcmp(sfname,rfname)==0)//ÏàµÈ
+		sta=usmart_get_fname((u8*)usmart_dev.funs[i].name,sfname,&spnum,&rval);//å¾—åˆ°æœ¬åœ°å‡½æ•°ååŠå‚æ•°ä¸ªæ•°
+		if(sta)return sta;//æœ¬åœ°è§£ææœ‰è¯¯	  
+		if(usmart_strcmp(sfname,rfname)==0)//ç›¸ç­‰
 		{
-			if(spnum>rpnum)return USMART_PARMERR;//²ÎÊı´íÎó(ÊäÈë²ÎÊı±ÈÔ´º¯Êı²ÎÊıÉÙ)
-			usmart_dev.id=i;//¼ÇÂ¼º¯ÊıID.
-			break;//Ìø³ö.
+			if(spnum>rpnum)return USMART_PARMERR;//å‚æ•°é”™è¯¯(è¾“å…¥å‚æ•°æ¯”æºå‡½æ•°å‚æ•°å°‘)
+			usmart_dev.id=i;//è®°å½•å‡½æ•°ID.
+			break;//è·³å‡º.
 		}	
 	}
-	if(i==usmart_dev.fnum)return USMART_NOFUNCFIND;	//Î´ÕÒµ½Æ¥ÅäµÄº¯Êı
- 	sta=usmart_get_fparam(str,&i);					//µÃµ½º¯Êı²ÎÊı¸öÊı	
-	if(sta)return sta;								//·µ»Ø´íÎó
-	usmart_dev.pnum=i;								//²ÎÊı¸öÊı¼ÇÂ¼
+	if(i==usmart_dev.fnum)return USMART_NOFUNCFIND;	//æœªæ‰¾åˆ°åŒ¹é…çš„å‡½æ•°
+ 	sta=usmart_get_fparam(str,&i);					//å¾—åˆ°å‡½æ•°å‚æ•°ä¸ªæ•°	
+	if(sta)return sta;								//è¿”å›é”™è¯¯
+	usmart_dev.pnum=i;								//å‚æ•°ä¸ªæ•°è®°å½•
     return USMART_OK;
 }
 
-//usamrtÖ´ĞĞº¯Êı
-//¸Ãº¯ÊıÓÃÓÚ×îÖÕÖ´ĞĞ´Ó´®¿ÚÊÕµ½µÄÓĞĞ§º¯Êı.
-//×î¶àÖ§³Ö10¸ö²ÎÊıµÄº¯Êı,¸ü¶àµÄ²ÎÊıÖ§³ÖÒ²ºÜÈİÒ×ÊµÏÖ.²»¹ıÓÃµÄºÜÉÙ.Ò»°ã5¸ö×óÓÒµÄ²ÎÊıµÄº¯ÊıÒÑ¾­ºÜÉÙ¼ûÁË.
-//¸Ãº¯Êı»áÔÚ´®¿Ú´òÓ¡Ö´ĞĞÇé¿ö.ÒÔ:"º¯ÊıÃû(²ÎÊı1£¬²ÎÊı2...²ÎÊıN)=·µ»ØÖµ".µÄĞÎÊ½´òÓ¡.
-//µ±ËùÖ´ĞĞµÄº¯ÊıÃ»ÓĞ·µ»ØÖµµÄÊ±ºò,Ëù´òÓ¡µÄ·µ»ØÖµÊÇÒ»¸öÎŞÒâÒåµÄÊı¾İ.
+//usamrtæ‰§è¡Œå‡½æ•°
+//è¯¥å‡½æ•°ç”¨äºæœ€ç»ˆæ‰§è¡Œä»ä¸²å£æ”¶åˆ°çš„æœ‰æ•ˆå‡½æ•°.
+//æœ€å¤šæ”¯æŒ10ä¸ªå‚æ•°çš„å‡½æ•°,æ›´å¤šçš„å‚æ•°æ”¯æŒä¹Ÿå¾ˆå®¹æ˜“å®ç°.ä¸è¿‡ç”¨çš„å¾ˆå°‘.ä¸€èˆ¬5ä¸ªå·¦å³çš„å‚æ•°çš„å‡½æ•°å·²ç»å¾ˆå°‘è§äº†.
+//è¯¥å‡½æ•°ä¼šåœ¨ä¸²å£æ‰“å°æ‰§è¡Œæƒ…å†µ.ä»¥:"å‡½æ•°å(å‚æ•°1ï¼Œå‚æ•°2...å‚æ•°N)=è¿”å›å€¼".çš„å½¢å¼æ‰“å°.
+//å½“æ‰€æ‰§è¡Œçš„å‡½æ•°æ²¡æœ‰è¿”å›å€¼çš„æ—¶å€™,æ‰€æ‰“å°çš„è¿”å›å€¼æ˜¯ä¸€ä¸ªæ— æ„ä¹‰çš„æ•°æ®.
 void usmart_exe(void)
 {
 	u8 id,i;
 	u32 res=0;		   
-	u32 temp[MAX_PARM];//²ÎÊı×ª»»,Ê¹Ö®Ö§³ÖÁË×Ö·û´® 
-	u8 sfname[MAX_FNAME_LEN];//´æ·Å±¾µØº¯ÊıÃû
+	u32 temp[MAX_PARM];//å‚æ•°è½¬æ¢,ä½¿ä¹‹æ”¯æŒäº†å­—ç¬¦ä¸² 
+	u8 sfname[MAX_FNAME_LEN];//å­˜æ”¾æœ¬åœ°å‡½æ•°å
 	u8 pnum,rval;
 	id=usmart_dev.id;
-	if(id>=usmart_dev.fnum)return;//²»Ö´ĞĞ.
-	usmart_get_fname((u8*)usmart_dev.funs[id].name,sfname,&pnum,&rval);//µÃµ½±¾µØº¯ÊıÃû,¼°²ÎÊı¸öÊı 
-	printf("\r\n%s(",sfname);//Êä³öÕıÒªÖ´ĞĞµÄº¯ÊıÃû
-	for(i=0;i<pnum;i++)//Êä³ö²ÎÊı
+	if(id>=usmart_dev.fnum)return;//ä¸æ‰§è¡Œ.
+	usmart_get_fname((u8*)usmart_dev.funs[id].name,sfname,&pnum,&rval);//å¾—åˆ°æœ¬åœ°å‡½æ•°å,åŠå‚æ•°ä¸ªæ•° 
+	printf("\r\n%s(",sfname);//è¾“å‡ºæ­£è¦æ‰§è¡Œçš„å‡½æ•°å
+	for(i=0;i<pnum;i++)//è¾“å‡ºå‚æ•°
 	{
-		if(usmart_dev.parmtype&(1<<i))//²ÎÊıÊÇ×Ö·û´®
+		if(usmart_dev.parmtype&(1<<i))//å‚æ•°æ˜¯å­—ç¬¦ä¸²
 		{
 			printf("%c",'"');			 
 			printf("%s",usmart_dev.parm+usmart_get_parmpos(i));
 			printf("%c",'"');
 			temp[i]=(u32)&(usmart_dev.parm[usmart_get_parmpos(i)]);
-		}else						  //²ÎÊıÊÇÊı×Ö
+		}else						  //å‚æ•°æ˜¯æ•°å­—
 		{
 			temp[i]=*(u32*)(usmart_dev.parm+usmart_get_parmpos(i));
-			if(usmart_dev.sptype==SP_TYPE_DEC)printf("%lu",temp[i]);//10½øÖÆ²ÎÊıÏÔÊ¾
-			else printf("0X%X",temp[i]);//16½øÖÆ²ÎÊıÏÔÊ¾ 	   
+			if(usmart_dev.sptype==SP_TYPE_DEC)printf("%lu",temp[i]);//10è¿›åˆ¶å‚æ•°æ˜¾ç¤º
+			else printf("0X%X",temp[i]);//16è¿›åˆ¶å‚æ•°æ˜¾ç¤º 	   
 		}
 		if(i!=pnum-1)printf(",");
 	}
 	printf(")");
-	usmart_reset_runtime();	//¼ÆÊ±Æ÷ÇåÁã,¿ªÊ¼¼ÆÊ±
+	usmart_reset_runtime();	//è®¡æ—¶å™¨æ¸…é›¶,å¼€å§‹è®¡æ—¶
 	switch(usmart_dev.pnum)
 	{
-		case 0://ÎŞ²ÎÊı(voidÀàĞÍ)											  
+		case 0://æ— å‚æ•°(voidç±»å‹)											  
 			res=(*(u32(*)())usmart_dev.funs[id].func)();
 			break;
-	    case 1://ÓĞ1¸ö²ÎÊı
+	    case 1://æœ‰1ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0]);
 			break;
-	    case 2://ÓĞ2¸ö²ÎÊı
+	    case 2://æœ‰2ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1]);
 			break;
-	    case 3://ÓĞ3¸ö²ÎÊı
+	    case 3://æœ‰3ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1],temp[2]);
 			break;
-	    case 4://ÓĞ4¸ö²ÎÊı
+	    case 4://æœ‰4ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1],temp[2],temp[3]);
 			break;
-	    case 5://ÓĞ5¸ö²ÎÊı
+	    case 5://æœ‰5ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1],temp[2],temp[3],temp[4]);
 			break;
-	    case 6://ÓĞ6¸ö²ÎÊı
+	    case 6://æœ‰6ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1],temp[2],temp[3],temp[4],\
 			temp[5]);
 			break;
-	    case 7://ÓĞ7¸ö²ÎÊı
+	    case 7://æœ‰7ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1],temp[2],temp[3],temp[4],\
 			temp[5],temp[6]);
 			break;
-	    case 8://ÓĞ8¸ö²ÎÊı
+	    case 8://æœ‰8ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1],temp[2],temp[3],temp[4],\
 			temp[5],temp[6],temp[7]);
 			break;
-	    case 9://ÓĞ9¸ö²ÎÊı
+	    case 9://æœ‰9ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1],temp[2],temp[3],temp[4],\
 			temp[5],temp[6],temp[7],temp[8]);
 			break;
-	    case 10://ÓĞ10¸ö²ÎÊı
+	    case 10://æœ‰10ä¸ªå‚æ•°
 			res=(*(u32(*)())usmart_dev.funs[id].func)(temp[0],temp[1],temp[2],temp[3],temp[4],\
 			temp[5],temp[6],temp[7],temp[8],temp[9]);
 			break;
 	}
-	usmart_get_runtime();//»ñÈ¡º¯ÊıÖ´ĞĞÊ±¼ä
-	if(rval==1)//ĞèÒª·µ»ØÖµ.
+	usmart_get_runtime();//è·å–å‡½æ•°æ‰§è¡Œæ—¶é—´
+	if(rval==1)//éœ€è¦è¿”å›å€¼.
 	{
-		if(usmart_dev.sptype==SP_TYPE_DEC)printf("=%lu;\r\n",res);//Êä³öÖ´ĞĞ½á¹û(10½øÖÆ²ÎÊıÏÔÊ¾)
-		else printf("=0X%X;\r\n",res);//Êä³öÖ´ĞĞ½á¹û(16½øÖÆ²ÎÊıÏÔÊ¾)	   
-	}else printf(";\r\n");		//²»ĞèÒª·µ»ØÖµ,Ö±½ÓÊä³ö½áÊø
-	if(usmart_dev.runtimeflag)	//ĞèÒªÏÔÊ¾º¯ÊıÖ´ĞĞÊ±¼ä
+		if(usmart_dev.sptype==SP_TYPE_DEC)printf("=%lu;\r\n",res);//è¾“å‡ºæ‰§è¡Œç»“æœ(10è¿›åˆ¶å‚æ•°æ˜¾ç¤º)
+		else printf("=0X%X;\r\n",res);//è¾“å‡ºæ‰§è¡Œç»“æœ(16è¿›åˆ¶å‚æ•°æ˜¾ç¤º)	   
+	}else printf(";\r\n");		//ä¸éœ€è¦è¿”å›å€¼,ç›´æ¥è¾“å‡ºç»“æŸ
+	if(usmart_dev.runtimeflag)	//éœ€è¦æ˜¾ç¤ºå‡½æ•°æ‰§è¡Œæ—¶é—´
 	{ 
-		printf("Function Run Time:%d.%1dms\r\n",usmart_dev.runtime/10,usmart_dev.runtime%10);//´òÓ¡º¯ÊıÖ´ĞĞÊ±¼ä 
+		printf("Function Run Time:%d.%1dms\r\n",usmart_dev.runtime/10,usmart_dev.runtime%10);//æ‰“å°å‡½æ•°æ‰§è¡Œæ—¶é—´ 
 	}	
 }
 
-//usmartÉ¨Ãèº¯Êı
-//Í¨¹ıµ÷ÓÃ¸Ãº¯Êı,ÊµÏÖusmartµÄ¸÷¸ö¿ØÖÆ.¸Ãº¯ÊıĞèÒªÃ¿¸ôÒ»¶¨Ê±¼ä±»µ÷ÓÃÒ»´Î
-//ÒÔ¼°Ê±Ö´ĞĞ´Ó´®¿Ú·¢¹ıÀ´µÄ¸÷¸öº¯Êı.
-//±¾º¯Êı¿ÉÒÔÔÚÖĞ¶ÏÀïÃæµ÷ÓÃ,´Ó¶øÊµÏÖ×Ô¶¯¹ÜÀí.
-//Èç¹û·ÇALIENTEKÓÃ»§,ÔòUSART_RX_STAºÍUSART_RX_BUF[]ĞèÒªÓÃ»§×Ô¼ºÊµÏÖ
+//usmartæ‰«æå‡½æ•°
+//é€šè¿‡è°ƒç”¨è¯¥å‡½æ•°,å®ç°usmartçš„å„ä¸ªæ§åˆ¶.è¯¥å‡½æ•°éœ€è¦æ¯éš”ä¸€å®šæ—¶é—´è¢«è°ƒç”¨ä¸€æ¬¡
+//ä»¥åŠæ—¶æ‰§è¡Œä»ä¸²å£å‘è¿‡æ¥çš„å„ä¸ªå‡½æ•°.
+//æœ¬å‡½æ•°å¯ä»¥åœ¨ä¸­æ–­é‡Œé¢è°ƒç”¨,ä»è€Œå®ç°è‡ªåŠ¨ç®¡ç†.
+//å¦‚æœéALIENTEKç”¨æˆ·,åˆ™USART_RX_STAå’ŒUSART_RX_BUF[]éœ€è¦ç”¨æˆ·è‡ªå·±å®ç°
 void usmart_scan(void)
 {
 	u8 sta,len;  
-	if(USART_RX_STA&0x8000)//´®¿Ú½ÓÊÕÍê³É£¿
+	if(USART_RX_STA&0x8000)//ä¸²å£æ¥æ”¶å®Œæˆï¼Ÿ
 	{					   
-		len=USART_RX_STA&0x3fff;	//µÃµ½´Ë´Î½ÓÊÕµ½µÄÊı¾İ³¤¶È
-		USART_RX_BUF[len]='\0';	//ÔÚÄ©Î²¼ÓÈë½áÊø·û. 
-		sta=usmart_dev.cmd_rec(USART_RX_BUF);//µÃµ½º¯Êı¸÷¸öĞÅÏ¢
-		if(sta==0)usmart_dev.exe();	//Ö´ĞĞº¯Êı 
+		len=USART_RX_STA&0x3fff;	//å¾—åˆ°æ­¤æ¬¡æ¥æ”¶åˆ°çš„æ•°æ®é•¿åº¦
+		USART_RX_BUF[len]='\0';	//åœ¨æœ«å°¾åŠ å…¥ç»“æŸç¬¦. 
+		sta=usmart_dev.cmd_rec(USART_RX_BUF);//å¾—åˆ°å‡½æ•°å„ä¸ªä¿¡æ¯
+		if(sta==0)usmart_dev.exe();	//æ‰§è¡Œå‡½æ•° 
 		else 
 		{  
 			len=usmart_sys_cmd_exe(USART_RX_BUF);
@@ -373,32 +373,32 @@ void usmart_scan(void)
 				switch(sta)
 				{
 					case USMART_FUNCERR:
-						printf("º¯Êı´íÎó!\r\n");   			
+						printf("å‡½æ•°é”™è¯¯!\r\n");   			
 						break;	
 					case USMART_PARMERR:
-						printf("²ÎÊı´íÎó!\r\n");   			
+						printf("å‚æ•°é”™è¯¯!\r\n");   			
 						break;				
 					case USMART_PARMOVER:
-						printf("²ÎÊıÌ«¶à!\r\n");   			
+						printf("å‚æ•°å¤ªå¤š!\r\n");   			
 						break;		
 					case USMART_NOFUNCFIND:
-						printf("Î´ÕÒµ½Æ¥ÅäµÄº¯Êı!\r\n");   			
+						printf("æœªæ‰¾åˆ°åŒ¹é…çš„å‡½æ•°!\r\n");   			
 						break;		
 				}
 			}
 		}
-		USART_RX_STA=0;//×´Ì¬¼Ä´æÆ÷Çå¿Õ	    
+		USART_RX_STA=0;//çŠ¶æ€å¯„å­˜å™¨æ¸…ç©º	    
 	}
 }
 
-#if USMART_USE_WRFUNS==1 	//Èç¹ûÊ¹ÄÜÁË¶ÁĞ´²Ù×÷
-//¶ÁÈ¡Ö¸¶¨µØÖ·µÄÖµ		 
+#if USMART_USE_WRFUNS==1 	//å¦‚æœä½¿èƒ½äº†è¯»å†™æ“ä½œ
+//è¯»å–æŒ‡å®šåœ°å€çš„å€¼		 
 u32 read_addr(u32 addr)
 {
 	return *(u32*)addr;//	
 }
 
-//ÔÚÖ¸¶¨µØÖ·Ğ´ÈëÖ¸¶¨µÄÖµ		 
+//åœ¨æŒ‡å®šåœ°å€å†™å…¥æŒ‡å®šçš„å€¼		 
 void write_addr(u32 addr,u32 val)
 {
 	*(u32*)addr=val; 	

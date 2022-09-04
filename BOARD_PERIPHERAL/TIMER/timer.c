@@ -1,6 +1,8 @@
 #include "timer.h"
 #include "led.h"
 
+// 硬件定时器数量有限, 一般用于什么场合?
+
 /**
  * @brief 通用定时器中断初始化
  *        这里时钟选择为APB1的2倍，而APB1为36M

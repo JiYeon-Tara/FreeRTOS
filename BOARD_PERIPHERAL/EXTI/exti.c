@@ -73,6 +73,7 @@ void EXTI9_5_IRQHandler(void)
         // printf("%s\n", __func__);
         LED0 = !LED0;
 #if WATCH_DOG_TEST_ENABLE
+        printf("feed watch dog timer.\r\n");
         IWDG_Feed();    // fedd watch dog
 #endif
     }
@@ -89,6 +90,7 @@ void EXTI15_10_IRQHandler(void)
     delay_ms(10);
     if(KEY1 == 0){
 #if WATCH_DOG_TEST_ENABLE
+        printf("feed watch dog timer.\r\n");
         IWDG_Feed();    // fedd watch dog
 #endif
         // printf("%s\n", __func__);
