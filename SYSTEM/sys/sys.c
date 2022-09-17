@@ -201,7 +201,7 @@ __asm void MSR_MSP(u32 addr)
  */
 void Sys_Standby(void)
 {
-	SCB->SCR |= (1 << 2);//使能SLEEPDEEP位 (SYS->CTRL)	   
+	SCB->SCR |= (1 << 2);// 使能SLEEPDEEP位 (SYS->CTRL), 《cortex-M3权威指南》
   	RCC->APB1ENR |= (1 << 28);     //使能电源时钟	    
  	PWR->CSR |= (1 << 8);          //设置WKUP用于唤醒
 	PWR->CR |= (1 << 2);           //清除Wake-up 标志

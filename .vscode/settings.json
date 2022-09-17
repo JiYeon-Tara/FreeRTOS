@@ -14,6 +14,8 @@
         "ssd_1306.h": "c",
         "watch_dog_timer.h": "c",
         "at_cmd_parse.h": "c",
-        "delay.h": "c"
+        "delay.h": "c",
+        "adc.h": "c",
+        "lcd.h": "c"
     }
 }

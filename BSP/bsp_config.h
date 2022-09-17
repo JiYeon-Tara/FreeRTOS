@@ -33,8 +33,15 @@
 #define TIMER_TEST_ENABLE       0
 
 // OLED & LCD
-#define OLED_SCREEN_TEST        0
-#define LCD_SCREEN_TEST         0
+#define OLED_SCREEN_ENABLE      0
+#define OLED_SCREEN_TEST_ENABLE 0
+#define LCD_SCREEN_ENABLE       1
+#define LCD_SCREEN_TEST_ENABLE  0
+
+// EEPROM
+#define EEPROM_TEST_ENABLE      1
+
+
 
 
 

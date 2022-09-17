@@ -17,6 +17,7 @@
 #include "exti.h"
 #include "third_party_config.h"
 #include "at_cmd_parse.h"
+#include "string.h"
 
  
 // Program Size: Code=14966 RO-data=7166 RW-data=408 ZI-data=1848  
@@ -40,47 +41,34 @@
 void bsp_init()
 {
 	uint8_t lcd_id[20];
+	uint8_t temp[50];
+	uint8_t time[50];
+	uint8_t cpuTemp = 50;
+	uint16_t year = 2022, month = 9, day = 1, hour = 8, min = 0, sec = 0; 
 
 	Stm32_Clock_Init(9); 		 //系统时钟设置
 	delay_init(72000000);	     //延时初始化
 	uart_init(72000000, 9600);	 //串口初始化为9600
 	LED_Init();					 // LED Init
 	EXTI_Init(); 				 // key and exit initialization
-	
-
 	LCD_Init();
-	sprintf((char*)lcd_id, "LCD ID:%04X", lcddev.id);
-	LCD_ShowString(0, 0, 240, 16, 16, lcd_id);
-	
-}
-
-int fun(void)
-{
-	// LCD_Init(); 		//感觉这个板子跑个LCD屏已经有点心有余而力不足了, 可以优化吗?
-	// usmart_dev.init(72); //初始化 USMART
-	
-	// //IWDG_Init(4, 615); // watch dog intialization
-	// //WWDG_Init(0X7F,0X5F,3);	//计数器值为7f,窗口寄存器为5f,分频数为8	 
-	// TIM3_Int_Init(9999, 7199);	//10Khz的计数频率，计数到5000为500ms  
-
-	while(1){
-		//open watch dog
-		// uart1_print_recv_msg(S_USART1);
-		// LCD_Test(&ix);
-		// printf("%d\n", KEY_Scan(1));
-		// if(cmd == "circle loop"){
-		// 	while(1);	//dog will bark
-		// }
-
-		//feed watch dog
-		
-		//printf("thread running...\n");
-		//delay_ms(1000);
-#if LED_ENABLE
-
+	RTC_Init();
+	Adc_Init();
+#if DAC_TEST_ENABLE
+	Dac1_Init();
 #endif
-	}
+
+
+	sprintf((char*)lcd_id, "LCD ID:%04X", lcddev.id);
+	sprintf((char*)temp, "CPU temperature:%d", cpuTemp);
+	sprintf((char*)time, "Time:%d-%d-%d %d:%d:%d  Week:%d", calendar.w_year, calendar.w_month,calendar.w_date, \
+												   calendar.hour, calendar.min, calendar.sec, calendar.week);
+	
+	LCD_ShowString(0, 0, 240, 16, 16, lcd_id);
+	LCD_ShowString(0, 16, 240, 16, 16, temp);
+	LCD_ShowString(0, 32, 240, 16, 16, time);
 }
+
 
 void led_test()
 {
@@ -185,6 +173,18 @@ void lcd_screen_test()
 	LCD_DrawLine(40, 40, 80, 80);	
 }
 
+void rtc_test()
+{
+	setRealTimeRtc();
+	RTC_Init();
+	RTC_Set(calendar.w_year, calendar.w_month, calendar.w_date, calendar.hour, calendar.min, calendar.sec);
+	while(1){
+		printf("%d-%d-%d %d:%d:%d, week:%d\n", calendar.w_year, calendar.w_month, calendar.w_date, \
+											   calendar.hour, calendar.min, calendar.sec, calendar.week);
+		delay_ms(5000);
+	}
+}
+
 void at_cmd_test()
 {
 	char *str = "AT^START"; // receive from uart
@@ -194,6 +194,53 @@ void at_cmd_test()
 	return;
 }
 
+void dlps_test()
+{
+	WKUP_Init();
+}
+
+void ADC_test()
+{
+	uint16_t adcVal = 0;
+
+	Adc_Init();
+
+	while(1){
+		adcVal = Get_Adc_Average(ADC_VAL_CH1, ADC_GET_TEST_COUNT);
+		printf("ADC val:%d\nvoltage:%02fV\n", adcVal, adcVal2Voltage(adcVal));
+		delay_ms(3000);
+	}
+}
+
+void dac_test()
+{
+	// Dac1_Init();
+
+	// 让 DAC 输出三角波
+	//^^^^^^^^^^^^^^^
+	// 如何将它输出到屏幕上?
+	// while(1){
+		static uint8_t dacVal = 0;
+		Dac1_Set_Vol(dacVal * DAC_OUTPUT_MAX_VOL);
+		dacVal = !dacVal;
+	// }
+}
+
+void dma_test()
+{
+	// dma_manager initialization
+	// char *data = "hello, world.";
+	// strcpy(&dma_manager.textToSend, data);
+	// dma_manager.sendSize = strlen(data);
+
+	// UART1 - DMA1_Channel4
+	// 外设为串口1
+	// 存储器为 sendBuff
+	// 长 (TEXT_LENGTH+2) * 100
+	DMA_Config(DMA1_Channel4, (uint32_t)&USART1->DR, (uint32_t)dma_manager.sendBuff, (TEXT_LENGTH + 2) * 100);
+
+	for(int ix = 0; ix < ())
+}
 
 
 

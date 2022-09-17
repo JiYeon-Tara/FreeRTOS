@@ -15,6 +15,9 @@
 #include "delay.h"
 #include "usart.h"
 #include "bsp_config.h"
+#if DLPS_TEST_ENABLE
+#include "dlps.h"
+#endif
 
 /**
  * @brief external interrupt intialization
@@ -50,6 +53,7 @@ void EXTI_Init()
  */
 void EXTI0_IRQHandler(void)
 {
+#if KEY_TEST_ENABLE
     delay_ms(10); //xiao dou 
     if(WK_UP == 1){ //PA0 - wake up key
         printf("%s\n", __func__);
@@ -58,7 +62,13 @@ void EXTI0_IRQHandler(void)
     }
 
     EXTI->PR = (1<<0);  // 清除中断
-
+#else if DLPS_TEST_ENABLE
+    // 判断 WKUP 是否按下超过 3s
+    EXTI->PR = 1 << 0; // 清除中断标志
+    if(Check_WKUP()){
+        Sys_Enter_Standby();
+    }
+#endif
     return;
 }
 

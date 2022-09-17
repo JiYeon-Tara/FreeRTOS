@@ -16,6 +16,10 @@
 #include "board_config.h"
 #include "bsp_config.h"
 #include "LCD.h"
+#include "rtc.h"
+#include "adc_stm.h"
+#include "dac_stm.h"
+#include "dma_stm.h"
 
 //
 void bsp_init();
@@ -23,7 +27,9 @@ void led_test();
 void key_test();
 void usart_test();
 void watch_dog_test();
-
+void dlps_test();
+void ADC_test();
+void dac_test();
 
 // third party test
 void at_cmd_test();
