@@ -39,10 +39,22 @@
 #define LCD_SCREEN_TEST_ENABLE  0
 
 // EEPROM
-#define EEPROM_TEST_ENABLE      1
+#define EEPROM_TEST_ENABLE      0
 
+// flash ROM
+#define FLASH_TEST_ENABLE       0
 
+// TP
+#define TP_ENABLE               1
+#define TP_TEST_ENABLE          1
 
+// remote control
+#define REMOTE_ENABLE           1
+#define REMOTE_CONTROL_TEST_ENABLE      0
+
+// temperature
+#define TEMP_ENABLE             0
+#define TEMP_TEST_ENABLE        0
 
 
 #endif

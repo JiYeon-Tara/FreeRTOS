@@ -1,6 +1,7 @@
  #include "spi_stm.h"
  
 // 对应的 GPIO
+// 全部都接 45K 电阻上拉
 // SPI1 CS - PA2
 // SPI1 SCK - PA5
 // SPI1 MISO - PA6
@@ -24,8 +25,8 @@ void SPI1_Init(void)
 		   
 	//这里只针对SPI口初始化
 	GPIOA->CRL &= 0X000FFFFF; 
-	GPIOA->CRL|= 0XBBB00000;    //PA5.6.7复用 	    
-	GPIOA->ODR |= 0X7 << 5;     //PA5.6.7上拉
+	GPIOA->CRL|= 0XBBB00000;    // PA5.6.7复用 	    
+	GPIOA->ODR |= 0X7 << 5;     // PA5.6.7上拉
 		
 	SPI1->CR1 |= 0 << 10;       // 全双工模式(发送和接收)
 	SPI1->CR1 |= 1 << 9;        // 软件nss管理
@@ -58,21 +59,26 @@ void SPI1_SetSpeed(u8 SpeedSet)
 //SPI1 读写一个字节
 //TxData:要写入的字节
 //返回值:读取到的字节
+// 为什么没有用到 SPI1_Handler 中断???
 u8 SPI1_ReadWriteByte(u8 TxData)
 {		
 	u16 retry=0;				 
-	while((SPI1->SR&1<<1)==0)//等待发送区空	
+	while((SPI1->SR & (1 << 1)) == 0)//等待发送区空	
 	{
 		retry++;
-		if(retry>0XFFFE)return 0;
+		if(retry > 0XFFFE)
+			return 0;
 	}			  
-	SPI1->DR=TxData;	 	  //发送一个byte 
-	retry=0;
-	while((SPI1->SR&1<<0)==0) //等待接收完一个byte  
+	SPI1->DR = TxData;	 	  //发送一个byte
+
+	retry = 0;
+	while((SPI1->SR & 1 << 0) == 0) //等待接收完一个byte  
 	{
 		retry++;
-		if(retry>0XFFFE)return 0;
-	}	  						    
+		if(retry > 0XFFFE)
+			return 0;
+	}
+						    
 	return SPI1->DR;          //返回收到的数据				    
 }
 

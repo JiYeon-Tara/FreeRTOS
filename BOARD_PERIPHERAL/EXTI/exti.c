@@ -18,6 +18,9 @@
 #if DLPS_TEST_ENABLE
 #include "dlps.h"
 #endif
+#if DMA_TEST_ENABLE
+#include "dma_stm.h"
+#endif
 
 /**
  * @brief external interrupt intialization
@@ -85,6 +88,14 @@ void EXTI9_5_IRQHandler(void)
 #if WATCH_DOG_TEST_ENABLE
         printf("feed watch dog timer.\r\n");
         IWDG_Feed();    // fedd watch dog
+#endif
+
+#if DMA_TEST_ENABLE
+        // 开始一次 DMA 传输
+        // 等待 DMA 传输完成, 此时我们可以做一些其他事情(不需要 CPU 参与)
+        // 实际应用中, DMA 传输期间可以执行另外的任务
+        USART1->CR3 |= 1 << 7; // 使能 UART1 的 DMA TX
+        DMA_Enable(DMA1_Channel4);
 #endif
     }
 

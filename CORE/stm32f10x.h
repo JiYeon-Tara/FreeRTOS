@@ -500,6 +500,7 @@ typedef __I int32_t vsc32;  /*!< Read Only */
 typedef __I int16_t vsc16;  /*!< Read Only */
 typedef __I int8_t vsc8;   /*!< Read Only */
 
+// 便于代码移植
 typedef uint32_t  u32;
 typedef uint16_t u16;
 typedef uint8_t  u8;

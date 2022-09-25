@@ -1,6 +1,7 @@
 #ifndef __W25Q64_H__
 #define __W25Q64_H__
 
+#include "sys.h"
 
 //W25X系列/Q系列芯片列表	   
 //W25Q80 ID  0XEF13
@@ -17,7 +18,7 @@ extern u16 SPI_FLASH_TYPE;		//定义我们使用的flash芯片型号
 				 
 ////////////////////////////////////////////////////////////////////////////
  
-//指令表
+// flash 指令表
 #define W25X_WriteEnable		0x06 
 #define W25X_WriteDisable		0x04 
 #define W25X_ReadStatusReg		0x05 
@@ -35,6 +36,28 @@ extern u16 SPI_FLASH_TYPE;		//定义我们使用的flash芯片型号
 #define W25X_ManufactDeviceID	0x90 
 #define W25X_JedecDeviceID		0x9F 
 
+
+// flash 状态寄存器标志位
+//读取 SPI_FLASH 的状态寄存器
+//BIT7  6   5   4   3   2   1   0
+//SPR   RV  TB BP2 BP1 BP0 WEL BUSY
+//SPR:默认0,状态寄存器保护位,配合WP使用
+//TB,BP2,BP1,BP0:FLASH区域写保护设置
+//WEL:写使能锁定
+//BUSY:忙标记位(1,忙;0,空闲)
+//默认:0x00
+#define W25X_SR_BUSY            0x01
+#define W25X_SR_WEL             0x02
+#define W25X_SR_BP0             0x04
+#define W25X_SR_BP1             0x08
+#define W25X_SR_BP2             0x10
+#define W25X_SR_TB              0x20
+#define W25X_SR_RV              0x40
+#define W25X_SR_SPR             0x80
+
+
+
+
 void SPI_Flash_Init(void);
 u16  SPI_Flash_ReadID(void);  	    //读取FLASH ID
 u8	 SPI_Flash_ReadSR(void);        //读取状态寄存器 
@@ -51,3 +74,4 @@ void SPI_Flash_PowerDown(void);           //进入掉电模式
 void SPI_Flash_WAKEUP(void);			  //唤醒
 
 #endif
+

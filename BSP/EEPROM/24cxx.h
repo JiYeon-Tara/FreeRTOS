@@ -1,5 +1,6 @@
 #ifndef __24C02_H__
 #define __24C02_H__
+
 #include "i2c.h"    // 包含 i2c 头文件
 
 #define AT24C01		127
@@ -13,8 +14,8 @@
 #define AT24C256	32767  
 #define AT24C512	65535
 
-//Mini STM32开发板使用的是24c02，所以定义EE_TYPE为AT24C02
-#define EE_TYPE AT24C02
+// Mini STM32开发板使用的是24c02，所以定义EE_TYPE为AT24C02
+#define EE_TYPE     AT24C02
 
 
 u8 AT24CXX_ReadOneByte(u16 ReadAddr);							//指定地址读取一个字节

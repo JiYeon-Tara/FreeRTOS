@@ -10,9 +10,12 @@
  * 
  */
 #include "24cxx.h"
+#include "usart.h"
+
 
 // EEPROM 是一种特殊形式的闪存，其应用通常是个人电脑中的电压来擦写和重编程
 // EEPROM 与 flash 的区别???
+// 可读写单位 byte, falsh 按块进行擦除和写;
 
 
 // I2C 接口，使用 GPIO 软件模拟 I2C 的方式，而不是使用的硬件 I2C 接口
@@ -23,6 +26,7 @@
 //初始化IIC接口
 void AT24CXX_Init(void)
 {
+	printf("%s\n", __func__);
 	IIC_Init(); // 硬件初始化(配置时钟以及 GPIO)
 }
 
@@ -37,8 +41,8 @@ void AT24CXX_Init(void)
 u8 AT24CXX_ReadOneByte(u16 ReadAddr)
 {
 	u8 temp=0;	
-    uint8_t ret;	  	    																 
-    IIC_Start();  
+    //uint8_t ret;	  	    																 
+    IIC_Start();  // 每读写一个字节都需要发送 start 信号吗???
 
     // 为了兼容不同型号
 	if(EE_TYPE > AT24C16)
@@ -51,7 +55,7 @@ u8 AT24CXX_ReadOneByte(u16 ReadAddr)
         IIC_Send_Byte(0XA0 + ((ReadAddr / 256) << 1));   //发送器件地址0XA0,写数据 	   
 	IIC_Wait_Ack(); 
 
-    IIC_Send_Byte(ReadAddr%256);   //发送低地址
+    IIC_Send_Byte(ReadAddr % 256);   //发送低地址
 	IIC_Wait_Ack();
 
 	IIC_Start();  	 	   
@@ -59,7 +63,8 @@ u8 AT24CXX_ReadOneByte(u16 ReadAddr)
 	IIC_Wait_Ack();	 
 
     temp = IIC_Read_Byte(0);		   
-    IIC_Stop(); //产生一个停止条件	    
+    IIC_Stop(); //产生一个停止条件, 每读写一个字节都需要发送 start 信号吗???
+
 	return temp;
 }
 
@@ -70,28 +75,30 @@ u8 AT24CXX_ReadOneByte(u16 ReadAddr)
  * @param WriteAddr 写入数据的目的地址
  * @param DataToWrite 要写入的数据
  */
-void AT24CXX_WriteOneByte(u16 WriteAddr,u8 DataToWrite)
+void AT24CXX_WriteOneByte(u16 WriteAddr, u8 DataToWrite)
 {
     IIC_Start();  
 	if(EE_TYPE > AT24C16)
 	{
-		IIC_Send_Byte(0XA0);	    //发送写命令
+		IIC_Send_Byte(0XA0);	    //发送写命令 每读写一个字节都需要发送 start 信号吗???
 		IIC_Wait_Ack();
 
 		IIC_Send_Byte(WriteAddr >> 8);//发送高地址	  
 	}
     else 
-        IIC_Send_Byte(0XA0+((WriteAddr/256)<<1));   //发送器件地址0XA0,写数据 	 
+        IIC_Send_Byte(0XA0 + ((WriteAddr / 256) << 1));   //发送器件地址0XA0,写数据 	 
 	IIC_Wait_Ack();
-	   
-    IIC_Send_Byte(WriteAddr%256);   //发送低地址
+	
+    IIC_Send_Byte(WriteAddr % 256);   // 发送低地址 (writeAddr & 0xFF), 这样得到低字节吗?
 	IIC_Wait_Ack(); 
 	 										  		   
 	IIC_Send_Byte(DataToWrite);     //发送字节							   
 	IIC_Wait_Ack();  
 		    	   
-    IIC_Stop();		//产生一个停止条件 
-	delay_ms(10);	//对于EEPROM器件，每写一次要等待一段时间，否则写失败！	 
+    IIC_Stop();		// 产生一个停止条件, 每读写一个字节都需要发送 start 信号吗???
+	delay_ms(10);	// 对于EEPROM器件，每写一次要等待一段时间，否则写失败！	 
+
+	return;
 }
 
 
@@ -110,13 +117,14 @@ void AT24CXX_WriteLenByte(u16 WriteAddr, u32 DataToWrite, u8 Len)
 	{
 		AT24CXX_WriteOneByte(WriteAddr + t, (DataToWrite >> (8 * t)) & 0xff);
 	}
+
     return;
 } 
 
 
 /**
  * @brief 在AT24CXX里面的指定地址开始读出长度为Len的数据
- *        该函数用于读出16bit或者32bit的数据.
+ *        该函数用于读出 16bit 或者 32bit 的数据.
  * 
  * @param ReadAddr 开始读出的地址 
  * @param Len 要读出数据的长度2,4
@@ -131,6 +139,7 @@ u32 AT24CXX_ReadLenByte(u16 ReadAddr, u8 Len)
 		temp <<= 8;
 		temp += AT24CXX_ReadOneByte(ReadAddr + Len - t - 1); 	 				   
 	}
+
 	return temp;												    
 }
 
@@ -146,7 +155,7 @@ u32 AT24CXX_ReadLenByte(u16 ReadAddr, u8 Len)
 u8 AT24CXX_Check(void)
 {
 	u8 temp;
-	temp = AT24CXX_ReadOneByte(255);//避免每次开机都写AT24CXX			   
+	temp = AT24CXX_ReadOneByte(255);// 避免每次开机都写AT24CXX			   
 	if(temp == 0X55)
         return 0;
 
@@ -185,7 +194,7 @@ void AT24CXX_Read(u16 ReadAddr, u8 *pBuffer, u16 NumToRead)
  * @param pBuffer 数据数组首地址
  * @param NumToWrite 要写入数据的个数
  */
-void AT24CXX_Write(u16 WriteAddr,u8 *pBuffer,u16 NumToWrite)
+void AT24CXX_Write(u16 WriteAddr, u8 *pBuffer, u16 NumToWrite)
 {
 	while(NumToWrite--)
 	{

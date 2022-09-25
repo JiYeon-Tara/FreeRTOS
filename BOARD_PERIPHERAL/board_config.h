@@ -32,7 +32,13 @@
 #define DAC_TEST_ENABLE             0
 
 // DMA
-#define DMA_TEST_ENABLE             1
+#define DMA_TEST_ENABLE             0
+
+// 内部 flash
+// 内部 flash 不可以一直玩, 会修改代码区, 具体原因还没排查
+#define INNER_FLASH_ENABLE          0
+#define INNER_FLASH_TEST_ENABLE     0
+
 
 #endif
 

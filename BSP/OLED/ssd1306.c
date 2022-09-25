@@ -3,6 +3,8 @@
 #include "oledfont.h"  	 
 #include "delay.h" 
  
+ #if OLED_TEST_ENABLE
+
 // OLED, chapter 15 还需要再认真看看, 如何切换不同的字库之类的;
 
 // OLED的显存
@@ -275,7 +277,7 @@ void OLED_Init(void)
 
 
 
-
+#endif
 
 
 

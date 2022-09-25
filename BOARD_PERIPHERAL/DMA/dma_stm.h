@@ -20,7 +20,7 @@ typedef struct
 /*************
  * DECLARATION
  *************/
-dma_manager_t dma_manager;
+// dma_manager_t dma_manager;
 
 void DMA_Config(DMA_Channel_TypeDef*DMA_CHx,u32 cpar,u32 cmar,u16 cndtr);//配置DMA1_CHx
 void DMA_Enable(DMA_Channel_TypeDef*DMA_CHx);//使能DMA1_CHx
@@ -59,3 +59,4 @@ void DMA_Enable(DMA_Channel_TypeDef*DMA_CHx);//使能DMA1_CHx
 
 
 #endif
+

@@ -6,9 +6,11 @@ int main()
 {
     uint8_t tempArr[50];
     uint16_t tempNum;
+    short temperature;
 
-    bsp_init();
     printf("\r\n\r\n\r\n\r\n\r\nSTM32F103RCT6 Intialized.\r\n");
+    bsp_init();
+    service_init();
 
 #if LED_TEST_ENABLE
     led_test();
@@ -43,7 +45,7 @@ int main()
 #endif
 
 #if DMA_TEST_ENABLE
-    
+    dma_test();
 #endif
 
     // loop
@@ -60,6 +62,7 @@ int main()
 #endif
         
         // ADC
+#if ADC_TEST_ENABLE
         tempNum = Get_Adc_Average(ADC_VAL_CH1, ADC_GET_TEST_COUNT);
         sprintf((char*)tempArr, "ADC:%2fV\n", adcVal2Voltage(tempNum));
         LCD_ShowString(0, 48, 240, 16, 16, (char*)tempArr);
@@ -67,8 +70,36 @@ int main()
         tempNum = Get_Adc_Average(ADC_MCU_TEMP_CHANNEL, ADC_GET_TEST_COUNT);
         sprintf((char*)tempArr, "CPU temperature:%2f degree\n", adcVal2Temper(tempNum));
         LCD_ShowString(0, 64, 240, 16, 16, (char*)tempArr);
+#endif
+
 #if DAC_TEST_ENABLE
         dac_test();
+#endif
+
+#if EEPROM_TEST_ENABLE
+        eeprom_test();
+#endif
+
+#if FLASH_TEST_ENABLE
+        flash_test();
+#endif
+
+#if REMOTE_CONTROL_TEST_ENABLE
+        remote_test();
+#endif
+
+#if TEMP_TEST_ENABLE
+        temperature = DS18B20_Get_Temp();
+        printf("temperature:%d\n", temperature);
+        delay_ms(1000);
+#endif
+
+#if INNER_FLASH_TEST_ENABLE
+        inner_flash_test();
+#endif
+
+#if MALLOC_TEST_ENABLE
+        memmang_test();
 #endif
     }
     
