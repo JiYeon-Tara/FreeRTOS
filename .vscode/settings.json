@@ -21,6 +21,8 @@
         "remote.h": "c",
         "w25q64.h": "c",
         "stm_flash.h": "c",
-        "dma_stm.h": "c"
+        "dma_stm.h": "c",
+        "service_at.h": "c",
+        "service_config.h": "c"
     }
 }

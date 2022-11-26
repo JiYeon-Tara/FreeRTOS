@@ -18,7 +18,7 @@
 #include "third_party_config.h"
 #include "at_cmd_parse.h"
 #include "string.h"
-
+#include "service_at.h"
 
  
 // Program Size: Code=14966 RO-data=7166 RW-data=408 ZI-data=1848  
@@ -51,7 +51,7 @@ void bsp_init()
 	Stm32_Clock_Init(9); 		 //系统时钟设置
 	delay_init(72000000);	     //延时初始化
 	delay_ms(100);
-	uart_init(72000000, 9600);	 //串口初始化为9600
+	uart_init(72000000, 115200);	 //串口初始化为9600
 	LED_Init();					 // LED Init
 	EXTI_Init(); 				 // key and exit initialization
 	LCD_Init();
@@ -154,7 +154,7 @@ void key_test()
 				break;
 		}
 	}
-#else if INT_KEY_ENABLE
+#elseif INT_KEY_ENABLE
 	EXTI_Init();
 #endif
 }
@@ -187,7 +187,7 @@ void watch_dog_test()
 {
 #if IWATCH_DOG_TEST_ENABLE
 	IWDG_Init(4, 625); // 溢出时间为 1s
-#else if WWATCH_DOG_TEST_ENABLE
+#elseif WWATCH_DOG_TEST_ENABLE
 	
 #endif
 }
@@ -222,12 +222,46 @@ void rtc_test()
 	}
 }
 
+/**
+ * @brief 必须要在大循环的 while(1) 中调用
+ * 
+ */
 void at_cmd_test()
 {
-	char *str = "AT^START"; // receive from uart
+	// char *str = "AT^START"; // receive from uart
+	// at_cmd_parse(str);
+	uint8_t len;
+	uint8_t ix = 0;
 
-	at_cmd_parse(str);
+	// 如果实在线程中执行这个, 则可以用 while(1)
+	// while(1){
+		if(USART_RX_STA & UART_RX_COMPLETE){
+			uint8_t bufPos = 0;
+			len = USART_RX_STA & UART_GET_RX_LEN;
+			// printf("recv len:%d\n", len);
+			// for(ix = 0; ix < len; ++ix){
+			// 	printf("%c", USART_RX_BUF[ix]);
+			// }
+			// printf("\r\n");
+			USART_RX_STA = 0;
 
+			if(USART_RX_BUF[0] == 'A' && USART_RX_BUF[1] == 'T'){
+				// 如果要多线程, 则发送到解析线程对列
+				// thread_msg_send(&g_thread_manager, THREAD_MANAGER_ID_AT, &USART_RX_BUF[0], len);
+				// 直接本地解析
+				service_at_parse((char*)USART_RX_BUF);
+			}
+			else if(USART_RX_BUF[0] == 'F' && USART_RX_BUF[1] == 'I'){
+				// 如果要多线程, 则发送到解析线程对列
+				// thread_msg_send(&g_thread_manager, THREAD_MANAGER_ID_FI, &USART_RX_BUF[0], len);
+				// 直接本地解析
+				// service_fi_parse((char*)USART_RX_BUF);
+			}
+			else{
+
+			}
+		}
+	// }
 	return;
 }
 

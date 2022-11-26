@@ -142,7 +142,7 @@ typedef struct
   __IO uint32_t IABR[8];                      /*!< Offset: 0x200  Interrupt Active bit Register           */
        uint32_t RESERVED4[56];                                   
   
-  //¸ßÇÀÕ¼ÓÅÏÈ¼¶µÄÖÐ¶Ï¿ÉÒÔ´ò¶ÏµÍÇÀÕ¼ÓÅÏÈ¼¶µÄÖÐ¶Ï, ¶øÏàÍ¬ÇÀÕ¼ÓÅÏÈ¼¶µÄÖÐ¶Ï, ¸ßÏìÓ¦ÓÅÏÈ¼¶µÄÖÐ¶Ï¿ÉÒÔ´ò¶ÏµÍÏìÓ¦ÓÅÏÈ¼¶µÄÖÐ¶Ï
+  //ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½Ð¶Ï¿ï¿½ï¿½Ô´ï¿½Ïµï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½, ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½, ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½Ð¶Ï¿ï¿½ï¿½Ô´ï¿½Ïµï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
   __IO uint8_t  IP[240];                      /*!< Offset: 0x300  Interrupt Priority Register (8Bit wide) */
        uint32_t RESERVED5[644];                                  
   __O  uint32_t STIR;                         /*!< Offset: 0xE00  Software Trigger Interrupt Register     */
@@ -152,6 +152,7 @@ typedef struct
 
 /** @addtogroup CMSIS_CM3_SCB CMSIS CM3 SCB
   memory mapped structure for System Control Block (SCB)
+  è¿™é‡Œçš„è°ƒè¯•çŠ¶æ€å¯„å­˜å™¨æ˜¯å¦‚ä½•ä½¿ç”¨çš„å‘¢?
   @{
  */
 typedef struct

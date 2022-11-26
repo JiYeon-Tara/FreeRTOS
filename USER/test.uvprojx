@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART;..\BOARD_PERIPHERAL;..\BSP\LED;..\BSP;..\BOARD_PERIPHERAL\GPIO;..\BSP\KEY;..\USER</IncludePath>
+              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART;..\BOARD_PERIPHERAL;..\BSP\LED;..\BSP;..\BOARD_PERIPHERAL\GPIO;..\BSP\KEY;..\USER;..\BOARD_PERIPHERAL\ADC;..\BOARD_PERIPHERAL\BKP;..\BOARD_PERIPHERAL\DAC;..\BOARD_PERIPHERAL\DMA;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\I2C;..\BOARD_PERIPHERAL\RTC;..\BOARD_PERIPHERAL\SLEEP_MODE;..\BOARD_PERIPHERAL\SPI;..\BOARD_PERIPHERAL\TEMP;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\USART;..\BOARD_PERIPHERAL\WDT;..\BSP\EEPROM;..\BSP\flash;..\BSP\KEY;..\BSP\LCD;..\BSP\LED;..\BSP\OLED;..\BSP\PS2;..\BSP\SD_card;..\BOARD_PERIPHERAL;..\BSP;..\third_party;..\third_party\AT;..\third_party;..\BSP\remote_control;..\BSP\temperature;..\BOARD_PERIPHERAL\flash;..\Service;..\Service\memmang</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -411,11 +411,6 @@
           <GroupName>BSP</GroupName>
           <Files>
             <File>
-              <FileName>ILI9341.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\LCD\ILI9341.c</FilePath>
-            </File>
-            <File>
               <FileName>18b20.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\TEMP_18B20\18b20.c</FilePath>
@@ -429,6 +424,36 @@
               <FileName>key_stm.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\KEY\key_stm.c</FilePath>
+            </File>
+            <File>
+              <FileName>24cxx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\EEPROM\24cxx.c</FilePath>
+            </File>
+            <File>
+              <FileName>w25q64.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\flash\w25q64.c</FilePath>
+            </File>
+            <File>
+              <FileName>ILI93xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\LCD\ILI93xx.c</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\OLED\ssd1306.c</FilePath>
+            </File>
+            <File>
+              <FileName>remote.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\remote_control\remote.c</FilePath>
+            </File>
+            <File>
+              <FileName>ds18b20.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\temperature\ds18b20.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -468,6 +493,51 @@
               <FileType>1</FileType>
               <FilePath>..\BOARD_PERIPHERAL\GPIO\gpio_stm.c</FilePath>
             </File>
+            <File>
+              <FileName>adc_stm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\ADC\adc_stm.c</FilePath>
+            </File>
+            <File>
+              <FileName>dac_stm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\DAC\dac_stm.c</FilePath>
+            </File>
+            <File>
+              <FileName>dma_stm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\DMA\dma_stm.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\I2C\i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\RTC\rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>dlps.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\SLEEP_MODE\dlps.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi_stm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\SPI\spi_stm.c</FilePath>
+            </File>
+            <File>
+              <FileName>usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USART\usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\flash\stm_flash.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -482,6 +552,16 @@
               <FileName>serviec_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Service\USART\serviec_usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>malloc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Service\memmang\malloc.c</FilePath>
+            </File>
+            <File>
+              <FileName>service_at.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Service\service_at.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -502,6 +582,11 @@
               <FileName>usmart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\third_party\USMART\usmart.c</FilePath>
+            </File>
+            <File>
+              <FileName>at_cmd_parse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\third_party\AT\at_cmd_parse.c</FilePath>
             </File>
           </Files>
         </Group>

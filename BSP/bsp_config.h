@@ -21,6 +21,7 @@
 #define KEY_ENABLE              1
 #define LOOP_KEY_ENABLE         0
 #define INT_KEY_ENABLE          1
+#define KEY_TEST_ENABLE         1
 
 // UART
 #define USART1_ENABLE           1

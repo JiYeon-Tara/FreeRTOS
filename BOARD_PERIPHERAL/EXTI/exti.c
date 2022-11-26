@@ -42,10 +42,10 @@ void EXTI_Init()
     // configure NVIC
     GPIO_NVIC_Config(KEY0_GPIO, KEY0_PORT, FTIR);   //rising trigger
     GPIO_NVIC_Config(KEY1_GPIO, KEY1_PORT, FTIR);   //falling trigger
-    // GPIO_NVIC_Config(WKUP_GPIO, WKUP_PORT, RTIR);
+    GPIO_NVIC_Config(WKUP_GPIO, WKUP_PORT, RTIR);
     MY_NVIC_Init(KEY0_PRIEMPTION_PRIORITY, KEY0_SUB_PRIORITY, EXTI9_5_IRQn, KEY0_NVIC_GROUP);
     MY_NVIC_Init(KEY1_PRIEMPTION_PRIORITY, KEY1_SUB_PRIORITY, EXTI15_10_IRQn, KEY1_NVIC_GROUP);
-    // MY_NVIC_Init(WKUP_PRIEMPTION_PRIORITY, WKUP_SUB_PRIORITY, EXTI0_IRQn, WKUP_NVIC_GROUP);
+    MY_NVIC_Init(WKUP_PRIEMPTION_PRIORITY, WKUP_SUB_PRIORITY, EXTI0_IRQn, WKUP_NVIC_GROUP);
 
     return;
 }
@@ -63,7 +63,6 @@ void EXTI0_IRQHandler(void)
         LED0 = !LED0;
         LED1 = !LED1;
     }
-
     EXTI->PR = (1<<0);  // 清除中断
 #else if DLPS_TEST_ENABLE
     // 判断 WKUP 是否按下超过 3s
@@ -83,7 +82,7 @@ void EXTI9_5_IRQHandler(void)
 {
     delay_ms(10);
     if(KEY0 == 0){
-        // printf("%s\n", __func__);
+        printf("%s\n", __func__);
         LED0 = !LED0;
 #if WATCH_DOG_TEST_ENABLE
         printf("feed watch dog timer.\r\n");
@@ -114,7 +113,7 @@ void EXTI15_10_IRQHandler(void)
         printf("feed watch dog timer.\r\n");
         IWDG_Feed();    // fedd watch dog
 #endif
-        // printf("%s\n", __func__);
+        printf("%s\n", __func__);
         LED1 = !LED1;
     }
 

@@ -8,8 +8,8 @@ int main()
     uint16_t tempNum;
     short temperature;
 
-    printf("\r\n\r\n\r\n\r\n\r\nSTM32F103RCT6 Intialized.\r\n");
     bsp_init();
+    printf("\r\n\r\n\r\n\r\n\r\nSTM32F103RCT6 Intialized.\r\n");
     service_init();
 
 #if LED_TEST_ENABLE
@@ -56,9 +56,9 @@ int main()
 #endif
 
 #if RTC_ENABLE && LCD_SCREEN_ENABLE
-        sprintf((char*)tempArr, "Time:%d-%d-%d %d:%d:%d  Week:%d", calendar.w_year, calendar.w_month,calendar.w_date, \
-                                                    calendar.hour, calendar.min, calendar.sec, calendar.week);
-        LCD_ShowString(0, 32, 240, 16, 16, tempArr);
+        // sprintf((char*)tempArr, "Time:%d-%d-%d %d:%d:%d  Week:%d", calendar.w_year, calendar.w_month,calendar.w_date, \
+        //                                             calendar.hour, calendar.min, calendar.sec, calendar.week);
+        // LCD_ShowString(0, 32, 240, 16, 16, tempArr);
 #endif
         
         // ADC
