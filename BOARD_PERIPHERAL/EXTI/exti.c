@@ -22,6 +22,13 @@
 #include "dma_stm.h"
 #endif
 
+
+
+// function declaration
+void EXTI0_IRQHandler(void);
+void EXTI9_5_IRQHandler(void);
+void EXTI15_10_IRQHandler(void);
+
 /**
  * @brief external interrupt intialization
  * 
@@ -37,7 +44,7 @@
 void EXTI_Init()
 {
     // key GPIO init
-    KEY_Init();
+    // KEY_Init();
 
     // configure NVIC
     GPIO_NVIC_Config(KEY0_GPIO, KEY0_PORT, FTIR);   //rising trigger
@@ -56,21 +63,23 @@ void EXTI_Init()
  */
 void EXTI0_IRQHandler(void)
 {
-#if KEY_TEST_ENABLE
-    delay_ms(10); //xiao dou 
-    if(WK_UP == 1){ //PA0 - wake up key
-        printf("%s\n", __func__);
+    delay_ms(10);               // xiao dou 
+    if(WK_UP == 1){             // PA0 - wake up key
+#if INT_KEY_TEST_ENABLE
+        printf("WKUP pressed\n");
         LED0 = !LED0;
         LED1 = !LED1;
-    }
-    EXTI->PR = (1<<0);  // 清除中断
-#else if DLPS_TEST_ENABLE
-    // 判断 WKUP 是否按下超过 3s
-    EXTI->PR = 1 << 0; // 清除中断标志
-    if(Check_WKUP()){
-        Sys_Enter_Standby();
-    }
 #endif
+    
+#if DLPS_TEST_ENABLE
+        // 判断 WKUP 是否按下超过 3s
+        // EXTI->PR = 1 << 0; // 清除中断标志
+        if(Check_WKUP()){
+            Sys_Enter_Standby();
+        }
+#endif
+    }
+    EXTI->PR = 1 << 0; // 清除中断标志
     return;
 }
 
@@ -81,9 +90,13 @@ void EXTI0_IRQHandler(void)
 void EXTI9_5_IRQHandler(void)
 {
     delay_ms(10);
+
     if(KEY0 == 0){
-        printf("%s\n", __func__);
+#if INT_KEY_TEST_ENABLE
+        printf("key 0 pressed\n", __func__);
         LED0 = !LED0;
+#endif
+
 #if WATCH_DOG_TEST_ENABLE
         printf("feed watch dog timer.\r\n");
         IWDG_Feed();    // fedd watch dog
@@ -98,7 +111,8 @@ void EXTI9_5_IRQHandler(void)
 #endif
     }
 
-    EXTI->PR = (1 << 5);    //clear interrupt flag
+    // clear interrupt flag
+    EXTI->PR = (1 << 5);
 }
 
 /**
@@ -109,12 +123,16 @@ void EXTI15_10_IRQHandler(void)
 {
     delay_ms(10);
     if(KEY1 == 0){
+#if INT_KEY_TEST_ENABLE
+        printf("key 1 pressed\n", __func__);
+        LED1 = !LED1;
+#endif
+
 #if WATCH_DOG_TEST_ENABLE
         printf("feed watch dog timer.\r\n");
         IWDG_Feed();    // fedd watch dog
 #endif
-        printf("%s\n", __func__);
-        LED1 = !LED1;
+
     }
 
     EXTI->PR = 1 << 15;

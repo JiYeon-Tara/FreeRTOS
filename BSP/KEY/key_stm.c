@@ -1,5 +1,8 @@
 #include "key_stm.h"
 #include "delay.h"
+#include "bsp_config.h"
+#include "exti.h"
+
 
 // WK_UP, PA0
 // KEY0, PC5
@@ -13,43 +16,51 @@
  */
 void KEY_Init(void)
 {
-	RCC->APB2ENR |= 1<<2;     	// 使能PORTA时钟
-	RCC->APB2ENR |= 1<<4;     	// 使能PORTC时钟
-	JTAG_Set(SWD_ENABLE);		// 关闭JTAG, 开启SWD
+    RCC->APB2ENR |= 1<<2;     	// 使能PORTA时钟
+    RCC->APB2ENR |= 1<<4;     	// 使能PORTC时钟
+    JTAG_Set(SWD_ENABLE);		// 关闭JTAG, 开启SWD
 
     //TODO:
-    //WK_UP 按键坏掉了 ***************************************************
-    //可以判断一下是不是硬件的问题
-    //PA0 - WK_UP 按键有问题
-	// GPIOA->CRL &= 0XFFFFFFF0;	// PA0 设置成输入, 模拟输入模式	  
-	// GPIOA->CRL |= 0X00000008;   // 上拉 / 下拉输入模式
-    // GPIOA->ODR &= 0xFFFFFFFF;   // 设置下拉， GPIOA->ODR &= 0xFFFFFFF7         
+    //PA0 - WK_UP 按键没有问题
+    // WK_UP 按键和红外共用一个 GPIO, 需要拔掉跳线帽
+    GPIOA->CRL &= 0XFFFFFFF0;	// PA0 设置成输入, 模拟输入模式	  
+    GPIOA->CRL |= 0X00000008;   // 上拉 / 下拉输入模式
+    GPIOA->ODR &= 0xFFFFFFFF;   // 设置下拉， GPIOA->ODR &= 0xFFFFFFF7         
 
-	GPIOA->CRH &= 0X0FFFFFFF;	// PA15设置成输入	  
-	GPIOA->CRH |= 0X80000000; 	// 上拉 / 下拉输入模式		 
-	GPIOA->ODR |= (1 << 15);	// PA15上拉, PA0默认下拉
+    GPIOA->CRH &= 0X0FFFFFFF;	// PA15设置成输入	  
+    GPIOA->CRH |= 0X80000000; 	// 上拉 / 下拉输入模式		 
+    GPIOA->ODR |= (1 << 15);	// PA15上拉, PA0默认下拉
 
-	GPIOC->CRL &= 0XFF0FFFFF;	//PC5设置成输入	  
-	GPIOC->CRL |= 0X00800000;   
-	GPIOC->ODR |= 1 << 5;	    //PC5上拉, 通过输出数据寄存器设置上拉, 默认下拉
+    GPIOC->CRL &= 0XFF0FFFFF;	//PC5设置成输入	  
+    GPIOC->CRL |= 0X00800000;   
+    GPIOC->ODR |= 1 << 5;	    //PC5上拉, 通过输出数据寄存器设置上拉, 默认下拉
 
-	return;
+    // 中断按键测试
+#if LOOP_KEY_ENABLE
+#endif
+
+#if INT_KEY_ENABLE
+    EXTI_Init();
+#endif
+
+    return;
 } 
 
 /**
  * @brief 按键处理函数, 轮询方式
  * 		  返回按键值
+ *        使用了 static 类型的变量, 不是一个可重入的函数, 使用多线程的时候要注意这里!!!
  * 
  * @param mode mode:0,不支持连续按;1,支持连续按;
  * @return u8 返回值：0，没有任何按键按下; KEY0_PRES，KEY0按下; KEY1_PRES，KEY1按下; WKUP_PRES，WK_UP按下 
  * 		   注意此函数有响应优先级,KEY0>KEY1>WK_UP!!
  */
-u8 KEY_Scan(KEY_MODE_E mode)
+int8_t KEY_Scan(KEY_MODE_E mode)
 {
-	static u8 key_up = 1;//按键按松开标志
-	if(mode)
+    static u8 key_up = 1;//按键按松开标志
+    if(mode == CONTINUE_MODE)
         key_up = 1;  //支持连按	
-	
+    
     // KEY_UP按键 - 要断开 PA0 和 BS18B20 的跳线帽
     if(key_up && (KEY0==0 || KEY1==0 || WK_UP == 1)) 
     {
@@ -65,7 +76,7 @@ u8 KEY_Scan(KEY_MODE_E mode)
     else if(KEY0==1 && KEY1==1 && WK_UP == 0)
         key_up = 1;
 
-	return 0;// 无按键按下
+    return NO_KEY_PRES;// 无按键按下
 }
 
 /**
@@ -73,3 +84,4 @@ u8 KEY_Scan(KEY_MODE_E mode)
  *        配置 GPIO 时钟 -> 配置为输入 -> 配置中断 -> 打开中断
  * 		  写中断服务函数
  */
+

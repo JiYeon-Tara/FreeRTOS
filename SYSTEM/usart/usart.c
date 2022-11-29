@@ -147,7 +147,7 @@ void USART1_IRQHandler(void)
  * @param pclk2 PCLK2时钟频率(hz)
  * @param baud 波特率 
  */
-void uart_init(u32 pclk2, u32 baud)
+void uart1_init(u32 pclk2, u32 baud)
 {
     float temp;
     u16 mantissa;

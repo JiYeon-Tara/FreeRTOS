@@ -6,6 +6,7 @@
 #define MALLOC_TEST_ENABLE          0
 
 // AT 命令测试
+#define AT_CMD_ENABLE               1
 #define AT_CMD_TEST_ENABLE          1
 
 #endif

@@ -14,6 +14,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include "led.h"
 
 
 // 流程大约是:串口接收数据 -> 解析 -> 执行提前注册好的回调函数
@@ -42,11 +44,12 @@ typedef enum {
 // function declaration
 static bool deal_at_cmd(const char *cmd, const char *para1, const char *para2);
 static bool at_trans_start(const char *para1, const char *para2);
+static bool at_LED_test(const char *para1, const char *para2);
 
 // variables
 const static at_callback_t atCmdList[] = {
     {"AT^START",                            at_trans_start},
-
+    {"AT^LED",                              at_LED_test},
 };
 static uint8_t _g_at_send_temp_buff[512];
 static AT_DIR_E atDir = AT_DIR_UART;
@@ -75,12 +78,12 @@ bool service_at_parse(char *inputStr)
 
     // strtok() 不是一个可重入的函数, 内部会保存传入的字符串
     token = strtok(inputStr, delim); // 返回值指向子串
-    // printf("token:%s\r\n");
+    printf("token:%s\r\n", token);
     while(token != NULL && delimNum <= 2){ // 最多两个参数
         snprintf((char*)tempStr[delimNum], 64, "%s", token);
         ++delimNum;
         token = strtok(NULL, delim);
-        // printf("token:%s\r\n");
+        printf("token:%s\r\n", token);
     }
 
     return deal_at_cmd((const char *)tempStr[0], (const char *)tempStr[1], (const char *)tempStr[2]);
@@ -133,6 +136,7 @@ void service_at_send(const char *fmt, ...)
     }
     mutex = true;
     va_start(args, fmt); // args point to the first variable parameter
+    // vsnprintf() 是个什么操作
     len = vsnprintf(_g_at_send_temp_buff, sizeof(_g_at_send_temp_buff), fmt, args);
     va_end(args);
 
@@ -148,7 +152,7 @@ void service_at_send(const char *fmt, ...)
                 // service_ble_send(_g_at_send_temp_buff, sizeof(_g_at_send_temp_buff));
                 break;
             default:
-            printf("unknown dir:%d\r\n", atDir);
+                printf("unknown dir:%d\r\n", atDir);
                 break;
         }
     }
@@ -161,7 +165,28 @@ void service_at_send(const char *fmt, ...)
 static bool at_trans_start(const char *para1, const char *para2)
 {
     AT_TRANS("OK\r\n");
+}
 
+static bool at_LED_test(const char *para1, const char *para2)
+{
+    LED_PIN_E ledNum;
+    LED_STATUS_E ledState;
+    if(!para1 || !para2){
+        AT_TRANS("ERROR\r\n");
+    }
+
+    ledNum = (LED_PIN_E)atoi(para1);
+    ledState = atoi(para2);
+
+    // if(ledNum == )
+    AT_TRANS("%d:%d\r\nOK\r\n", ledNum, ledState);
+
+    if(!led_state_change(ledNum, ledState)){
+        AT_TRANS("ERROR\r\n");
+        return false;
+    }
+
+    return true;
 }
 
 

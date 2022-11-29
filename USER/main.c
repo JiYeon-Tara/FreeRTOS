@@ -9,50 +9,56 @@ int main()
     short temperature;
 
     bsp_init();
-    printf("\r\n\r\n\r\n\r\n\r\nSTM32F103RCT6 Intialized.\r\n");
     service_init();
+    printf("\r\n\r\n\r\n\r\n\r\nSTM32F103RCT6 Intialized.\r\n");
 
-#if LED_TEST_ENABLE
-    led_test();
-#endif
+// #if LED_TEST_ENABLE
+//     led_test();
+// #endif
 
-#if KEY_TEST_ENABLE
-    key_test();
-#endif
+// #if UART1_TEST_ENABLE
+//     usart_test();
+// #endif
 
-#if UART1_TEST_ENABLE
-    usart_test();
-#endif
+// #if WATCH_DOG_TEST_ENABLE
+//     watch_dog_test();
+// #endif
 
-#if WATCH_DOG_TEST_ENABLE
-    watch_dog_test();
-#endif
+// #if LCD_SCREEN_TEST
+//     lcd_screen_test();
+// #endif
 
-#if LCD_SCREEN_TEST
-    lcd_screen_test();
-#endif
+// #if RTC_TEST_ENABLE
+//     rtc_test();
+// #endif
 
-#if RTC_TEST_ENABLE
-    rtc_test();
-#endif
+// #if DLPS_TEST_ENABLE
+//     dlps_test();
+// #endif
 
-#if DLPS_TEST_ENABLE
-    dlps_test();
-#endif
+// #if ADC_TEST_ENABLE
+//     ADC_test();
+// #endif
 
-#if ADC_TEST_ENABLE
-    ADC_test();
-#endif
-
-#if DMA_TEST_ENABLE
-    dma_test();
-#endif
-
+// #if DMA_TEST_ENABLE
+//     dma_test();
+// #endif
+    
     // loop
     while(1){
 #if AT_CMD_TEST_ENABLE
-        // receive from uart
         at_cmd_test();
+#endif
+
+#if LED_TEST_ENABLE
+        led_test();
+#endif
+
+#if LOOP_KEY_TEST_ENABLE
+        key_test();
+#endif
+
+#if INT_KEY_TEST_ENABLE
 #endif
 
 #if RTC_ENABLE && LCD_SCREEN_ENABLE
