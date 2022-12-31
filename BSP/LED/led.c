@@ -39,6 +39,7 @@ void LED_Init(void)
     GPIOD->CRL |= 0X00000300;	// output mode
     GPIOD->ODR |= (1 << 2);     // output 1
 
+    printf("led red and yellow init\r\n");
     return;
 }
 

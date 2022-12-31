@@ -1,96 +1,109 @@
+/**
+ * @file mouse.c
+ * @author your name (you@domain.com)
+ * @brief PS2 mouse data process
+ * @version 0.1
+ * @date 2022-12-31
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "mouse.h"
 #include "usart.h"
 #include "lcd.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEK MiniSTM32¿ª·¢°å
-//Êó±ê Çı¶¯´úÂë	   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//ĞŞ¸ÄÈÕÆÚ:2014/3/12
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾ 2009-2019
-//All rights reserved									  
-//////////////////////////////////////////////////////////////////////////////////
-   	 
-u8 MOUSE_ID;//ÓÃÀ´±ê¼ÇÊó±êID 
+
+
+// é¼ æ ‡æµ‹è¯•å¤±è´¥
+// å¯èƒ½éœ€è¦ç”¨é€»è¾‘åˆ†æä»ªé‡ä¸€ä¸ª GPIO ä¸Šçš„ç”µå¹³æƒ…å†µ
+
+        
+u8 MOUSE_ID;//ç”¨æ¥æ ‡è®°é¼ æ ‡ID 
 PS2_Mouse MouseX;
-//´¦ÀíMOUSEµÄÊı¾İ	 
+u8 g_mouse_init_flag = 0; // mouse init success flag
+
+//å¤„ç†MOUSEçš„æ•°æ®	 
 void Mouse_Data_Pro(void)
-{			    			    
+{
     MouseX.x_pos+=(signed char)PS2_DATA_BUF[1];
     MouseX.y_pos+=(signed char)PS2_DATA_BUF[2];
-	//MouseX.y_pos=-MouseX.y_pos;//Y·½Ïò·´ÁË,¾ÀÕı¹ıÀ´
+    //MouseX.y_pos=-MouseX.y_pos;//Yæ–¹å‘åäº†,çº æ­£è¿‡æ¥
     MouseX.z_pos+=(signed char)PS2_DATA_BUF[3];		  
-	MouseX.bt_mask=PS2_DATA_BUF[0]&0X07;//È¡³öÑÚÂë
-}	 
-//³õÊ¼»¯Êó±ê
-//·µ»Ø:0,³õÊ¼»¯³É¹¦
-//ÆäËû:´íÎó´úÂë
-//CHECK OK 2010/5/2
+    MouseX.bt_mask=PS2_DATA_BUF[0] & 0X07;//å–å‡ºæ©ç 
+}
+
+/**
+ * @brief åˆå§‹åŒ–é¼ æ ‡
+ * 
+ * @return u8 0,åˆå§‹åŒ–æˆåŠŸ; å…¶ä»–:é”™è¯¯ä»£ç 
+ */
 u8 Init_Mouse(void)
 {
-	u8 t;		 
-	PS2_Init();							     
-	delay_ms(800);            //µÈ´ıÉÏµç¸´Î»Íê³É		 	 
-	PS2_Status=CMDMODE;       //½øÈëÃüÁîÄ£Ê½
-	t=PS2_Send_Cmd(PS_RESET); //¸´Î»Êó±ê		 
-	if(t!=0)return 1;
-	t=PS2_Get_Byte();			  
-    if(t!=0XFA)return 2;
-	t=0;
-	while((PS2_Status&0x80)==0)//µÈ´ı¸´Î»Íê±Ï 
-	{
-		t++;
-		delay_ms(10);      
-		if(t>50)return 3;
-	}
-	PS2_Get_Byte();//µÃµ½0XAA
-	PS2_Get_Byte();//µÃµ½ID 0X00		 
-	//½øÈë¹öÂÖÄ£Ê½µÄÌØÊâ³õÊ¼»¯ĞòÁĞ
-	PS2_Send_Cmd(SET_SAMPLE_RATE);//½øÈëÉèÖÃ²ÉÑùÂÊ
-    if(PS2_Get_Byte()!=0XFA)return 4;//´«ÊäÊ§°Ü
-	PS2_Send_Cmd(0XC8);//²ÉÑùÂÊ200
-    if(PS2_Get_Byte()!=0XFA)return 5;//´«ÊäÊ§°Ü
-	PS2_Send_Cmd(SET_SAMPLE_RATE);//½øÈëÉèÖÃ²ÉÑùÂÊ
-    if(PS2_Get_Byte()!=0XFA)return 6;//´«ÊäÊ§°Ü
-	PS2_Send_Cmd(0X64);//²ÉÑùÂÊ100
-    if(PS2_Get_Byte()!=0XFA)return 7;//´«ÊäÊ§°Ü
-	PS2_Send_Cmd(SET_SAMPLE_RATE);//½øÈëÉèÖÃ²ÉÑùÂÊ
-    if(PS2_Get_Byte()!=0XFA)return 8;//´«ÊäÊ§°Ü
-	PS2_Send_Cmd(0X50);//²ÉÑùÂÊ80
-    if(PS2_Get_Byte()!=0XFA)return 9;//´«ÊäÊ§°Ü
-	//ĞòÁĞÍê³É		   
-	PS2_Send_Cmd(GET_DEVICE_ID); //¶ÁÈ¡ID
-    if(PS2_Get_Byte()!=0XFA)return 10;//´«ÊäÊ§°Ü
-	MOUSE_ID=PS2_Get_Byte();//µÃµ½MOUSE ID	 
+    u8 ret;		 
+    
+    PS2_Init();							     
+    delay_ms(800);            //ç­‰å¾…ä¸Šç”µå¤ä½å®Œæˆ		 	 
+    PS2_Status = CMDMODE;       //è¿›å…¥å‘½ä»¤æ¨¡å¼
+    ret = PS2_Send_Cmd(PS_RESET); //å¤ä½é¼ æ ‡		 
+    if(ret != 0)
+        return 1;
+    ret = PS2_Get_Byte();			  
+    if(ret != 0XFA)
+        return 2;
+    ret = 0;
+    while((PS2_Status & 0x80) == 0)//ç­‰å¾…å¤ä½å®Œæ¯• 
+    {
+        ret++;
+        delay_ms(10);      
+        if(ret>50)
+            return 3;
+    }
+    PS2_Get_Byte();//å¾—åˆ°0XAA
+    PS2_Get_Byte();//å¾—åˆ°ID 0X00
 
-	PS2_Send_Cmd(SET_SAMPLE_RATE);//ÔÙ´Î½øÈëÉèÖÃ²ÉÑùÂÊ
-    if(PS2_Get_Byte()!=0XFA)return 11;//´«ÊäÊ§°Ü
-	PS2_Send_Cmd(0X0A);//²ÉÑùÂÊ10
-    if(PS2_Get_Byte()!=0XFA)return 12;//´«ÊäÊ§°Ü		 
-	PS2_Send_Cmd(GET_DEVICE_ID); //¶ÁÈ¡ID
-    if(PS2_Get_Byte()!=0XFA)return 13;//´«ÊäÊ§°Ü
-	MOUSE_ID=PS2_Get_Byte();//µÃµ½MOUSE ID		 
+    //è¿›å…¥æ»šè½®æ¨¡å¼çš„ç‰¹æ®Šåˆå§‹åŒ–åºåˆ—
+    PS2_Send_Cmd(SET_SAMPLE_RATE);//è¿›å…¥è®¾ç½®é‡‡æ ·ç‡
+    if(PS2_Get_Byte() != 0XFA)
+        return 4;//ä¼ è¾“å¤±è´¥
+    PS2_Send_Cmd(0XC8);//é‡‡æ ·ç‡200
+    if(PS2_Get_Byte()!=0XFA)return 5;//ä¼ è¾“å¤±è´¥
+    PS2_Send_Cmd(SET_SAMPLE_RATE);//è¿›å…¥è®¾ç½®é‡‡æ ·ç‡
+    if(PS2_Get_Byte()!=0XFA)return 6;//ä¼ è¾“å¤±è´¥
+    PS2_Send_Cmd(0X64);//é‡‡æ ·ç‡100
+    if(PS2_Get_Byte()!=0XFA)return 7;//ä¼ è¾“å¤±è´¥
+    PS2_Send_Cmd(SET_SAMPLE_RATE);//è¿›å…¥è®¾ç½®é‡‡æ ·ç‡
+    if(PS2_Get_Byte()!=0XFA)return 8;//ä¼ è¾“å¤±è´¥
+    PS2_Send_Cmd(0X50);//é‡‡æ ·ç‡80
+    if(PS2_Get_Byte()!=0XFA)return 9;//ä¼ è¾“å¤±è´¥
+    //åºåˆ—å®Œæˆ		   
+    PS2_Send_Cmd(GET_DEVICE_ID); //è¯»å–ID
+    if(PS2_Get_Byte()!=0XFA)return 10;//ä¼ è¾“å¤±è´¥
+    MOUSE_ID=PS2_Get_Byte();//å¾—åˆ°MOUSE ID	 
 
-	PS2_Send_Cmd(SET_RESOLUTION);  //ÉèÖÃ·Ö±æÂÊ
-    if(PS2_Get_Byte()!=0XFA)return 14;//´«ÊäÊ§°Ü   
- 	PS2_Send_Cmd(0X03);//8µã/mm
-    if(PS2_Get_Byte()!=0XFA)return 15;//´«ÊäÊ§°Ü 
-	PS2_Send_Cmd(SET_SCALING11);   //ÉèÖÃËõ·Å±ÈÂÊÎª1:1
-    if(PS2_Get_Byte()!=0XFA)return 16;//´«ÊäÊ§°Ü 
-	  
- 	PS2_Send_Cmd(SET_SAMPLE_RATE); //ÉèÖÃ²ÉÑùÂÊ
-    if(PS2_Get_Byte()!=0XFA)return 17;//´«ÊäÊ§°Ü   
- 	PS2_Send_Cmd(0X28);//40
-    if(PS2_Get_Byte()!=0XFA)return 18;//´«ÊäÊ§°Ü 
-	   
-	PS2_Send_Cmd(EN_DATA_REPORT);   //Ê¹ÄÜÊı¾İ±¨¸æ
-    if(PS2_Get_Byte()!=0XFA)return 19;//´«ÊäÊ§°Ü
+    PS2_Send_Cmd(SET_SAMPLE_RATE);//å†æ¬¡è¿›å…¥è®¾ç½®é‡‡æ ·ç‡
+    if(PS2_Get_Byte()!=0XFA)return 11;//ä¼ è¾“å¤±è´¥
+    PS2_Send_Cmd(0X0A);//é‡‡æ ·ç‡10
+    if(PS2_Get_Byte()!=0XFA)return 12;//ä¼ è¾“å¤±è´¥		 
+    PS2_Send_Cmd(GET_DEVICE_ID); //è¯»å–ID
+    if(PS2_Get_Byte()!=0XFA)return 13;//ä¼ è¾“å¤±è´¥
+    MOUSE_ID=PS2_Get_Byte();//å¾—åˆ°MOUSE ID		 
 
-	PS2_Status=MOUSE;//½øÈëÊó±êÄ£Ê½
-	return 0;//ÎŞ´íÎó,³õÊ¼»¯³É¹¦   
+    PS2_Send_Cmd(SET_RESOLUTION);  //è®¾ç½®åˆ†è¾¨ç‡
+    if(PS2_Get_Byte()!=0XFA)return 14;//ä¼ è¾“å¤±è´¥   
+     PS2_Send_Cmd(0X03);//8ç‚¹/mm
+    if(PS2_Get_Byte()!=0XFA)return 15;//ä¼ è¾“å¤±è´¥ 
+    PS2_Send_Cmd(SET_SCALING11);   //è®¾ç½®ç¼©æ”¾æ¯”ç‡ä¸º1:1
+    if(PS2_Get_Byte()!=0XFA)return 16;//ä¼ è¾“å¤±è´¥ 
+      
+     PS2_Send_Cmd(SET_SAMPLE_RATE); //è®¾ç½®é‡‡æ ·ç‡
+    if(PS2_Get_Byte()!=0XFA)return 17;//ä¼ è¾“å¤±è´¥   
+     PS2_Send_Cmd(0X28);//40
+    if(PS2_Get_Byte()!=0XFA)return 18;//ä¼ è¾“å¤±è´¥ 
+       
+    PS2_Send_Cmd(EN_DATA_REPORT);   //ä½¿èƒ½æ•°æ®æŠ¥å‘Š
+    if(PS2_Get_Byte()!=0XFA)return 19;//ä¼ è¾“å¤±è´¥
+
+    PS2_Status = MOUSE;//è¿›å…¥é¼ æ ‡æ¨¡å¼
+    return 0;//æ— é”™è¯¯,åˆå§‹åŒ–æˆåŠŸ   
 } 
 
 

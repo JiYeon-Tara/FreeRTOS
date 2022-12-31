@@ -15,8 +15,8 @@ typedef struct
 	u8  dir;			// 横屏还是竖屏控制：0，竖屏；1，横屏; 横屏其实就是调转 x, y 坐标	
 	u16	wramcmd;		// 开始写gram指令
 	u16 setxcmd;		// 设置x坐标指令
-	u16  setycmd;		// 设置y坐标指令	 
-}_lcd_dev; 	  
+	u16 setycmd;		// 设置y坐标指令	 
+} _lcd_dev; 	  
 
 //LCD参数
 extern _lcd_dev lcddev;	//管理LCD重要参数

@@ -119,7 +119,7 @@ void GPIO_NVIC_Config(u8 GPIOx, u8 BITx, u8 TRIM)
     EXTI->IMR |= 1 << BITx;//  开启line BITx上的中断
     //EXTI->EMR |= 1<<BITx;//不屏蔽line BITx上的事件 (如果不屏蔽这句,在硬件上是可以的,但是在软件仿真的时候无法进入中断!)
 
-     if(TRIM & 0x01) // 0000 0001
+    if(TRIM & 0x01) // 0000 0001
         EXTI->FTSR |= 1 << BITx;//line BITx上事件下降沿触发
     if(TRIM & 0x02) // 0000 0010
         EXTI->RTSR |= 1 << BITx;//line BITx上事件上升降沿触发
@@ -214,12 +214,13 @@ __asm void MSR_MSP(u32 addr)
  */
 void Sys_Standby(void)
 {
-    SCB->SCR |= (1 << 2);			// 使能SLEEPDEEP位 (SYS->CTRL), 《cortex-M3权威指南》
-    RCC->APB1ENR |= (1 << 28);      //使能电源时钟	    
-    PWR->CSR |= (1 << 8);           //设置WKUP用于唤醒
-    PWR->CR |= (1 << 2);            //清除Wake-up 标志
-    PWR->CR |= (1 << 1);            //PDDS置位		  
-    WFI_SET();				 		//执行WFI指令
+    printf("sys standby mode\r\n");
+    SCB->SCR |= (1 << 2);			// 使能 SLEEPDEEP 位 (SYS->CTRL), 《cortex-M3权威指南》
+    RCC->APB1ENR |= (1 << 28);      // 使能电源时钟	    
+    PWR->CSR |= (1 << 8);           // 设置 WKUP 用于唤醒
+    PWR->CR |= (1 << 2);            // 清除 Wake-up 标志
+    PWR->CR |= (1 << 1);            // PDDS置位	进入 deepsleep mode / stop mode
+    WFI_SET();				 		// 执行WFI指令
 
     return;		 
 }
@@ -272,12 +273,12 @@ void Stm32_Clock_Init(u8 PLL)
      RCC->CR |= 0x00010000;  //外部高速时钟使能HSEON, 1 << 16, HSI(RC) ——> HSE(crystal)
     while(!(RCC->CR >> 17))	//HSE RDY flag : bit[17], RCC & (1 << 17)
         ;//等待外部时钟就绪
-    RCC->CFGR = 0X00000400; //APB1=DIV2; APB2=DIV1(一分频 = 不分频); AHB=DIV1;
+    RCC->CFGR = 0X00000400;   //APB1=DIV2(二分频); APB2=DIV1(一分频 = 不分频); AHB=DIV1;
     PLL -= 2;				  //抵消2个单位（因为是从2开始的，设置0就是2）???
-    RCC->CFGR |= PLL << 18;   //设置PLL值 2~16
+    RCC->CFGR |= PLL << 18;   //设置 PLL 值 2~16, 倍频数
     RCC->CFGR |= 1 << 16;	  //PLLSRC, 1, HSE 作为时钟源 
-    FLASH->ACR |= 0x32;	  //FLASH 2个延时周期
-    RCC->CR |= 0x01000000;  //PLLON
+    FLASH->ACR |= 0x32;	      //FLASH 2个延时周期
+    RCC->CR |= 0x01000000;    //PLLON
     while(!(RCC->CR>>25))
         ;//等待PLL锁定
     RCC->CFGR |= 0x00000002;//PLL作为系统时钟	 

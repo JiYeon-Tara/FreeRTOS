@@ -1,57 +1,51 @@
 #ifndef __MOUSE_H
 #define __MOUSE_H	 
 #include "ps2.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEK MiniSTM32¿ª·¢°å
-//Êó±ê Çı¶¯´úÂë	   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//ĞŞ¸ÄÈÕÆÚ:2014/3/12
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾ 2009-2019
-//All rights reserved									  
-//////////////////////////////////////////////////////////////////////////////////
 
-//HOST->DEVICEµÄÃüÁî¼¯				  				   
-#define PS_RESET    		0XFF //¸´Î»ÃüÁî »ØÓ¦0XFA
-#define RESEND	     		0XFE //ÔÙ´Î·¢ËÍ
-#define SET_DEFAULT	 		0XF6 //Ê¹ÓÃÄ¬ÈÏÉèÖÃ »ØÓ¦0XFA
-#define DIS_DATA_REPORT   	0XF5 //½ûÓÃÊı¾İ±¨¸æ »ØÓ¦0XFA
-#define EN_DATA_REPORT    	0XF4 //Ê¹ÄÜÊı¾İ±¨¸æ »ØÓ¦0XFA
-#define SET_SAMPLE_RATE		0XF3 //ÉèÖÃ²ÉÑùËÙÂÊ »ØÓ¦0XFA
-#define GET_DEVICE_ID       0XF2 //µÃµ½Éè±¸ID   »ØÓ¦0XFA+ID
-#define SET_REMOTE_MODE     0XF0 //ÉèÖÃµ½REMOTEÄ£Ê½ »ØÓ¦OXFA
-#define SET_WRAP_MODE       0XEE //ÉèÖÃµ½WRAPÄ£Ê½ »ØÓ¦0XFA
-#define RST_WRAP_MODE       0XEC //»Øµ½WRAPÖ®Ç°µÄÄ£Ê½ »ØÓ¦0XFA
-#define READ_DATA           0XEB //¶ÁÈ¡Êı¾İ »ØÓ¦0XFA+Î»ÒÆÊı¾İ°ü
-#define SET_STREAM_MODE     0XEA //ÉèÖÃµ½STREAMÄ£Ê½ »ØÓ¦0XFA
-#define STATUS_REQUEST      0XE9 //ÇëÇóµÃµ½×´Ì¬ »ØÓ¦0XFA+3¸ö×Ö½Ú
-#define SET_RESOLUTION      0XE8 //ÉèÖÃ·Ö±æÂÊ »ØÓ¦OXFA+¶ÁÈ¡1¸ö×Ö½Ú+Ó¦´ø0XFA
-#define SET_SCALING21       0XE7 //ÉèÖÃËõ·Å±ÈÂÊÎª2:1 »ØÓ¦0XFA
-#define SET_SCALING11       0XE6 //ÉèÖÃËõ·Å±ÈÂÊÎª1:1 »ØÓ¦0XFA
-//DEVICE->HOSTµÄÖ¸Áî
-#define ERROR	     		0XFC //´íÎó
-//#define RESEND	     		0XFE //ÔÙ´Î·¢ËÍ
 
-#define LEFT_DOWN  0X01//×ó¼ü°´ÏÂ
-#define MID_DOWN   0X04//ÖĞ¼ä¼ü°´ÏÂ
-#define RIGHT_DOWN 0X02//ÓÒ¼ü°´ÏÂ
-//Êó±ê½á¹¹Ìå
+
+//HOST->DEVICEçš„å‘½ä»¤é›†
+#define PS_RESET    		0XFF //å¤ä½å‘½ä»¤ å›åº”0XFA
+#define RESEND	     		0XFE //å†æ¬¡å‘é€
+#define SET_DEFAULT	 		0XF6 //ä½¿ç”¨é»˜è®¤è®¾ç½® å›åº”0XFA
+#define DIS_DATA_REPORT   	0XF5 //ç¦ç”¨æ•°æ®æŠ¥å‘Š å›åº”0XFA
+#define EN_DATA_REPORT    	0XF4 //ä½¿èƒ½æ•°æ®æŠ¥å‘Š å›åº”0XFA
+#define SET_SAMPLE_RATE		0XF3 //è®¾ç½®é‡‡æ ·é€Ÿç‡ å›åº”0XFA
+#define GET_DEVICE_ID       0XF2 //å¾—åˆ°è®¾å¤‡ID   å›åº”0XFA+ID
+#define SET_REMOTE_MODE     0XF0 //è®¾ç½®åˆ°REMOTEæ¨¡å¼ å›åº”OXFA
+#define SET_WRAP_MODE       0XEE //è®¾ç½®åˆ°WRAPæ¨¡å¼ å›åº”0XFA
+#define RST_WRAP_MODE       0XEC //å›åˆ°WRAPä¹‹å‰çš„æ¨¡å¼ å›åº”0XFA
+#define READ_DATA           0XEB //è¯»å–æ•°æ® å›åº”0XFA+ä½ç§»æ•°æ®åŒ…
+#define SET_STREAM_MODE     0XEA //è®¾ç½®åˆ°STREAMæ¨¡å¼ å›åº”0XFA
+#define STATUS_REQUEST      0XE9 //è¯·æ±‚å¾—åˆ°çŠ¶æ€ å›åº”0XFA+3ä¸ªå­—èŠ‚
+#define SET_RESOLUTION      0XE8 //è®¾ç½®åˆ†è¾¨ç‡ å›åº”OXFA+è¯»å–1ä¸ªå­—èŠ‚+åº”å¸¦0XFA
+#define SET_SCALING21       0XE7 //è®¾ç½®ç¼©æ”¾æ¯”ç‡ä¸º2:1 å›åº”0XFA
+#define SET_SCALING11       0XE6 //è®¾ç½®ç¼©æ”¾æ¯”ç‡ä¸º1:1 å›åº”0XFA
+//DEVICE->HOSTçš„æŒ‡ä»¤
+#define ERROR	     		0XFC //é”™è¯¯
+//#define RESEND	     		0XFE //å†æ¬¡å‘é€
+
+#define LEFT_DOWN  0X01//å·¦é”®æŒ‰ä¸‹
+#define MID_DOWN   0X04//ä¸­é—´é”®æŒ‰ä¸‹
+#define RIGHT_DOWN 0X02//å³é”®æŒ‰ä¸‹
+
+//é¼ æ ‡ç»“æ„ä½“
 typedef struct
 {
-	short x_pos;//ºá×ø±ê
-	short y_pos;//×İ×ø±ê
-	short z_pos;//¹öÂÖ×ø±ê
-	u8  bt_mask;//°´¼ü±êÊ¶,bit2ÖĞ¼ä¼ü;bit1,ÓÒ¼ü;bit0,×ó¼ü
+    short x_pos;//æ¨ªåæ ‡
+    short y_pos;//çºµåæ ‡
+    short z_pos;//æ»šè½®åæ ‡
+    u8  bt_mask;//æŒ‰é”®æ ‡è¯†,bit2ä¸­é—´é”®;bit1,å³é”®;bit0,å·¦é”®
 } PS2_Mouse;
+
 extern PS2_Mouse MouseX;	   
-extern u8 MOUSE_ID;//Êó±êID,0X00,±íÊ¾±ê×¼Êó±ê(3×Ö½Ú);0X03±íÊ¾À©Õ¹Êó±ê(4×Ö½Ú)
+extern u8 MOUSE_ID;//é¼ æ ‡ID,0X00,è¡¨ç¤ºæ ‡å‡†é¼ æ ‡(3å­—èŠ‚);0X03è¡¨ç¤ºæ‰©å±•é¼ æ ‡(4å­—èŠ‚)
+extern u8 g_mouse_init_flag;
+
 
 u8 Init_Mouse(void); 
 void Mouse_Data_Pro(void);
-	   	 			    
+                            
 #endif
 
 

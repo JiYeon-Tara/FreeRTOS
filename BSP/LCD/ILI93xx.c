@@ -4,6 +4,8 @@
 #include "usart.h"
 #include "delay.h"	 
 
+#if LCD_SCREEN_ENABLE
+
 /*************
  * MACRO
  *************/
@@ -713,7 +715,7 @@ void LCD_Init(void)
 			}
  		}  	
 	}
- 	printf("LCD ID:%x\r\n",lcddev.id); //打印LCD ID  
+ 	printf("LCD ID:0x%04x\r\n",lcddev.id); //打印LCD ID  
 	if(lcddev.id==0X9341)	//9341初始化
 	{	 
 		LCD_WR_REG(0xCF);  
@@ -808,7 +810,8 @@ void LCD_Init(void)
 		LCD_WR_REG(0x11); //Exit Sleep
 		delay_ms(120);
 		LCD_WR_REG(0x29); //display on	
-	}else if(lcddev.id==0x6804) //6804初始化
+	}
+	else if(lcddev.id==0x6804) //6804初始化
 	{
 		LCD_WR_REG(0X11);
 		delay_ms(20);
@@ -874,7 +877,8 @@ void LCD_Init(void)
 		LCD_WR_DATAX(0XDF);
 		delay_ms(120);
 		LCD_WR_REG(0X29); 	 
- 	}else if(lcddev.id==0x5310)
+ 	}
+	else if(lcddev.id==0x5310)
 	{  
 		LCD_WR_REG(0xED);
 		LCD_WR_DATAX(0x01);
@@ -1553,7 +1557,8 @@ void LCD_Init(void)
 		LCD_WR_REG(0x55);
 		LCD_WR_DATAX(0x82);
 		LCD_WR_REG(0x2c); 
-	}else if(lcddev.id==0x5510)
+	}
+	else if(lcddev.id==0x5510)
 	{
 		LCD_WriteReg(0xF000,0x55);
 		LCD_WriteReg(0xF001,0xAA);
@@ -2965,29 +2970,5 @@ void LCD_ShowString(u16 x, u16 y, u16 width, u16 height, u8 size, u8 *p)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif // LCD_SCREEN_ENABLE
 

@@ -18,34 +18,35 @@
 #define LED_TEST_ENBLE          0
 
 // KEY
-#define KEY_ENABLE              1
+#define KEY_ENABLE              0
 // #define KEY_TEST_ENABLE         1
 #define LOOP_KEY_ENABLE         0                     // 默认模式
 #define LOOP_KEY_TEST_ENABLE    0
-#define INT_KEY_ENABLE          1
-#define INT_KEY_TEST_ENABLE     1
+#define INT_KEY_ENABLE          0
+#define INT_KEY_TEST_ENABLE     0
 
 // UART
 #define USART1_ENABLE           1
 #define UART1_TEST_ENABLE       0
 
-// watch dog
-#define IWATCH_DOG_TEST_ENABLE  0
-#define WWATCH_DOT_TEST_ENABLE  1
+
 // timer
 #define TIMER_TEST_ENABLE       0
 
 // OLED & LCD
 #define OLED_SCREEN_ENABLE      0
 #define OLED_SCREEN_TEST_ENABLE 0
+
 #define LCD_SCREEN_ENABLE       1
-#define LCD_SCREEN_TEST_ENABLE  0
+#define LCD_SCREEN_TEST_ENABLE  1
 
 // EEPROM
-#define EEPROM_TEST_ENABLE      0
+#define EEPROM_ENABLE           1
+#define EEPROM_TEST_ENABLE      1
 
-// flash ROM
-#define FLASH_TEST_ENABLE       0
+// external flash ROM
+#define FLASH_ENABLE            1
+#define FLASH_TEST_ENABLE       1
 
 // TP
 #define TP_ENABLE               1
@@ -56,8 +57,16 @@
 #define REMOTE_CONTROL_TEST_ENABLE      0
 
 // temperature
-#define TEMP_ENABLE             0
+#define TEMP_ENABLE             1
 #define TEMP_TEST_ENABLE        0
+
+// mouse
+#define MOUSE_ENABLE            0
+#define MOUSE_TEST_ENABLE       0
+
+// sdcard
+#define SD_CARD_ENABLE          1
+#define SD_CARD_TEST_ENABLE     1
 
 
 #endif

@@ -1,8 +1,11 @@
 #include "key_stm.h"
 #include "delay.h"
 #include "bsp_config.h"
+#include "board_config.h"
 #include "exti.h"
-
+#if DLPS_ENABLE
+#include "dlps.h"
+#endif
 
 // WK_UP, PA0
 // KEY0, PC5
@@ -23,9 +26,13 @@ void KEY_Init(void)
     //TODO:
     //PA0 - WK_UP 按键没有问题
     // WK_UP 按键和红外共用一个 GPIO, 需要拔掉跳线帽
+#if DLPS_ENABLE
+    WKUP_Init();
+#else
     GPIOA->CRL &= 0XFFFFFFF0;	// PA0 设置成输入, 模拟输入模式	  
     GPIOA->CRL |= 0X00000008;   // 上拉 / 下拉输入模式
-    GPIOA->ODR &= 0xFFFFFFFF;   // 设置下拉， GPIOA->ODR &= 0xFFFFFFF7         
+    GPIOA->ODR &= 0xFFFFFFFF;   // 设置下拉， GPIOA->ODR &= 0xFFFFFFF7   
+#endif // DLPS_ENABLE
 
     GPIOA->CRH &= 0X0FFFFFFF;	// PA15设置成输入	  
     GPIOA->CRH |= 0X80000000; 	// 上拉 / 下拉输入模式		 
@@ -43,6 +50,7 @@ void KEY_Init(void)
     EXTI_Init();
 #endif
 
+    printf("key init\r\n");
     return;
 } 
 

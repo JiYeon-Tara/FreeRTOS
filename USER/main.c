@@ -10,40 +10,8 @@ int main()
 
     bsp_init();
     service_init();
-    printf("\r\n\r\n\r\n\r\n\r\nSTM32F103RCT6 Intialized.\r\n");
+    printf("\r\n\r\nSTM32F103RCT6 Intialized.\r\n");
 
-// #if LED_TEST_ENABLE
-//     led_test();
-// #endif
-
-// #if UART1_TEST_ENABLE
-//     usart_test();
-// #endif
-
-// #if WATCH_DOG_TEST_ENABLE
-//     watch_dog_test();
-// #endif
-
-// #if LCD_SCREEN_TEST
-//     lcd_screen_test();
-// #endif
-
-// #if RTC_TEST_ENABLE
-//     rtc_test();
-// #endif
-
-// #if DLPS_TEST_ENABLE
-//     dlps_test();
-// #endif
-
-// #if ADC_TEST_ENABLE
-//     ADC_test();
-// #endif
-
-// #if DMA_TEST_ENABLE
-//     dma_test();
-// #endif
-    
     // loop
     while(1){
 #if AT_CMD_TEST_ENABLE
@@ -61,10 +29,21 @@ int main()
 #if INT_KEY_TEST_ENABLE
 #endif
 
-#if RTC_ENABLE && LCD_SCREEN_ENABLE
-        // sprintf((char*)tempArr, "Time:%d-%d-%d %d:%d:%d  Week:%d", calendar.w_year, calendar.w_month,calendar.w_date, \
-        //                                             calendar.hour, calendar.min, calendar.sec, calendar.week);
-        // LCD_ShowString(0, 32, 240, 16, 16, tempArr);
+#if IWATCH_DOG_TEST_ENABLE
+        // feed watch doe
+        IWDG_Feed();           
+#endif
+
+#if TIMER1_PWM_TEST_ENABLE
+        timer1_pwm_test();
+#endif
+
+#if TIMER2_INPUT_TEST_ENABLE
+        timer2_cap_test();
+#endif
+
+#if RTC_TEST_ENABLE
+        rtc_update_test();
 #endif
         
         // ADC
@@ -83,11 +62,22 @@ int main()
 #endif
 
 #if EEPROM_TEST_ENABLE
-        eeprom_test();
+        // eeprom_test();
 #endif
 
 #if FLASH_TEST_ENABLE
-        flash_test();
+        // flash_test();
+#endif
+
+#if TP_TEST_ENABLE
+        // if(tp_dev.touchtype != 0xFF)
+        //     LCD_ShowString(60, 130, 200, 16, 16, "Please start tp adjust process");
+        if(tp_dev.touchtype & 0x80){ // 电容屏
+            ctp_test();
+        }
+        else{
+            rtp_test();
+        }
 #endif
 
 #if REMOTE_CONTROL_TEST_ENABLE
@@ -96,16 +86,21 @@ int main()
 
 #if TEMP_TEST_ENABLE
         temperature = DS18B20_Get_Temp();
-        printf("temperature:%d\n", temperature);
+        printf("DS18B20 temperature:%d oC\n", temperature / 10);
         delay_ms(1000);
 #endif
 
-#if INNER_FLASH_TEST_ENABLE
-        inner_flash_test();
+#if MOUSE_TEST_ENABLE
+        mouse_test();
 #endif
 
-#if MALLOC_TEST_ENABLE
-        memmang_test();
+#if INNER_FLASH_TEST_ENABLE
+        // inner_flash_test();
+#endif
+
+#if MEMORY_MANAGE_ENABLE
+        // memmang_test(1);
+        // memmang_test(0);
 #endif
     }
     

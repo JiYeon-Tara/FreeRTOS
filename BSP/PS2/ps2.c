@@ -1,228 +1,265 @@
 #include "ps2.h" 
 #include "usart.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEK MiniSTM32¿ª·¢°å
-//PS2 Çı¶¯´úÂë	   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//ĞŞ¸ÄÈÕÆÚ:2014/3/12
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾ 2009-2019
-//All rights reserved									  
-//////////////////////////////////////////////////////////////////////////////////	
-//PS2²úÉúµÄÊ±ÖÓÆµÂÊÔÚ10~20Khz(×î´ó33K)
-//¸ß/µÍµçÆ½µÄ³ÖĞøÊ±¼äÎª25~50usÖ®¼ä. 
 
-//PS2_Statusµ±Ç°×´Ì¬±êÖ¾
-//[7]:½ÓÊÕµ½Ò»´ÎÊı¾İ;[6]:Ğ£Ñé´íÎó;[5:4]:µ±Ç°¹¤×÷µÄÄ£Ê½;[3:0]:ÊÕµ½µÄÊı¾İ³¤¶È;		   
-u8 PS2_Status=CMDMODE; //Ä¬ÈÏÎªÃüÁîÄ£Ê½ 
-u8 PS2_DATA_BUF[16];   //ps2Êı¾İ»º´æÇø
 
-//Î»¼ÆÊıÆ÷
-u8 BIT_Count=0;
-//ÖĞ¶Ï15~10´¦Àíº¯Êı
-//Ã¿11¸öbit,Îª½ÓÊÕ1¸ö×Ö½Ú
-//Ã¿½ÓÊÕÍêÒ»¸ö°ü(11Î»)ºó,Éè±¸ÖÁÉÙ»áµÈ´ı50msÔÙ·¢ËÍÏÂÒ»¸ö°ü
-//Ö»×öÁËÊó±ê²¿·Ö,¼üÅÌ²¿·ÖÔİÊ±Î´¼ÓÈë
-void EXTI15_10_IRQHandler(void)
-{	  	 
-	static u8 tempdata=0;
-	static u8 parity=0;  	   
-	if(EXTI->PR&(1<<15))//ÖĞ¶Ï15²úÉúÁËÏàÓ¦µÄÖĞ¶Ï
-	{
-		EXTI->PR=1<<15;  //Çå³ıLINE15ÉÏµÄÖĞ¶Ï±êÖ¾Î»
-		if(BIT_Count==0)
-		{
-			parity=0;
-			tempdata=0;
-		}
-		BIT_Count++;    
-		if(BIT_Count>1&&BIT_Count<10)//ÕâÀï»ñµÃÊı¾İ
-		{	  
-			tempdata>>=1;
-			if(PS2_SDA)
-			{
-				tempdata|=0x80;
-				parity++;//¼ÇÂ¼1µÄ¸öÊı
-			}   
-		}else if(BIT_Count==10)//µÃµ½Ğ£ÑéÎ»
-		{
-			if(PS2_SDA)parity|=0x80;//Ğ£ÑéÎ»Îª1
-		}	   
-		if(BIT_Count==11)//½ÓÊÕµ½1¸ö×Ö½ÚµÄÊı¾İÁË
-		{
- 			BIT_Count=parity&0x7f;//È¡µÃ1µÄ¸öÊı	  
-			if(((BIT_Count%2==0)&&(parity&0x80))||((BIT_Count%2==1)&&(parity&0x80)==0))//ÆæÅ¼Ğ£ÑéOK
-			{					    
-				//PS2_Status|=1<<7;//±ê¼ÇµÃµ½Êı¾İ	   
-				BIT_Count=PS2_Status&0x0f;		
-				PS2_DATA_BUF[BIT_Count]=tempdata;//±£´æÊı¾İ
-				if(BIT_Count<15)PS2_Status++;    //Êı¾İ³¤¶È¼Ó1
-				BIT_Count=PS2_Status&0x30;	     //µÃµ½Ä£Ê½	  
-				switch(BIT_Count)
-				{
-					case CMDMODE://ÃüÁîÄ£Ê½ÏÂ,Ã¿ÊÕµ½Ò»¸ö×Ö½Ú¶¼»á²úÉú½ÓÊÕÍê³É
-						PS2_Dis_Data_Report();//½ûÖ¹Êı¾İ´«Êä
-						PS2_Status|=1<<7; //±ê¼ÇµÃµ½Êı¾İ
-						break;
-					case KEYBOARD:
-						break;
-					case MOUSE:
-						if(MOUSE_ID==0)//±ê×¼Êó±ê,3¸ö×Ö½Ú
-						{
-							if((PS2_Status&0x0f)==3)
-							{
-								PS2_Status|=1<<7;//±ê¼ÇµÃµ½Êı¾İ
-								PS2_Dis_Data_Report();//½ûÖ¹Êı¾İ´«Êä
-							}
-						}else if(MOUSE_ID==3)//À©Õ¹Êó±ê,4¸ö×Ö½Ú
-						{
-							if((PS2_Status&0x0f)==4)
-							{
-								PS2_Status|=1<<7;//±ê¼ÇµÃµ½Êı¾İ
-								PS2_Dis_Data_Report();//½ûÖ¹Êı¾İ´«Êä
-							}
-						}	 
-						break;
-				}		   		 
-			}else
-			{
-				PS2_Status|=1<<6;//±ê¼ÇĞ£Ñé´íÎó
-				PS2_Status&=0xf0;//Çå³ı½ÓÊÕÊı¾İ¼ÆÊıÆ÷
-			}
-			BIT_Count=0;
-		} 	 	  
-	}			  
-}
-//½ûÖ¹Êı¾İ´«Êä
-//°ÑÊ±ÖÓÏßÀ­µÍ,½ûÖ¹Êı¾İ´«Êä	   
+//PS2äº§ç”Ÿçš„æ—¶é’Ÿé¢‘ç‡åœ¨10~20Khz(æœ€å¤§33K)
+//é«˜/ä½ç”µå¹³çš„æŒç»­æ—¶é—´ä¸º25~50usä¹‹é—´. 
+
+// PS2_Statuså½“å‰çŠ¶æ€æ ‡å¿—ä½
+// bit[7]:æ¥æ”¶åˆ°ä¸€æ¬¡æ•°æ®;
+// bit[6]:æ ¡éªŒé”™è¯¯;
+// bit[5:4]:å½“å‰å·¥ä½œçš„æ¨¡å¼;
+// bit[3:0]:æ”¶åˆ°çš„æ•°æ®é•¿åº¦, 0 - 16;		   
+u8 PS2_Status = CMDMODE; //é»˜è®¤ä¸ºå‘½ä»¤æ¨¡å¼ 
+u8 PS2_DATA_BUF[16];   //ps2æ•°æ®ç¼“å­˜åŒº
+
+//ä½è®¡æ•°å™¨
+u8 BIT_Count = 0;
+
+//ä¸­æ–­ 15~10 å¤„ç†å‡½æ•°
+//æ¯ 11 ä¸ªbit,ä¸ºæ¥æ”¶ 1 ä¸ªå­—èŠ‚
+//æ¯æ¥æ”¶å®Œä¸€ä¸ªåŒ…(11ä½)å,è®¾å¤‡è‡³å°‘ä¼šç­‰å¾… 50ms å†å‘é€ä¸‹ä¸€ä¸ªåŒ…
+//åªåšäº†é¼ æ ‡éƒ¨åˆ†,é”®ç›˜éƒ¨åˆ†æš‚æ—¶æœªåŠ å…¥
+// void EXTI15_10_IRQHandler(void)
+// {
+//     static u8 tempdata = 0;
+//     static u8 parity = 0; // ç”¨äºå¥‡å¶æ ¡éªŒ
+
+//     if(EXTI->PR & (1 << 15)){ //ä¸­æ–­15äº§ç”Ÿäº†ç›¸åº”çš„ä¸­æ–­
+//         EXTI->PR = 1 << 15;  //æ¸…é™¤LINE15ä¸Šçš„ä¸­æ–­æ ‡å¿—ä½
+//         if(BIT_Count == 0){
+//             parity = 0;
+//             tempdata = 0;
+//         }
+
+//         BIT_Count++;    
+//         if(BIT_Count > 1 && BIT_Count < 10){ //è¿™é‡Œè·å¾—æ•°æ®  
+//             tempdata >>= 1;
+//             if(PS2_SDA){
+//                 tempdata |= 0x80;
+//                 parity++;//è®°å½•1çš„ä¸ªæ•°
+//             }
+//         }
+//         else if(BIT_Count == 10){ //å¾—åˆ°æ ¡éªŒä½
+//             if(PS2_SDA)
+//                 parity |= 0x80;//æ ¡éªŒä½ä¸º1
+//         }	
+
+//         if(BIT_Count == 11) {//æ¥æ”¶åˆ°1ä¸ªå­—èŠ‚çš„æ•°æ®äº†
+//              BIT_Count = parity & 0x7f;//å–å¾—1çš„ä¸ªæ•°	  
+//             if(((BIT_Count % 2 == 0) && (parity & 0x80)) || ((BIT_Count % 2 == 1) && (parity & 0x80) == 0))//å¥‡å¶æ ¡éªŒOK
+//             {					    
+//                 //PS2_Status|=1<<7;//æ ‡è®°å¾—åˆ°æ•°æ®	   
+//                 BIT_Count = PS2_Status & 0x0f;		
+//                 PS2_DATA_BUF[BIT_Count] = tempdata;//ä¿å­˜æ•°æ®
+//                 if(BIT_Count < 15)
+//                     PS2_Status++;    //æ•°æ®é•¿åº¦åŠ 1
+//                 BIT_Count = PS2_Status & 0x30;	     //å¾—åˆ°æ¨¡å¼	
+
+//                 switch(BIT_Count){
+//                 case CMDMODE://å‘½ä»¤æ¨¡å¼ä¸‹,æ¯æ”¶åˆ°ä¸€ä¸ªå­—èŠ‚éƒ½ä¼šäº§ç”Ÿæ¥æ”¶å®Œæˆ
+//                     PS2_Dis_Data_Report();//ç¦æ­¢æ•°æ®ä¼ è¾“
+//                     PS2_Status |= 1 << 7; //æ ‡è®°å¾—åˆ°æ•°æ®
+//                 break;
+//                 case KEYBOARD:
+//                 break;
+//                 case MOUSE:
+//                     if(MOUSE_ID == 0){ //æ ‡å‡†é¼ æ ‡,3ä¸ªå­—èŠ‚
+//                         if((PS2_Status & 0x0f) == 3){
+//                             PS2_Status |= 1 << 7;//æ ‡è®°å¾—åˆ°æ•°æ®
+//                             PS2_Dis_Data_Report();//ç¦æ­¢æ•°æ®ä¼ è¾“
+//                         }
+//                     }
+//                     else if(MOUSE_ID == 3){ //æ‰©å±•é¼ æ ‡,4ä¸ªå­—èŠ‚
+//                         if((PS2_Status & 0x0f) == 4){
+//                             PS2_Status |= 1 << 7;//æ ‡è®°å¾—åˆ°æ•°æ®
+//                             PS2_Dis_Data_Report();//ç¦æ­¢æ•°æ®ä¼ è¾“
+//                         }
+//                     }	 
+//                 break;
+//                 }		   		 
+//             }
+//             else{ // æ ¡éªŒå¤±è´¥
+//                 PS2_Status |= 1 << 6;//æ ‡è®°æ ¡éªŒé”™è¯¯
+//                 PS2_Status &= 0xf0;//æ¸…é™¤æ¥æ”¶æ•°æ®è®¡æ•°å™¨
+//             }
+//             BIT_Count = 0;
+//         } 	 	  
+//     }			  
+// }
+
+/**
+ * @brief ç¦æ­¢æ•°æ®ä¼ è¾“
+ *        æŠŠæ—¶é’Ÿçº¿æ‹‰ä½,ç¦æ­¢æ•°æ®ä¼ è¾“	   
+ * 
+ */
 void PS2_Dis_Data_Report(void)
 {
-	PS2_Set_Int(0);   //¹Ø±ÕÖĞ¶Ï
-	PS2_SET_SCL_OUT();//ÉèÖÃSCLÎªÊä³ö
-	PS2_SCL_OUT=0;    //ÒÖÖÆ´«Êä
-}
-//Ê¹ÄÜÊı¾İ´«Êä
-//ÊÍ·ÅÊ±ÖÓÏß		    
-void PS2_En_Data_Report(void)
-{
-	PS2_SET_SCL_IN(); //ÉèÖÃSCLÎªÊäÈë
-	PS2_SET_SDA_IN(); //SDA IN
-	PS2_SCL_OUT=1;    //ÉÏÀ­   
-	PS2_SDA_OUT=1; 
-	PS2_Set_Int(1);   //¿ªÆôÖĞ¶Ï
+    PS2_Set_Int(0); //å…³é—­ä¸­æ–­
+    PS2_SET_SCL_OUT();//è®¾ç½®SCLä¸ºè¾“å‡º
+    PS2_SCL_OUT = 0; //æŠ‘åˆ¶ä¼ è¾“
 }
 
-//PS2ÖĞ¶ÏÆÁ±ÎÉèÖÃ
-//en:1£¬¿ªÆô;0£¬¹Ø±Õ;	 
+/**
+ * @brief ä½¿èƒ½æ•°æ®ä¼ è¾“
+ *        é‡Šæ”¾æ—¶é’Ÿçº¿	
+ * 
+ * @return * void 
+ */
+void PS2_En_Data_Report(void)
+{
+    PS2_SET_SCL_IN(); //è®¾ç½®SCLä¸ºè¾“å…¥
+    PS2_SET_SDA_IN(); //SDA IN
+    PS2_SCL_OUT = 1; //ä¸Šæ‹‰   
+    PS2_SDA_OUT = 1; 
+    PS2_Set_Int(1); //å¼€å¯ä¸­æ–­
+}
+
+/**
+ * @brief PS2ä¸­æ–­å±è”½è®¾ç½®
+ * 
+ * @param en 1ï¼Œå¼€å¯;0ï¼Œå…³é—­;
+ */
 void PS2_Set_Int(u8 en)
 {
-	EXTI->PR=1<<15;  //Çå³ıLINE15ÉÏµÄÖĞ¶Ï±êÖ¾Î»
-	if(en)EXTI->IMR|=1<<15;//²»ÆÁ±Îline15ÉÏµÄÖĞ¶Ï
-    else EXTI->IMR&=~(1<<15);//ÆÁ±Îline15ÉÏµÄÖĞ¶Ï   
+    EXTI->PR = 1 << 15;  //æ¸…é™¤LINE15ä¸Šçš„ä¸­æ–­æ ‡å¿—ä½
+    if(en)
+        EXTI->IMR |= 1 << 15;//ä¸å±è”½line15ä¸Šçš„ä¸­æ–­
+    else 
+        EXTI->IMR &= ~(1 << 15);//å±è”½line15ä¸Šçš„ä¸­æ–­   
 }
-//µÈ´ıPS2Ê±ÖÓÏßsta×´Ì¬¸Ä±ä
-//sta:1£¬µÈ´ı±äÎª1;0£¬µÈ´ı±äÎª0;
-//·µ»ØÖµ:0£¬Ê±ÖÓÏß±ä³ÉÁËsta;1£¬³¬Ê±Òç³ö;	 
+
+
+/**
+ * @brief ç­‰å¾…PS2æ—¶é’Ÿçº¿staçŠ¶æ€æ”¹å˜
+ *        PS2 æ—¶é’Ÿæ˜¯ç”±é¼ æ ‡/é”®ç›˜äº§ç”Ÿ
+ * 
+ * @param sta 1ï¼Œç­‰å¾…å˜ä¸º1;0ï¼Œç­‰å¾…å˜ä¸º0;
+ * @return * u8 0ï¼Œæ—¶é’Ÿçº¿å˜æˆäº†sta; 1ï¼Œè¶…æ—¶æº¢å‡º;
+ */
 u8 Wait_PS2_Scl(u8 sta)
 {
-	u16 t=0;
-	sta=!sta;
-	while(PS2_SCL==sta)
-	{
-		delay_us(1);
-		t++;
-		if(t>16000)return 1;//Ê±¼äÒç³ö (Éè±¸»áÔÚ10msÄÚ¼ì²âÕâ¸ö×´Ì¬)
-	}
-	return 0;//±»À­µÍÁË
+    u16 t = 0;
+    sta = !sta;
+    while(PS2_SCL == sta){
+        delay_us(1);
+        t++;
+        if(t > 16000) //æ—¶é—´æº¢å‡º (è®¾å¤‡ä¼šåœ¨10mså†…æ£€æµ‹è¿™ä¸ªçŠ¶æ€)
+            return 1;
+    }
+    return 0; //ç­‰åˆ°äº†æƒ³è¦çš„ç”µå¹³
 }
-//ÔÚ·¢ËÍÃüÁî/Êı¾İÖ®ºó,µÈ´ıÉè±¸Ó¦´ø,¸Ãº¯ÊıÓÃÀ´»ñÈ¡Ó¦´ğ
-//·µ»ØµÃµ½µÄÖµ 
-//·µ»Ø0£¬ÇÒPS2_Status.6=1£¬Ôò²úÉúÁË´íÎó		  
+
+	 
+/**
+ * @brief åœ¨å‘é€å‘½ä»¤/æ•°æ®ä¹‹å,ç­‰å¾…è®¾å¤‡åº”ç­”,è¯¥å‡½æ•°ç”¨æ¥è·å–åº”ç­”
+ *        è¿”å›å¾—åˆ°çš„å€¼ 
+ * 
+ * @return * u8 è¿”å›0ï¼Œä¸”PS2_Status.6=1ï¼Œåˆ™äº§ç”Ÿäº†é”™è¯¯
+ */
 u8 PS2_Get_Byte(void)
 {
-	u16 t=0;
-	u8 temp=0;
-	while(1)//×î´óµÈ´ı55ms
-	{
-		t++;
-		delay_us(10);
-		if(PS2_Status&0x80)//µÃµ½ÁËÒ»´ÎÊı¾İ
-		{
-			temp=PS2_DATA_BUF[PS2_Status&0x0f-1];
-			PS2_Status&=0x70;//Çå³ı¼ÆÊıÆ÷£¬½ÓÊÕµ½Êı¾İ±ê¼Ç
-			break;	
-		}else if(t>5500||PS2_Status&0x40)break;//³¬Ê±Òç³ö/½ÓÊÕ´íÎó	   
-	}
-	PS2_En_Data_Report();//Ê¹ÄÜÊı¾İ´«Êä
-	return temp;    
-}	    
-//·¢ËÍÒ»¸öÃüÁîµ½PS2.
-//·µ»ØÖµ:0£¬ÎŞ´íÎó,ÆäËû,´íÎó´úÂë
+    u16 t = 0;
+    u8 temp = 0;
+    while(1){ //æœ€å¤§ç­‰å¾…55ms
+        t++;
+        delay_us(10);
+        if(PS2_Status & 0x80) // (PS2_Status & (1 << 7)), å¾—åˆ°äº†ä¸€æ¬¡æ•°æ®
+        {
+            temp = PS2_DATA_BUF[PS2_Status & 0x0f - 1]; // (PS2_Status & 0x0f) - 1
+            PS2_Status &= 0x70;//æ¸…é™¤è®¡æ•°å™¨ï¼Œæ¥æ”¶åˆ°æ•°æ®æ ‡è®°, å–ä¸€ä¸ªå­—èŠ‚ç„¶åæŠŠç¼“å†²åŒºçš„æ•°æ®å…¨éƒ¨æ¸…æ‰?????????????????
+            break;	
+        }
+        else if(t > 5500 || PS2_Status & 0x40) //è¶…æ—¶æº¢å‡º/æ¥æ”¶é”™è¯¯
+            break;
+    }
+    PS2_En_Data_Report();//ä½¿èƒ½æ•°æ®ä¼ è¾“
+    return temp;    
+}	
+
+/**
+ * @brief å‘é€ä¸€ä¸ªå‘½ä»¤åˆ°PS2.
+ * 
+ * @param cmd 
+ * @return u8 0ï¼Œæ— é”™è¯¯,å…¶ä»–,é”™è¯¯ä»£ç 
+ */
 u8 PS2_Send_Cmd(u8 cmd)
 {
-	u8 i;
-	u8 high=0;//¼ÇÂ¼1µÄ¸öÊı		 
-	PS2_Set_Int(0);   //ÆÁ±ÎÖĞ¶Ï
-	PS2_SET_SCL_OUT();//ÉèÖÃSCLÎªÊä³ö
-	PS2_SET_SDA_OUT();//SDA OUT
-	PS2_SCL_OUT=0;//À­µÍÊ±ÖÓÏß
-	delay_us(120);//±£³ÖÖÁÉÙ100us
-	PS2_SDA_OUT=0;//À­µÍÊı¾İÏß
-	delay_us(10);
-	PS2_SET_SCL_IN();//ÊÍ·ÅÊ±ÖÓÏß,ÕâÀïPS2Éè±¸µÃµ½µÚÒ»¸öÎ»,¿ªÊ¼Î»
-	PS2_SCL_OUT=1;
-	if(Wait_PS2_Scl(0)==0)//µÈ´ıÊ±ÖÓÀ­µÍ
-	{									  
-		for(i=0;i<8;i++)
-		{
-			if(cmd&0x01)
-			{
-			    PS2_SDA_OUT=1;
-				high++;
-			}else PS2_SDA_OUT=0;   
-			cmd>>=1;
-			//ÕâĞ©µØ·½Ã»ÓĞ¼ì²â´íÎó,ÒòÎªÕâĞ©µØ·½²»»á²úÉúËÀÑ­»·
-			Wait_PS2_Scl(1);//µÈ´ıÊ±ÖÓÀ­¸ß ·¢ËÍ8¸öÎ»
-			Wait_PS2_Scl(0);//µÈ´ıÊ±ÖÓÀ­µÍ
-		}
-		if((high%2)==0)PS2_SDA_OUT=1;//·¢ËÍĞ£ÑéÎ» 10
-		else PS2_SDA_OUT=0;
-		Wait_PS2_Scl(1); //µÈ´ıÊ±ÖÓÀ­¸ß 10Î»
-		Wait_PS2_Scl(0); //µÈ´ıÊ±ÖÓÀ­µÍ
-		PS2_SDA_OUT=1;   //·¢ËÍÍ£Ö¹Î»  11	  
- 		Wait_PS2_Scl(1);//µÈ´ıÊ±ÖÓÀ­¸ß 11Î»
-		PS2_SET_SDA_IN();//SDA in
-		Wait_PS2_Scl(0);//µÈ´ıÊ±ÖÓÀ­µÍ
-		if(PS2_SDA==0)Wait_PS2_Scl(1);//µÈ´ıÊ±ÖÓÀ­¸ß 12Î» 
-		else 
-		{
-			PS2_En_Data_Report();
-			return 1;//·¢ËÍÊ§°Ü
-		}		
-	}else 
-	{
-		PS2_En_Data_Report();
-		return 2;//·¢ËÍÊ§°Ü
-	}
-	PS2_En_Data_Report();
-	return 0;    //·¢ËÍ³É¹¦
+    u8 i;
+    u8 high=0;//è®°å½•1çš„ä¸ªæ•°		 
+    PS2_Set_Int(0);   //å±è”½ä¸­æ–­
+    PS2_SET_SCL_OUT();//è®¾ç½®SCLä¸ºè¾“å‡º
+    PS2_SET_SDA_OUT();//SDA OUT
+    PS2_SCL_OUT = 0;//æ‹‰ä½æ—¶é’Ÿçº¿
+    delay_us(120);//ä¿æŒè‡³å°‘100us
+    // èµ·å§‹ä½
+    PS2_SDA_OUT = 0;// æ‹‰ä½æ•°æ®çº¿, ä½œä¸ºèµ·å§‹ä½ START
+    delay_us(10);
+    PS2_SET_SCL_IN();//é‡Šæ”¾æ—¶é’Ÿçº¿,è¿™é‡ŒPS2è®¾å¤‡å¾—åˆ°ç¬¬ä¸€ä¸ªä½,å¼€å§‹ä½
+    PS2_SCL_OUT = 1;
+    if(Wait_PS2_Scl(0) == 0){ //ç­‰å¾…æ—¶é’Ÿæ‹‰ä½, æ•°æ®åœ¨ä½ç”µå¹³çš„æ—¶å€™åˆ‡æ¢, åœ¨ä¸Šå‡æ²¿çš„æ—¶å€™é”å­˜, è¢«è®¾å¤‡è¯»å–
+        // æ•°æ®
+        for(i = 0; i < 8; i++){
+            if(cmd & 0x01){
+                PS2_SDA_OUT = 1;
+                high++;
+            }
+            else 
+                PS2_SDA_OUT = 0;   
+            cmd >>= 1;
+            //è¿™äº›åœ°æ–¹æ²¡æœ‰æ£€æµ‹é”™è¯¯,å› ä¸ºè¿™äº›åœ°æ–¹ä¸ä¼šäº§ç”Ÿæ­»å¾ªç¯
+            Wait_PS2_Scl(1);//ç­‰å¾…æ—¶é’Ÿæ‹‰é«˜ å‘é€8ä¸ªä½
+            Wait_PS2_Scl(0);//ç­‰å¾…æ—¶é’Ÿæ‹‰ä½
+        }
+
+        // æ ¡éªŒä½
+        if((high % 2) == 0) //å‘é€æ ¡éªŒä½ 10
+            PS2_SDA_OUT = 1;
+        else 
+            PS2_SDA_OUT = 0;
+
+        // åœæ­¢ä½
+        Wait_PS2_Scl(1); //ç­‰å¾…æ—¶é’Ÿæ‹‰é«˜ 10ä½
+        Wait_PS2_Scl(0); //ç­‰å¾…æ—¶é’Ÿæ‹‰ä½
+        PS2_SDA_OUT = 1; //å‘é€åœæ­¢ä½  11	  
+
+        // ç­‰å¾…è®¾å¤‡å›å¤ ACK
+        Wait_PS2_Scl(1);//ç­‰å¾…æ—¶é’Ÿæ‹‰é«˜ 11ä½
+        PS2_SET_SDA_IN();//SDA in
+        Wait_PS2_Scl(0);//ç­‰å¾…æ—¶é’Ÿæ‹‰ä½
+        if(PS2_SDA == 0)
+            Wait_PS2_Scl(1);//ç­‰å¾…æ—¶é’Ÿæ‹‰é«˜ 12ä½ 
+        else {
+            PS2_En_Data_Report();
+            return 1;//å‘é€å¤±è´¥
+        }		
+    }
+    else{
+        PS2_En_Data_Report();
+        return 2;//å‘é€å¤±è´¥
+    }
+    PS2_En_Data_Report();
+    return 0;    //å‘é€æˆåŠŸ
 }
-//PS2³õÊ¼»¯				 
+
+/**
+ * @brief PS2åˆå§‹åŒ–
+ *        PS2_CLK - PA15; PS2_DATA - PC5
+ * 
+ * @return * void 
+ */
 void PS2_Init(void)
 {
-	RCC->APB2ENR|=1<<2;    //Ê¹ÄÜPORTAÊ±ÖÓ
-	RCC->APB2ENR|=1<<4;    //Ê¹ÄÜPORTCÊ±ÖÓ
- 	GPIOA->CRH&=0X0FFFFFFF;	
-	GPIOA->CRH|=0X80000000;//PA15ÉèÖÃ³ÉÊäÈë	
-	GPIOA->ODR|=1<<15;	 
- 	GPIOC->CRL&=0XFF0FFFFF;	
-	GPIOC->CRL|=0X00800000;//PC5ÉèÖÃ³ÉÊäÈë	
-	GPIOC->ODR|=1<<5;	  
- 	Ex_NVIC_Config(GPIO_A,15,FTIR);		//½«line15Ó³Éäµ½PA.15£¬ÏÂ½µÑØ´¥·¢.
-	MY_NVIC_Init(1,2,EXTI15_10_IRQn,2);	//·ÖÅäµ½µÚ¶ş×é,ÇÀÕ¼2,ÏìÓ¦3		 
+    RCC->APB2ENR |= 1 << 2;    //ä½¿èƒ½PORTAæ—¶é’Ÿ
+    RCC->APB2ENR |= 1 << 4;    //ä½¿èƒ½PORTCæ—¶é’Ÿ
+     GPIOA->CRH &= 0X0FFFFFFF;	
+    GPIOA->CRH |= 0X80000000;//PA15è®¾ç½®æˆè¾“å…¥	
+    GPIOA->ODR |= 1 << 15;	 
+     GPIOC->CRL &= 0XFF0FFFFF;	
+    GPIOC->CRL |= 0X00800000;//PC5è®¾ç½®æˆè¾“å…¥	
+    GPIOC->ODR |= 1 << 5;	  
+    GPIO_NVIC_Config(GPIO_A, 15, FTIR); //å°†line15æ˜ å°„åˆ°PA.15ï¼Œä¸‹é™æ²¿è§¦å‘.
+    MY_NVIC_Init(1, 2, EXTI15_10_IRQn, 2);	//åˆ†é…åˆ°ç¬¬äºŒç»„,æŠ¢å 2,å“åº”3		 
 }
 
 

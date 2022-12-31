@@ -31,8 +31,10 @@
 #define GPIOF_IDR_Addr    (GPIOF_BASE+8) //0x40011A08 
 #define GPIOG_IDR_Addr    (GPIOG_BASE+8) //0x40011E08 
  
-//IO口操作,只对单一的IO口!
-//确保n的值小于16!
+// bit field
+// IO口操作,只对单一的IO口!
+// 确保n的值小于16!
+// 读取输入/设置管脚输出
 #define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //输出 
 #define PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  //输入 
 

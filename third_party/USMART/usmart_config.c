@@ -17,6 +17,7 @@
 #include "usart.h"		
 #include "sys.h"
 // #include "ILI9341.h"
+
 #include "LCD.h"
 
 
@@ -31,7 +32,8 @@ struct _m_usmart_nametab usmart_nametab[]=
 	(void*)write_addr,"void write_addr(u32 addr,u32 val)",	 
 #endif		   
 	(void*)delay_ms,"void delay_ms(u16 nms)",
- 	(void*)delay_us,"void delay_us(u32 nus)",	 
+ 	(void*)delay_us,"void delay_us(u32 nus)",	
+#if LCD_SCREEN_TEST_ENABLE 
 	(void*)LCD_Clear,"void LCD_Clear(u16 Color)",
 	(void*)LCD_Fill,"void LCD_Fill(u16 xsta,u16 ysta,u16 xend,u16 yend,u16 color)",
 	(void*)LCD_DrawLine,"void LCD_DrawLine(u16 x1, u16 y1, u16 x2, u16 y2)",
@@ -45,6 +47,7 @@ struct _m_usmart_nametab usmart_nametab[]=
 	(void*)LCD_ReadPoint,"u16 LCD_ReadPoint(u16 x,u16 y)",					 					 
 	(void*)LCD_Display_Dir,"void LCD_Display_Dir(u8 dir)",
 	(void*)LCD_ShowxNum,"void LCD_ShowxNum(u16 x,u16 y,u32 num,u8 len,u8 size,u8 mode)",
+#endif // LCD_SCREEN_TEST_ENABLE
 };						  
 ///////////////////////////////////END///////////////////////////////////////////////
 

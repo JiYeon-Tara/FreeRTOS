@@ -1,3 +1,14 @@
+/**
+ * @file w25q64.c
+ * @author your name (you@domain.com)
+ * @brief 片外扩展 flash, 8M byte
+ * 		  可以在 flash 的基础上实现各种存储机制, 比如 KV, NV...
+ * @version 0.1
+ * @date 2022-12-22
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "w25q64.h"
 #include "spi_stm.h"
 #include "usart.h"
@@ -33,8 +44,8 @@ void SPI_Flash_Init(void)
 	SPI1_Init();		   		// 初始化SPI1
 	SPI1_SetSpeed(SPI_SPEED_4);	// 设置为18M时钟,高速模式
 	SPI_FLASH_TYPE = SPI_Flash_ReadID();//读取FLASH ID.
-
-	printf("SPI flash init\n");
+	printf("flash ID:%04X\r\n", SPI_FLASH_TYPE);
+	printf("external flash init\r\n\n");
 
 	return;
 }  
@@ -72,9 +83,9 @@ void SPI_FLASH_Write_SR(u8 sr)
 //将WEL置位   
 void SPI_FLASH_Write_Enable(void)   
 {
-	SPI_FLASH_CS=0;                            //使能器件   
+	SPI_FLASH_CS = 0;                            //使能器件   
     SPI1_ReadWriteByte(W25X_WriteEnable);      //发送写使能  
-	SPI_FLASH_CS=1;                            //取消片选     	      
+	SPI_FLASH_CS = 1;                            //取消片选     	      
 } 
 
 
@@ -119,19 +130,18 @@ u16 SPI_Flash_ReadID(void)
  * @param ReadAddr 开始读取的地址(24bit)
  * @param NumByteToRead 要读取的字节数(最大65535)
  */
-void SPI_Flash_Read(u8* pBuffer,u32 ReadAddr,u16 NumByteToRead)   
-{ 
+void SPI_Flash_Read(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead)   
+{
  	u16 i;    												    
-	SPI_FLASH_CS = 0;                            //使能器件   
-    SPI1_ReadWriteByte(W25X_ReadData);         //发送读取命令   
-    SPI1_ReadWriteByte((u8)((ReadAddr) >> 16));  //发送24bit地址    
+	SPI_FLASH_CS = 0;                            // 使能器件   
+    SPI1_ReadWriteByte(W25X_ReadData);         	 // 发送读取命令   
+    SPI1_ReadWriteByte((u8)((ReadAddr) >> 16));  // 发送24bit地址, MSB
     SPI1_ReadWriteByte((u8)((ReadAddr) >> 8));   
     SPI1_ReadWriteByte((u8)ReadAddr);   
-    for(i=0; i < NumByteToRead; i++)
-	{ 
-        pBuffer[i] = SPI1_ReadWriteByte(0XFF);   //循环读数  
+    for(i = 0; i < NumByteToRead; i++){ 
+        pBuffer[i] = SPI1_ReadWriteByte(0XFF); //循环读数  
     }
-	SPI_FLASH_CS = 1;                            //取消片选   
+	SPI_FLASH_CS = 1; //取消片选   
 
 	return;  	      
 }  
@@ -148,10 +158,10 @@ void SPI_Flash_Read(u8* pBuffer,u32 ReadAddr,u16 NumByteToRead)
 void SPI_Flash_Write_Page(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite)
 {
  	u16 i;  
-    SPI_FLASH_Write_Enable();                  //SET WEL 
-	SPI_FLASH_CS = 0;                            //使能器件   
-    SPI1_ReadWriteByte(W25X_PageProgram);      //发送写页命令   
-    SPI1_ReadWriteByte((u8)((WriteAddr) >> 16)); //发送24bit地址    
+    SPI_FLASH_Write_Enable();                  // SET WEL 
+	SPI_FLASH_CS = 0;                          // 使能器件   
+    SPI1_ReadWriteByte(W25X_PageProgram);      // 发送写页命令   
+    SPI1_ReadWriteByte((u8)((WriteAddr) >> 16)); //发送24bit地址, MSB
     SPI1_ReadWriteByte((u8)((WriteAddr) >> 8));   
     SPI1_ReadWriteByte((u8)WriteAddr);   
     for(i = 0; i < NumByteToWrite; i++)
@@ -172,7 +182,7 @@ void SPI_Flash_Write_Page(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite)
  * @param NumByteToWrite 要写入的字节数(最大65535)
  */
 void SPI_Flash_Write_NoCheck(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite)   
-{ 			 		 
+{
 	u16 pageremain;
 
 	pageremain = 256 - WriteAddr % 256; //单页剩余的字节数		 	    
@@ -198,43 +208,43 @@ void SPI_Flash_Write_NoCheck(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite)
 } 
 
 	   
-u8 SPI_FLASH_BUF[4096];
+u8 SPI_FLASH_BUF[4096]; // 4K 的 flash 写缓冲区
 /**
  * @brief 写SPI FLASH  
  * 		  在指定地址开始写入指定长度的数据
  * 		  该函数带擦除操作!
- * 		  一次要写入一个扇区??
+ * 		  一次要写入一个扇区, W25Q64 最小擦除单位为:1扇区
  * 
  * @param pBuffer 数据存储区
  * @param WriteAddr 开始写入的地址(24bit)，  地址计算:第几个扇区 ix * 4096
+ * 		 			片外 flash 的地址是怎么计算的? 这个地址和芯片的内存地址没有关系
  * @param NumByteToWrite 要写入的字节数(最大65535)  
  */
-void SPI_Flash_Write(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite)   
-{ 
-	u32 secpos;
-	u16 secoff;
-	u16 secremain;	   
+void SPI_Flash_Write(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite)   
+{
+	u32 secpos; // sector position
+	u16 secoff; // sectior offset
+	u16 secremain; // remain sector size
  	u16 i;    
 
-	secpos = WriteAddr / 4096;	//扇区地址  
-	secoff = WriteAddr % 4096;	//在扇区内的偏移
-	secremain = 4096 - secoff;	//扇区剩余空间大小(bytes)
+	secpos = WriteAddr / 4096;	// 扇区地址  
+	secoff = WriteAddr % 4096;	// 在扇区内的偏移
+	secremain = 4096 - secoff;	// 当前扇区剩余空间大小(bytes)
 
 	if(NumByteToWrite <= secremain)
 		secremain = NumByteToWrite;//不大于4096个字节
 
-	while(1) 
-	{	
+	while(1) {	
 		// flash 的读写单位 ?
 		// step1:
-		SPI_Flash_Read(SPI_FLASH_BUF, secpos*4096, 4096);//读出整个扇区的内容
+		SPI_Flash_Read(SPI_FLASH_BUF, secpos * 4096, 4096); // 读出整个扇区的内容
 
 		// step2: 检查扇区中剩余空间的数据是否是 0xFF(原始数据, 擦除后才是 0xFF, 然后才可以写入, 否则写入无效)
 		// SPI_FLASH_BUF[secoff + 0] 到 SPI_FLASH_BUF[secoff + secremain - 1] 都是 0xFF
 		for(i = 0; i < secremain; i++)//校验数据
 		{
 			if(SPI_FLASH_BUF[secoff + i] != 0XFF)
-				break;//需要擦除  	  
+				break;// 需要擦除
 		}
 	
 		// 擦除扇区
@@ -253,11 +263,10 @@ void SPI_Flash_Write(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite)
 		   
 		if(NumByteToWrite == secremain)
 			break;//写入结束了
-		else//写入未结束
+		else//写入未结束, 当前扇区剩余空间不够写入 NumByteToWrite bytes 数据, 在下一个扇区继续写
 		{
 			secpos++;	//扇区地址增1
 			secoff = 0;	//偏移位置为0 	 
-
 		   	pBuffer += secremain;  //指针偏移
 			WriteAddr += secremain;//写地址偏移	   
 		   	NumByteToWrite -= secremain;				//字节数递减
@@ -267,6 +276,8 @@ void SPI_Flash_Write(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite)
 				secremain = NumByteToWrite;			//下一个扇区可以写完了
 		}	 
 	}
+
+	return;
 }
 
 //擦除整个芯片
@@ -276,7 +287,7 @@ void SPI_Flash_Write(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite)
 //W25X64:40s 
 //等待时间超长...
 void SPI_Flash_Erase_Chip(void)   
-{                                             
+{
     SPI_FLASH_Write_Enable();                  //SET WEL 
     SPI_Flash_Wait_Busy();   
   	SPI_FLASH_CS = 0;                            //使能器件   

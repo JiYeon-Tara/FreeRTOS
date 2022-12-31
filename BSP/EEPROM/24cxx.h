@@ -1,8 +1,11 @@
 #ifndef __24C02_H__
 #define __24C02_H__
 
-#include "i2c.h"    // 包含 i2c 头文件
+#include "sys.h"
 
+/*****************
+ * MACRO
+ *****************/
 #define AT24C01		127
 #define AT24C02		255
 #define AT24C04		511

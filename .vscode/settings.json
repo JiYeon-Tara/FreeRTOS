@@ -23,6 +23,15 @@
         "stm_flash.h": "c",
         "dma_stm.h": "c",
         "service_at.h": "c",
-        "service_config.h": "c"
+        "service_config.h": "c",
+        "i2c_soft.h": "c",
+        "spi_soft.h": "c",
+        "oled.h": "c",
+        "stdlib.h": "c",
+        "ssh_1106.h": "c",
+        "stdint.h": "c",
+        "rtc.h": "c",
+        "dlps.h": "c",
+        "touch.h": "c"
     }
 }

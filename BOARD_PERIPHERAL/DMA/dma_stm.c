@@ -1,11 +1,24 @@
+/**
+ * @file dma_stm.c
+ * @author your name (you@domain.com)
+ * @brief DMA 实现串口数据传输
+ * @version 0.1
+ * @date 2022-12-19
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "dma_stm.h"
 #include "delay.h"
 #include <stdbool.h>
+#include "board_config.h"
+
 
 /***/
 // DMA - Direcct Memory Access
 // 无需 CPU 直接传输控制, 也没有中断处理方式保留现场和恢复现场的过程, 通过硬件为 RAM 与 I/O 设备开辟一条通过, 使得 CPU 的效率大大增加
-// 每个通道专门永安里管理来自一个或者多个外设对存储器访问的请求
+// 每个通道专门用来管理来自一个或者多个外设对存储器访问的请求
+// ADC, Timer, USART, I2C, I2S, SPI.. 外设 <-> 存储器(内存)
 
 
 // UART1 TX - DMA1-ch4
@@ -18,7 +31,7 @@ u16 DMA1_MEM_LEN;//保存DMA每次数据传送的长度
 /**
  * @brief DMA1 的各通道配置
  *        这里的传输形式是固定的,这点要根据不同的情况来修改
- *        从存储器->外设模式/8位数据宽度/存储器增量模式
+ *        从存储器->外设模式/8位数据宽度/存储器增量模式, 发送数据
  * 	      数据方向：存储器 -> 外设
  * 
  * @param DMA_CHx DMA通道CHx
@@ -28,37 +41,43 @@ u16 DMA1_MEM_LEN;//保存DMA每次数据传送的长度
  */
 void DMA_Config(DMA_Channel_TypeDef *DMA_CHx, u32 cpar, u32 cmar, u16 cndtr)
 {
-	RCC->AHBENR |= 1 << 0;			//开启DMA1时钟
-	delay_ms(5);				    //等待DMA时钟稳定
+    RCC->AHBENR |= 1 << 0;			//开启DMA1时钟
+    delay_ms(5);				    //等待DMA时钟稳定
 
-	DMA_CHx->CPAR = cpar; 	 	    //DMA1 外设地址 
-	DMA_CHx->CMAR = (u32)cmar; 	    //DMA1,存储器地址
+    DMA_CHx->CPAR = cpar; 	 	    //DMA1 外设地址 
+    DMA_CHx->CMAR = (u32)cmar; 	    //DMA1,存储器地址
 
-	DMA1_MEM_LEN = cndtr;      	    // 保存DMA传输数据量, 全局变量保存 DMA 的传输数据量
+    DMA1_MEM_LEN = cndtr;      	    // 保存DMA传输数据量, 全局变量保存 DMA 的传输数据量
+    DMA_CHx->CNDTR = cndtr;    	    // DMA1,传输数据量， 该寄存器的值在 DMA 启动后自减, 每次心动的 DMA 传输, 都重新向该寄存器吸入要传输的数据量
+    
+    DMA_CHx->CCR = 0X00000000;	    // clear
+    DMA_CHx->CCR |= 1 << 4;  		// 从存储器读（存储器 -> 外设）
+    DMA_CHx->CCR |= 0 << 5;  		// 普通模式(不执行循环操作), 仅进行一次 DMA 传输, 不是每次都是, 这里可能需要更改
+    DMA_CHx->CCR |= 0 << 6; 		// 外设地址非增量模式(不执行外设地址增量操作), 外设地址不会自增, 这里也需要更改
+    DMA_CHx->CCR |= 1 << 7; 	 	// 存储器增量模式(执行存储器地址增量操作), 存储器地址自增
+    DMA_CHx->CCR |= 0 << 8; 	 	// 外设数据宽度为8位
+    DMA_CHx->CCR |= 0 << 10; 		// 存储器数据宽度8位
+    DMA_CHx->CCR |= 1 << 12; 		// 中等优先级
+    DMA_CHx->CCR |= 0 << 14; 		// 非存储器到存储器模式
 
-	DMA_CHx->CNDTR = cndtr;    	    //DMA1,传输数据量， 该寄存器的值在 DMA 启动后自减, 每次心动的 DMA 传输, 都重新向该寄存器吸入要传输的数据量
-	DMA_CHx->CCR = 0X00000000;	    //复位
-	DMA_CHx->CCR |= 1 << 4;  		//从存储器读（存储器 -> 外设）
-	DMA_CHx->CCR |= 0 << 5;  		// 普通模式(不执行循环操作)
-	DMA_CHx->CCR |= 0 << 6; 		// 外设地址非增量模式(不执行外设地址增量操作)
-	DMA_CHx->CCR |= 1 << 7; 	 	//存储器增量模式(执行存储器地址增量操作)
-	DMA_CHx->CCR |= 0 << 8; 	 	//外设数据宽度为8位
-	DMA_CHx->CCR |= 0 << 10; 		//存储器数据宽度8位
-	DMA_CHx->CCR |= 1 << 12; 		//中等优先级
-	DMA_CHx->CCR |= 0 << 14; 		//非存储器到存储器模式
-
-	return;		  	
+    return;		  	
 } 
 
 
-//开启一次DMA传输
+//
+/**
+ * @brief 开启一次DMA传输
+ *        该函数每执行一次, DMA 就发送一次
+ * 
+ * @param DMA_CHx 
+ */
 void DMA_Enable(DMA_Channel_TypeDef *DMA_CHx)
 {
-	DMA_CHx->CCR &= ~(1 << 0);       // 关闭DMA传输 
-	DMA_CHx->CNDTR = DMA1_MEM_LEN; 	 // DMA1,传输数据量 
-	DMA_CHx->CCR |= 1 << 0;          // 开启DMA传输
+    DMA_CHx->CCR &= ~(1 << 0);       // 关闭DMA传输 
+    DMA_CHx->CNDTR = DMA1_MEM_LEN; 	 // DMA1,传输数据量 
+    DMA_CHx->CCR |= 1 << 0;          // 开启 DMA 传输
 
-	return;
+    return;
 }
 
 

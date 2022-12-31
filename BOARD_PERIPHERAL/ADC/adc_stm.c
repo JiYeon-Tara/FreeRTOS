@@ -1,3 +1,14 @@
+/**
+ * @file adc_stm.c
+ * @author your name (you@domain.com)
+ * @brief STM32 ADC/DAC/
+ * 		  内部 CPU温度传感器可以直接连接到 ADC 的通道上, 可以直接获取到 CPU 温度
+ * @version 0.1
+ * @date 2022-12-19
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "adc_stm.h"
 
 // ADC 采样可以由软件触发, 也可以由定时器的事件触发

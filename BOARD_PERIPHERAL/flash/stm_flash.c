@@ -31,7 +31,7 @@ void STMFLASH_Lock(void)
 
 //得到FLASH状态
 u8 STMFLASH_GetStatus(void)
-{	
+{
 	u32 res;	
 	
 	res = FLASH->SR; 
@@ -135,7 +135,7 @@ u16 STMFLASH_ReadHalfWord(u32 faddr)
  * @return * void 
  */
 void STMFLASH_Write_NoCheck(u32 WriteAddr, u16 *pBuffer,u16 NumToWrite)   
-{ 			 		 
+{
 	u16 i;
 	for(i = 0; i < NumToWrite; i++)
 	{
@@ -145,17 +145,18 @@ void STMFLASH_Write_NoCheck(u32 WriteAddr, u16 *pBuffer,u16 NumToWrite)
 } 
 
 
-#if STM32_FLASH_SIZE<256
+#if STM32_FLASH_SIZE < 256
 #define STM_SECTOR_SIZE 1024 //字节; 小容量芯片(flash size < 256 bytes), 1 page = 1 K byte
 #else 
 #define STM_SECTOR_SIZE	2048 // 大容量芯片: 1 page = 2 K bytes
 #endif
 
-// 扇区大小
-u16 STMFLASH_BUF[STM_SECTOR_SIZE / 2];  //最多是2K字节; 最多一次写入一页?
+// 扇区大小缓冲区
+static u16 STMFLASH_BUF[STM_SECTOR_SIZE / 2];  //最多是2K字节; 最多一次写入一页?
 
 /**
  * @brief 从指定地址开始写入指定长度的数据
+ * 		  256K:0X08000000 - 08040000
  * 
  * @param WriteAddr 起始地址(此地址必须为2的倍数!!)
  * @param pBuffer 数据指针, uint16_t
@@ -170,6 +171,7 @@ void STMFLASH_Write(u32 WriteAddr,u16 *pBuffer,u16 NumToWrite)
 	u32 offaddr;   // 去掉0X08000000后的地址
 
     // 从 0x08000000 开始的 256K byte
+	// 0X08000000 - 08040000
 	if(WriteAddr < STM32_FLASH_BASE || (WriteAddr >= (STM32_FLASH_BASE + 1024 * STM32_FLASH_SIZE)))
         return;//非法地址
 
@@ -182,7 +184,7 @@ void STMFLASH_Write(u32 WriteAddr,u16 *pBuffer,u16 NumToWrite)
         secremain = NumToWrite;
 
 	while(1) 
-	{	
+	{
         // step1:读出整个扇区的内容
         // falsh 基地址 + 扇区偏移地址
 		STMFLASH_Read(STM32_FLASH_BASE + secpos * STM_SECTOR_SIZE, STMFLASH_BUF, STM_SECTOR_SIZE / 2); //读出整个扇区的内容
@@ -195,7 +197,7 @@ void STMFLASH_Write(u32 WriteAddr,u16 *pBuffer,u16 NumToWrite)
 		}
 
         // stp3:写入数据; 如果没有擦除, 先擦出然后写入;
-		if(i < secremain)//需要擦除
+		if(i < secremain) //需要擦除
 		{
 			STMFLASH_ErasePage(secpos * STM_SECTOR_SIZE + STM32_FLASH_BASE);// 擦除这个扇区(page, sector)
             // memcpy ?

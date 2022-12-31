@@ -25,9 +25,12 @@
 #include "remote.h"
 #include "ds18b20.h"
 #include "stm_flash.h"
+#include "touch.h"
+#include "tp_test.h"
+
 #include "service_config.h"
 #include "malloc.h"
-
+#include "timer.h"
 
 void bsp_init();
 void service_init();
@@ -37,22 +40,23 @@ void led_test();
 void key_test();
 void usart_test();
 void watch_dog_test();
+void timer1_pwm_test();
+void timer2_cap_test();
 void dlps_test();
 void ADC_test();
 void dac_test();
 void dma_test();
-void inner_flash_test();
-
-// service
-
-
-// third party test
+void inner_flash_test(uint8_t read_write_flag);
 void at_cmd_test();
 void oled_screen_test();
 void lcd_screen_test();
+void rtc_update_test();
 void eeprom_test();
-void flash_test();
+void external_flash_test(uint8_t dir);
 void remote_test();
+void tp_test();
+void memmang_test(uint8_t flag);
+void sdcard_test(u32 sect);
 
 #endif
 

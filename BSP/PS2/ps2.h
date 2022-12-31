@@ -2,69 +2,45 @@
 #define __PS2_H	 
 #include "delay.h"	   
 #include "sys.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEK MiniSTM32¿ª·¢°å
-//PS2 Çı¶¯´úÂë	   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//ĞŞ¸ÄÈÕÆÚ:2014/3/12
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾ 2009-2019
-//All rights reserved									  
-//////////////////////////////////////////////////////////////////////////////////	
 
-//ÎïÀí½Ó¿Ú¶¨Òå
-//PS2ÊäÈë 		  				    
+//ç‰©ç†æ¥å£å®šä¹‰
+// PS2_CLK - PA15
+// PS2_DATA - PC5
+// è¿™ä¸¤ä¸ª GPIO è¢«æŒ‰é”®å…±ç”¨, ä½¿ç”¨æŒ‰é”®çš„æ—¶å€™ä¸å¯ä»¥ä½¿ç”¨é¼ æ ‡
+//PS2è¾“å…¥ 		  				    
 #define PS2_SCL PAin(15)			//PA15
 #define PS2_SDA PCin(5)				//PC5
-//PS2Êä³ö
+//PS2è¾“å‡º
 #define PS2_SCL_OUT PAout(15)		//PA15
 #define PS2_SDA_OUT PCout(5)		//PC5
 
-//ÉèÖÃPS2_SCLÊäÈëÊä³ö×´Ì¬.		  
+//è®¾ç½®PS2_SCLè¾“å…¥è¾“å‡ºçŠ¶æ€.		  
 #define PS2_SET_SCL_IN()  {GPIOA->CRH&=0X0FFFFFFF;GPIOA->CRH|=0X80000000;}
 #define PS2_SET_SCL_OUT() {GPIOA->CRH&=0X0FFFFFFF;GPIOA->CRH|=0X30000000;}	  
-//ÉèÖÃPS2_SDAÊäÈëÊä³ö×´Ì¬.		  
+//è®¾ç½®PS2_SDAè¾“å…¥è¾“å‡ºçŠ¶æ€.		  
 #define PS2_SET_SDA_IN()  {GPIOC->CRL&=0XFF0FFFFF;GPIOC->CRL|=0X00800000;}
 #define PS2_SET_SDA_OUT() {GPIOC->CRL&=0XFF0FFFFF;GPIOC->CRL|=0X00300000;} 
 
-#define MOUSE    0X20 //Êó±êÄ£Ê½
-#define KEYBOARD 0X10 //¼üÅÌÄ£Ê½
-#define CMDMODE  0X00 //·¢ËÍÃüÁî
-//PS2_Statusµ±Ç°×´Ì¬±êÖ¾
-//[5:4]:µ±Ç°¹¤×÷µÄÄ£Ê½;[7]:½ÓÊÕµ½Ò»´ÎÊı¾İ
-//[6]:Ğ£Ñé´íÎó;[3:0]:ÊÕµ½µÄÊı¾İ³¤¶È;	 
-extern u8 PS2_Status;       //¶¨ÒåÎªÃüÁîÄ£Ê½
-extern u8 PS2_DATA_BUF[16]; //ps2Êı¾İ»º´æÇø
+#define MOUSE    0X20 //é¼ æ ‡æ¨¡å¼
+#define KEYBOARD 0X10 //é”®ç›˜æ¨¡å¼
+#define CMDMODE  0X00 //å‘é€å‘½ä»¤
+
+//PS2_Statuså½“å‰çŠ¶æ€æ ‡å¿—
+//[5:4]:å½“å‰å·¥ä½œçš„æ¨¡å¼;[7]:æ¥æ”¶åˆ°ä¸€æ¬¡æ•°æ®
+//[6]:æ ¡éªŒé”™è¯¯;[3:0]:æ”¶åˆ°çš„æ•°æ®é•¿åº¦;	 
+extern u8 PS2_Status;       //å®šä¹‰ä¸ºå‘½ä»¤æ¨¡å¼
+extern u8 PS2_DATA_BUF[16]; //ps2æ•°æ®ç¼“å­˜åŒº
 extern u8 MOUSE_ID;
+extern u8 BIT_Count;
+
 
 void PS2_Init(void);
 u8 PS2_Send_Cmd(u8 cmd);
 void PS2_Set_Int(u8 en);
 u8 PS2_Get_Byte(void);
 void PS2_En_Data_Report(void);  
-void PS2_Dis_Data_Report(void);		  				    
+void PS2_Dis_Data_Report(void);	
+
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
