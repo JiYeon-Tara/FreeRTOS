@@ -500,6 +500,17 @@
               <FileType>1</FileType>
               <FilePath>..\BSP\PS2\ps2.c</FilePath>
             </File>
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+            <File>
+              <FileName>sdcard.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\SD_card\sdcard.c</FilePath>
+            </File>
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
           </Files>
         </Group>
         <Group>
