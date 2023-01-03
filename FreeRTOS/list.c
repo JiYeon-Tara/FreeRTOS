@@ -89,6 +89,7 @@ void vListInitialise( List_t * const pxList )
 
 	/* The list end next and previous pointers point to itself so we know
 	when the list is empty. */
+	// 空链表头结点, 尾节点都指向自身
 	pxList->xListEnd.pxNext = ( ListItem_t * ) &( pxList->xListEnd );	/*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
 	pxList->xListEnd.pxPrevious = ( ListItem_t * ) &( pxList->xListEnd );/*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
 
@@ -126,6 +127,7 @@ ListItem_t * const pxIndex = pxList->pxIndex;
 	/* Insert a new list item into pxList, but rather than sort the list,
 	makes the new list item the last item to be removed by a call to
 	listGET_OWNER_OF_NEXT_ENTRY(). */
+	// 在 pxIndex 前插入 pxNewListItem
 	pxNewListItem->pxNext = pxIndex;
 	pxNewListItem->pxPrevious = pxIndex->pxPrevious;
 

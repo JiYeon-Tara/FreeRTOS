@@ -760,7 +760,7 @@ extern "C" {
 #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
 	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 0
 #endif
-//û�ж��� configAPPLICATION_ALLOCATED_HEAP
+//û�ж��� configAPPLICATION_ALLOCATED_HEAP
 #ifndef configAPPLICATION_ALLOCATED_HEAP
 	#define configAPPLICATION_ALLOCATED_HEAP 0
 #endif
@@ -914,7 +914,7 @@ typedef struct xSTATIC_TCB
 	#if ( portUSING_MPU_WRAPPERS == 1 )
 		xMPU_SETTINGS	xDummy2;
 	#endif
-	StaticListItem_t	xDummy3[ 2 ];
+	StaticListItem_t	xDummy3[ 2 ]; // 链表的使用方法, 定义一个结构体包含链表的 ListItem_t
 	UBaseType_t			uxDummy5;
 	void				*pxDummy6;
 	uint8_t				ucDummy7[ configMAX_TASK_NAME_LEN ];

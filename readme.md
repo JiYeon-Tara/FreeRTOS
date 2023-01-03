@@ -3,6 +3,20 @@
 (1)堆栈分配在哪里, 都是在 RAM 吗？ 有没有可能在 flash ， 应该不会， flash 相当于磁盘，
 (2)后面可以添加一个cmsis.h, cmsis.c 提供接口, 将 FreeRTOS 的接口进行封装, 这样切换操作系统时，只需要修改这个文件即可, 增强代码的可移植性;
 
+**好好学学"彭志伟"写的代码，alarm 也是使用链表进行管理的，db_alarm_clock.c**
+
+音乐播放也是使用链表进行管理，
+
+(5) 对 GUI 进行管理，每一个小方块代表一个线程，显示每个线程收到消息的情况以及线程有关的信息；
+
+| name           | info            |
+| -------------- | --------------- |
+| Thread manager | msg:16 info:abc |
+| Thread monitor | msg:17 info:def |
+| Thread key     | msg:5 info:ddd  |
+| Thread LED     | msg:8 info:www  |
+| Thread ...     | msg:1 info:zzz  |
+
 
 
 ##### FreeRTOS
@@ -185,6 +199,14 @@ typedef struct _dev_desc
 ```C
 void proto_data_recv(HANDLER_E handler, uint8_t channel, uint8_t *p_data, uint 32_t len);
 ```
+
+
+
+
+
+
+
+##### 6. nuttx 操作系统学习
 
 
 

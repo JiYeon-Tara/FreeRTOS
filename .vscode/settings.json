@@ -19,6 +19,9 @@
         "freertos.h": "c",
         "string.h": "c",
         "usart.h": "c",
-        "rtc.h": "c"
+        "rtc.h": "c",
+        "main.h": "c",
+        "thread.h": "c",
+        "beep.h": "c"
     }
 }

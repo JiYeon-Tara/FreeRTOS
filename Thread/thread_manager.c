@@ -11,18 +11,31 @@
 #include "thread_manager.h"
 #include "sys.h"
 #include "usart.h"
-#include "rtc.h"
-/**************************** task info ******************************/
-TaskHandle_t ManagerTask_Handler;   //ÈÎÎñ¾ä±ú
+#include "test_config.h"
+// #include "rtc.h"
 
-// ¶ÔËùÓĞÏß³Ì½øĞĞ¹ÜÀí
-// ËùÓĞÏß³ÌµÄ¸¸Ïß³Ì, ËùÓĞÏß³ÌµÄ³õÊ¼»¯ÒÔ¼°ÍË³ö
-/**************************** global varible ******************************/
-EventGroupHandle_t manager_event_group; //ÊÂ¼ş±êÖ¾×é, ¿ÉÒÔÓÃÓÚÒ»¸öÈÎÎñ/ÊÂ¼şÓë¶à¸öÈÎÎñ/ÊÂ¼ş½øĞĞÍ¬²½
+/********************
+ * MACRO
+ ********************/
 
-/**************************** macro definition ******************************/
 
-/**************************** macro definition ******************************/
+/********************
+ * FUNCTION
+ ********************/
+void thread_manager_task(void *pvParameters);
+static void manager_task_exit(void *param);
+
+
+/********************
+ * GLOBAL VAR
+ ********************/
+thread_cb_t manager_thread = {
+	.thread_init = thread_manager_task,
+	.thread_deinit = manager_task_exit,
+};
+
+EventGroupHandle_t manager_event_group;
+
 
 /**
  * @brief hardware_init
@@ -31,8 +44,8 @@ EventGroupHandle_t manager_event_group; //ÊÂ¼ş±êÖ¾×é, ¿ÉÒÔÓÃÓÚÒ»¸öÈÎÎñ/ÊÂ¼şÓë¶à¸
 static void hardware_init()
 {
     printf("%s\r\n", __func__);
-    while(RTC_Init()); // µÈ´ı RTC ³õÊ¼»¯³É¹¦
-    RTC_Set(2022, 4, 23, 8, 47, 0);
+    // while(RTC_Init()); // ï¿½È´ï¿½ RTC ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½É¹ï¿½
+    // RTC_Set(2022, 4, 23, 8, 47, 0);
     return;
 }
 
@@ -42,9 +55,10 @@ static void hardware_init()
  */
 static void software_init()
 {
-    // //Í¨ÖªÆäËüÏß³Ì³õÊ¼»¯ -> Í¨³£Ê¹ÓÃÈÎÎñÍ¨ÖªÊµÏÖ
-    // //ÉèÖÃ±êÖ¾Î»
     // xEventGroupSetBits(manager_event_group, TASK_SYNC);
+#if LIST_TEST_ENABLE
+    list_test();
+#endif
 }
 
 /**
@@ -58,21 +72,28 @@ static void resource_init()
 }
 
 /**
- * @brief Ïß³ÌÈë¿Úº¯Êı, manager Ïß³ÌÖĞ¶ÔËùÓĞÏß³Ì½øĞĞ³õÊ¼»¯
+ * @brief ï¿½ß³ï¿½ï¿½ï¿½Úºï¿½ï¿½ï¿½, manager ï¿½ß³ï¿½ï¿½Ğ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³Ì½ï¿½ï¿½Ğ³ï¿½Ê¼ï¿½ï¿½
  * 
  * @param pvParameters 
  */
 void thread_manager_task(void *pvParameters)
 {
+    taskENTER_CRITICAL();
     hardware_init();
     resource_init();
     software_init();
+    printf("thread manager running...\r\n");
+	taskEXIT_CRITICAL();
 
     while(1)
     {
-        printf("manager thread running...\r\n");
-        Disp_Time(0, 0, 0); // ¿ÉÒÔ·¢ÏûÏ¢¸ø UI Ïß³ÌÈÃ UI ÏÔÊ¾
+        // Disp_Time(0, 0, 0); // ï¿½ï¿½ï¿½Ô·ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ UI ï¿½ß³ï¿½ï¿½ï¿½ UI ï¿½ï¿½Ê¾
         vTaskDelay(1000);
     }
+}
+
+static void manager_task_exit(void *param)
+{
+	
 }
 

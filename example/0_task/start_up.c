@@ -11,8 +11,16 @@
 #include "thread_dual_comm.h"
 #include "thread_monitor.h"
 #include "thread_manager.h"
-/**************************** global varible ******************************/
-TaskHandle_t StartTask_Handler;     //ÈÎÎñ¾ä±ú
+
+
+/********************
+ * MACRO
+ ********************/
+
+/********************
+ * GLOBAL VAR
+ ********************/
+TaskHandle_t StartTask_Handler;     //ä»»åŠ¡å¥æŸ„
 
 /**************************** macro definition ******************************/
 
@@ -24,12 +32,12 @@ TaskHandle_t StartTask_Handler;     //ÈÎÎñ¾ä±ú
  */
 void hardware_init()
 {
-    //ÉèÖÃÏµÍ³ÖĞ¶ÏÓÅÏÈ¼¶·Ö×é4£¬	
-	//0-15 ×Ü¹²16¼¶ÓÅÏÈ¼¶£¬Ã»ÓĞÇÀÕ¼ÓÅÏÈ¼¶	 	 
+    //è®¾ç½®ç³»ç»Ÿä¸­æ–­ä¼˜å…ˆçº§åˆ†ç»„4ï¼Œ	
+	//0-15 æ€»å…±16çº§ä¼˜å…ˆçº§ï¼Œæ²¡æœ‰æŠ¢å ä¼˜å…ˆçº§	 	 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-	delay_init();	    				//ÑÓÊ±º¯Êı³õÊ¼»¯	  
-	uart_init(115200);					//³õÊ¼»¯´®¿Ú
-	LED_Init();		  					//³õÊ¼»¯LED
+	delay_init();	    				//å»¶æ—¶å‡½æ•°åˆå§‹åŒ–	  
+	uart_init(115200);					//åˆå§‹åŒ–ä¸²å£
+	// LED_Init();		  					//åˆå§‹åŒ–LED
 
     return;
 }
@@ -53,105 +61,88 @@ void software_init()
  */
 void start_task(void *pvParameters)
 {
-    taskENTER_CRITICAL();           //½øÈëÁÙ½çÇø,ÁÙ½ç¶Î´úÂë±£»¤
+    taskENTER_CRITICAL();           //è¿›å…¥ä¸´ç•ŒåŒº,ä¸´ç•Œæ®µä»£ç ä¿æŠ¤
 
-    //
     // Manager task
-    //
-    xTaskCreate((TaskFunction_t )thread_manager_task,     
+    xTaskCreate((TaskFunction_t )manager_thread.thread_init,     
                 (const char*    )"manager_task",   
                 (uint16_t       )MANAGER_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )MANAGER_TASK_PRIO,
-                (TaskHandle_t*  )&ManagerTask_Handler); 
+                (TaskHandle_t*  )&manager_thread.taskHandle); 
 
-    //
-    //´´½¨LED0ÈÎÎñ
-    //
-    xTaskCreate((TaskFunction_t )led0_task,     	
+    //åˆ›å»ºLED0ä»»åŠ¡
+    xTaskCreate((TaskFunction_t )led0_thread.thread_init,     	
                 (const char*    )"led0_task",   	
                 (uint16_t       )LED0_STK_SIZE, 
                 (void*          )NULL,				
                 (UBaseType_t    )LED0_TASK_PRIO,	
-                (TaskHandle_t*  )&LED0Task_Handler);  
+                (TaskHandle_t*  )&led0_thread.taskHandle);  
 
-    //
-    //´´½¨LED1ÈÎÎñ
-    //
-    xTaskCreate((TaskFunction_t )led1_task,     
+    //åˆ›å»ºLED1ä»»åŠ¡
+    xTaskCreate((TaskFunction_t )led1_thread.thread_init,     
                 (const char*    )"led1_task",   
                 (uint16_t       )LED1_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )LED1_TASK_PRIO,
-                (TaskHandle_t*  )&LED1Task_Handler); 
+                (TaskHandle_t*  )&led1_thread.taskHandle); 
 
-    //
     // key task
-    //
-    xTaskCreate((TaskFunction_t )key_task,     
+    xTaskCreate((TaskFunction_t )key_thread.thread_init,     
                 (const char*    )"key_task",   
                 (uint16_t       )KEY_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )KEY_TASK_PRIO,
-                (TaskHandle_t*  )&KeyTask_Handler); 
+                (TaskHandle_t*  )&key_thread.taskHandle); 
 
-    //
     // interrupt task
-    //
-    // xTaskCreate((TaskFunction_t )interrupt_task,     
-    //             (const char*    )"interrupt_task",   
-    //             (uint16_t       )INTERRUPT_STK_SIZE, 
-    //             (void*          )NULL,
-    //             (UBaseType_t    )INTERRUPT_TASK_PRIO,
-    //             (TaskHandle_t*  )&INTERRUPTTask_Handler); 
+    xTaskCreate((TaskFunction_t )interrupt_thread.thread_init,     
+                (const char*    )"interrupt_task",   
+                (uint16_t       )INTERRUPT_STK_SIZE, 
+                (void*          )NULL,
+                (UBaseType_t    )INTERRUPT_TASK_PRIO,
+                (TaskHandle_t*  )&interrupt_thread.taskHandle); 
 
-    //
     // ui_task  
-    //
-    xTaskCreate((TaskFunction_t )thread_ui_entry,     
-                (const char*    )"thread_ui",   
+    xTaskCreate((TaskFunction_t )ui_thread.thread_init,     
+                (const char*    )"ui_task",   
                 (uint16_t       )THREAD_UI_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )THREAD_UI_PRIO,
-                (TaskHandle_t*  )&Thread_UI_Handler); 
+                (TaskHandle_t*  )&ui_thread .taskHandle); 
 
-    //
     // dual_comm_task  
-    //
-    // xTaskCreate((TaskFunction_t )dual_comm_task,     
-    //             (const char*    )"thread_dual_comm",   
-    //             (uint16_t       )DUAL_COMM_STK_SIZE, 
-    //             (void*          )NULL,
-    //             (UBaseType_t    )DUAL_COMM_TASK_PRIO,
-    //             (TaskHandle_t*  )&DualCommTask_Handler); 
-    //
-    // static create task
-    // xTaskCreateStatic() µÄ·µ»ØÖµÊÇÈÎÎñ¾ä±ú
-    //
-    // ThreadAlgo_Handler = xTaskCreateStatic(	(TaskFunction_t )thread_algo_enery,
-    //                                         (const char*    )"thread_algo",
-    //                                         (uint16_t       )THREAD_ALGO_STK_SIZE,
-    //                                         ( void *        )NULL,
-    //                                         (UBaseType_t    )THREAD_ALGO_PRIO,
-    //                                         (StackType_t*   )ThreadAlgoStack,
-    //                                         (StaticTask_t*  )&ThreadAlgoTCB );
+    xTaskCreate((TaskFunction_t )dual_comm_thread.thread_init,     
+                (const char*    )"dual_comm_task",   
+                (uint16_t       )DUAL_COMM_STK_SIZE, 
+                (void*          )NULL,
+                (UBaseType_t    )DUAL_COMM_TASK_PRIO,
+                (TaskHandle_t*  )&dual_comm_thread.taskHandle); 
     
-    //
-    // monitor thread
-    //
-    monitor_binary_handle = xTaskCreateStatic(	(TaskFunction_t )thread_monitor_enery,
-                                                (const char*    )"thread_monitor",
-                                                (uint16_t       )THREAD_MONITOR_STK_SIZE,
+    // static create task
+    // xTaskCreateStatic() çš„è¿”å›å€¼æ˜¯ä»»åŠ¡å¥æŸ„
+    algo_thread.taskHandle = xTaskCreateStatic(	(TaskFunction_t )algo_thread.thread_init,
+                                                (const char*    )"algo_task",
+                                                (uint16_t       )THREAD_ALGO_STK_SIZE,
                                                 ( void *        )NULL,
-                                                (UBaseType_t    )THREAD_MOINITOR_PRIO,
-                                                (StackType_t*   )ThreadMonitorStack,
-                                                (StaticTask_t*  )&ThreadMonitorTCB );
-        
+                                                (UBaseType_t    )THREAD_ALGO_PRIO,
+                                                (StackType_t*   )ThreadAlgoStack,
+                                                (StaticTask_t*  )&ThreadAlgoTCB );
+    
+    // monitor thread
+    monitor_thread.taskHandle = xTaskCreateStatic(	(TaskFunction_t )monitor_thread.thread_init,
+                                                    (const char*    )"monitor_task",
+                                                    (uint16_t       )THREAD_MONITOR_STK_SIZE,
+                                                    ( void *        )NULL,
+                                                    (UBaseType_t    )THREAD_MOINITOR_PRIO,
+                                                    (StackType_t*   )ThreadMonitorStack,
+                                                    (StaticTask_t*  )&ThreadMonitorTCB );
+            
 
 
-    // µ±ÈÎÎñÍË³ö while(1) Ê±, Ò»¶¨ÒªÉ¾³ıÈÎÎñ
-    vTaskDelete(StartTask_Handler); //É¾³ı¿ªÊ¼ÈÎÎñ
-    taskEXIT_CRITICAL();            //ÍË³öÁÙ½çÇø
+    // å½“ä»»åŠ¡é€€å‡º while(1) æ—¶, ä¸€å®šè¦åˆ é™¤ä»»åŠ¡
+    vTaskDelete(StartTask_Handler); //åˆ é™¤å¼€å§‹ä»»åŠ¡
+    taskEXIT_CRITICAL(); //é€€å‡ºä¸´ç•ŒåŒº
 	
 	return;
 }

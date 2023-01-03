@@ -5,39 +5,48 @@
 #include "semphr.h"
 #include "task.h"
 #include "led.h"
+#include "thread.h"
 
-/**************************** global varible ******************************/
 
-/**************************** macro definition ******************************/
 
-/**************************** macro definition ******************************/
+/********************
+ * MACRO
+ ********************/
+#define LED0_TASK_PRIO		2 	//ä»»åŠ¡ä¼˜å…ˆçº§
+#define LED0_STK_SIZE 		50  //ä»»åŠ¡å †æ ˆå¤§å°	
 
-//LED task
-#define LED0_TASK_PRIO		2 //ÈÎÎñÓÅÏÈ¼¶
-#define LED0_STK_SIZE 		50  //ÈÎÎñ¶ÑÕ»´óĞ¡	
-extern TaskHandle_t LED0Task_Handler; //ÈÎÎñ¾ä±ú, ÉùÃ÷ÎªÈ«¾Ö±äÁ¿
-void led0_task(void *pvParameters); //ÈÎÎñº¯Êı
+#define LED0_QUEUE_SIZE		5
+
+typedef enum {
+    THREAD_LED0_MSG_ID_RAW,
+    THREAD_LED0_MSG_ID_DATA
+} THREAD_LED0_MSG_ID_E;
+
+/********************
+ * GLOBAL VAR
+ ********************/
+extern thread_cb_t led0_thread;
 
 /**
-* @fun: ¶ÔÓÚÈÎÎñ(Ïß³Ì)¿ÉÒÔÊ¹ÓÃÈ«¾Ö±äÁ¿µÄ·½Ê½
-* ½á¹¹Ìå
-void (*funPtr)(void);	//º¯ÊıÖ¸Õë
+* @fun: å¯¹äºä»»åŠ¡(çº¿ç¨‹)å¯ä»¥ä½¿ç”¨å…¨å±€å˜é‡çš„æ–¹å¼
+* ç»“æ„ä½“
+void (*funPtr)(void);	//å‡½æ•°æŒ‡é’ˆ
 typedef struct TASK{
 	funPtr taskEnterFun;
 	char * taskName;
 	int stackSize;
 	int stackPrioirity;
 	funPtr taskEnd;
-	//ÓëÏûÏ¢¶ÓÁĞÓĞ¹ØµÄ³ÉÔ±
+	//ä¸æ¶ˆæ¯é˜Ÿåˆ—æœ‰å…³çš„æˆå‘˜
 	message_t	taskMessage;
 	queue_t		takQueue;
 	mail_t		taskMail;
 	semaphare_t	taskSemaphere;
-	//µÈµÈ£¬Ò»¸öÈÎÎñÓĞ¹Ø½á¹¹ÌåÖĞ¿ÉÒÔ°üº¬ËùÓĞÓĞ¹ØµÄ³ÉÔ±
+	//ç­‰ç­‰ï¼Œä¸€ä¸ªä»»åŠ¡æœ‰å…³ç»“æ„ä½“ä¸­å¯ä»¥åŒ…å«æ‰€æœ‰æœ‰å…³çš„æˆå‘˜
 } Task;
-* @desc: B520ÏîÄ¿£¬ËüÊÇ°ÑÕâ¸öÈÎÎñ½á¹¹Ìå·ÅÔÚÈ«¾Ö±äÁ¿ÖĞ, .c ÎÄ¼şÖĞ¾Í³õÊ¼»¯
-*		 main »¹Ã»Ö´ĞĞ£¬ÕâĞ©ÈÎÎñ¿ØÖÆ¿é init, delete ÒÑ¾­³õÊ¼»¯ºÃÁË
-*		 ÔÚ manager_thread ÈÎÎñÖĞÔÙµ÷ÓÃ task1.init() ³õÊ¼»¯Ïß³Ì£¬µ÷ÓÃÏß³ÌÈë¿Úº¯Êı
+* @desc: B520é¡¹ç›®ï¼Œå®ƒæ˜¯æŠŠè¿™ä¸ªä»»åŠ¡ç»“æ„ä½“æ”¾åœ¨å…¨å±€å˜é‡ä¸­, .c æ–‡ä»¶ä¸­å°±åˆå§‹åŒ–
+*		 main è¿˜æ²¡æ‰§è¡Œï¼Œè¿™äº›ä»»åŠ¡æ§åˆ¶å— init, delete å·²ç»åˆå§‹åŒ–å¥½äº†
+*		 åœ¨ manager_thread ä»»åŠ¡ä¸­å†è°ƒç”¨ task1.init() åˆå§‹åŒ–çº¿ç¨‹ï¼Œè°ƒç”¨çº¿ç¨‹å…¥å£å‡½æ•°
 */
 
 #endif

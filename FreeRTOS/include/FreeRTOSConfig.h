@@ -74,109 +74,109 @@
 #include "sys.h"
 #include "usart.h"
 
-//��Բ�ͬ�ı��������ò�ͬ��stdint.h�ļ�
+//针对不同的编译器调用不同的stdint.h文件
 #if defined(__ICCARM__) || defined(__CC_ARM) || defined(__GNUC__)
     #include <stdint.h>
     extern uint32_t SystemCoreClock;
 #endif
 
-//����
-//ʹ�ö��ԵĻ��ᵼ�¿����Ӵ�һ���ڵ��Խ׶�ʹ�á�
-//����������ʾ�� LCD �ϵĺ�����Ҳ������ͨ�����ڴ�ӡ�����ĺ�����
+//断言
+//使用断言的话会导致开销加大，一般在调试阶段使用。
+//，可以是显示到 LCD 上的函数，也可以是通过串口打印出来的函数，
 #define vAssertCalled(char,int) printf("Error:%s,%d\r\n",char,int)
 //#define vAssertCalled(char, int) LCD_Show_char(char)
 #define configASSERT(x) if((x)==0) vAssertCalled(__FILE__,__LINE__)
 
 /***************************************************************************************************************/
-/*                                        FreeRTOS������������ѡ��                                              */
+/*                                        FreeRTOS基础配置配置选项                                              */
 /***************************************************************************************************************/
-#define configUSE_PREEMPTION					1	//1ʹ����ռʽ�ںˣ�0ʹ��Э��
-//��ʱ��Ƭ���ж��н��������л�
-#define configUSE_TIME_SLICING					1	//1ʹ��ʱ��Ƭ����(Ĭ��ʽʹ�ܵ�)
+#define configUSE_PREEMPTION					1	//1使用抢占式内核，0使用协程
+//在时间片的中断中进行任务切换
+#define configUSE_TIME_SLICING					1	//1使能时间片调度(默认式使能的)
 
-//ѡ����һ��Ҫִ�е�����ķ���
-//0 ��������
-//1 ˵��Ӳ��֧�� ʹ��Ӳ��������Cortex-M ֧�ֵļ���ǰ����ָ��, ָ����һ��Ҫִ�е�����
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION	1   //1�������ⷽ����ѡ����һ��Ҫ���е�����
-                                                    //һ����Ӳ������ǰ����ָ������ʹ�õ�
-                                                    //MCUû����ЩӲ��ָ��Ļ��˺�Ӧ������Ϊ0��
-//FreeRTOS�ĵ͹���
-#define configUSE_TICKLESS_IDLE					0   //1���õ͹���ticklessģʽ
-#define configUSE_QUEUE_SETS					1   //Ϊ1ʱ���ö���
-//SystemCoreClock ��system_stm32xx.c�ж���
-#define configCPU_CLOCK_HZ						(SystemCoreClock) //CPUƵ��
-#define configTICK_RATE_HZ						(1000) //ʱ�ӽ���Ƶ�ʣ���������Ϊ1000�����ھ���1ms
-#define configMAX_PRIORITIES					(32)//��ʹ�õ�����������ȼ�
+//选择下一个要执行的任务的方法
+//0 软件方法
+//1 说明硬件支持 使用硬件方法（Cortex-M 支持的计算前导零指令, 指向下一个要执行的任务）
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION	1   //1启用特殊方法来选择下一个要运行的任务
+                                                    //一般是硬件计算前导零指令，如果所使用的
+                                                    //MCU没有这些硬件指令的话此宏应该设置为0！
+//FreeRTOS的低功耗
+#define configUSE_TICKLESS_IDLE					0   //1启用低功耗tickless模式
+#define configUSE_QUEUE_SETS					1   //为1时启用队列
+//SystemCoreClock 在system_stm32xx.c中定义
+#define configCPU_CLOCK_HZ						(SystemCoreClock) //CPU频率
+#define configTICK_RATE_HZ						(1000) //时钟节拍频率，这里设置为1000，周期就是1ms
+#define configMAX_PRIORITIES					(32)//可使用的任务最大优先级
 
-//�������õĲ����������������С��ջ��С
-//ָ���ǿ����������С��ջ
-//��������Ŀռ��ǿ���С�����ֵ��
-#define configMINIMAL_STACK_SIZE				((unsigned short)130)   //��������ʹ�õĶ�ջ��С
-#define configMAX_TASK_NAME_LEN					(16) //���������ַ�������
+//这里配置的并不是所有任务的最小堆栈大小
+//指的是空闲任务的最小堆栈
+//其他任务的空间是可以小于这个值的
+#define configMINIMAL_STACK_SIZE				((unsigned short)130)   //空闲任务使用的堆栈大小
+#define configMAX_TASK_NAME_LEN					(16) //任务名字字符串长度
 
-//stm32 32λ, ���� ʹ��32λ�ļ�����������������
-#define configUSE_16_BIT_TICKS					0    //ϵͳ���ļ����������������ͣ�
-                                                     //1��ʾΪ16λ�޷������Σ�0��ʾΪ32λ�޷�������
-//��������
-#define configIDLE_SHOULD_YIELD					1    //Ϊ1ʱ�����������CPUʹ��Ȩ������ͬ���ȼ����û�����
-#define configUSE_TASK_NOTIFICATIONS            1    //Ϊ1ʱ��������֪ͨ���ܣ�Ĭ�Ͽ���
-#define configUSE_MUTEXES						1    //Ϊ1ʱʹ�û����ź���
-#define configQUEUE_REGISTRY_SIZE				8    //��Ϊ0ʱ��ʾ���ö��м�¼�������ֵ�ǿ���
-                                                     //��¼�Ķ��к��ź��������Ŀ��
-//�����ջ�Ƿ�������
-//�ں˼�⵽��ջ���ʱ����� �ص�����
-#define configCHECK_FOR_STACK_OVERFLOW			0    //����0ʱ���ö�ջ�����⹦�ܣ����ʹ�ô˹���
-                                                     //�û������ṩһ��ջ������Ӻ��������ʹ�õĻ�
-                                                     //��ֵ����Ϊ1����2����Ϊ������ջ�����ⷽ����
-#define configUSE_RECURSIVE_MUTEXES				1    //Ϊ1ʱʹ�õݹ黥���ź���
-#define configUSE_MALLOC_FAILED_HOOK			0    //1ʹ���ڴ�����ʧ�ܹ��Ӻ���
+//stm32 32位, 所以 使用32位的计数器变量数据类型
+#define configUSE_16_BIT_TICKS					0    //系统节拍计数器变量数据类型，
+                                                     //1表示为16位无符号整形，0表示为32位无符号整形
+//空闲任务
+#define configIDLE_SHOULD_YIELD					1    //为1时空闲任务放弃CPU使用权给其他同优先级的用户任务
+#define configUSE_TASK_NOTIFICATIONS            1    //为1时开启任务通知功能，默认开启
+#define configUSE_MUTEXES						1    //为1时使用互斥信号量
+#define configQUEUE_REGISTRY_SIZE				8    //不为0时表示启用队列记录，具体的值是可以
+                                                     //记录的队列和信号量最大数目。
+//任务堆栈是否溢出检查
+//内核检测到堆栈溢出时会调用 回调函数
+#define configCHECK_FOR_STACK_OVERFLOW			0    //大于0时启用堆栈溢出检测功能，如果使用此功能
+                                                     //用户必须提供一个栈溢出钩子函数，如果使用的话
+                                                     //此值可以为1或者2，因为有两种栈溢出检测方法。
+#define configUSE_RECURSIVE_MUTEXES				1    //为1时使用递归互斥信号量
+#define configUSE_MALLOC_FAILED_HOOK			0    //1使用内存申请失败钩子函数
 #define configUSE_APPLICATION_TASK_TAG			0                       
-#define configUSE_COUNTING_SEMAPHORES			1    //Ϊ1ʱʹ�ü����ź���
+#define configUSE_COUNTING_SEMAPHORES			1    //为1时使用计数信号量
 
 /***************************************************************************************************************/
-/*                                FreeRTOS���ڴ������й�����ѡ��                                                */
+/*                                FreeRTOS与内存申请有关配置选项                                                */
 /***************************************************************************************************************/
-#define configSUPPORT_DYNAMIC_ALLOCATION        1     //֧�ֶ�̬�ڴ�����
-//Ĭ��ϵͳ�ѵĴ�С: 20K
-//��̬�ڴ�����ʱ���������������ڴ�
-#define configTOTAL_HEAP_SIZE					((size_t)(20*1024)) //ϵͳ�����ܵĶѴ�С
+#define configSUPPORT_DYNAMIC_ALLOCATION        1     //支持动态内存申请
+//默认系统堆的大小: 20K
+//动态内存分配的时候就是申请这里的内存
+#define configTOTAL_HEAP_SIZE					((size_t)(20*1024)) //系统所有总的堆大小
 
 //
-//configAPPLICATION_ALLOCATED_HEAP ����Ϊ 1 �Ļ����ڴ�������û���������
+//configAPPLICATION_ALLOCATED_HEAP 定义为 1 的话堆内存可以由用户自行设置
 /***************************************************************************************************************/
-/*                                FreeRTOS�빳�Ӻ����йص�����ѡ��                                              */
+/*                                FreeRTOS与钩子函数有关的配置选项                                              */
 /***************************************************************************************************************/
-#define configUSE_IDLE_HOOK						0   //1��ʹ�ÿ��й��ӣ�0����ʹ��
-#define configUSE_TICK_HOOK						0   //1��ʹ��ʱ��Ƭ���ӣ�0����ʹ��
+#define configUSE_IDLE_HOOK						0   //1，使用空闲钩子；0，不使用
+#define configUSE_TICK_HOOK						0   //1，使用时间片钩子；0，不使用
 
 /***************************************************************************************************************/
-/*                                FreeRTOS������ʱ�������״̬�ռ��йص�����ѡ��                                 */
+/*                                FreeRTOS与运行时间和任务状态收集有关的配置选项                                 */
 /***************************************************************************************************************/
-//��������ʱ����Ϣͳ��
-//����Ӻ�ʱ�����ڴ�����Խ׶�ʹ��
-#define configGENERATE_RUN_TIME_STATS	        0  //Ϊ1ʱ��������ʱ��ͳ�ƹ���
-#define configUSE_TRACE_FACILITY				1  //Ϊ1���ÿ��ӻ����ٵ���
-#define configUSE_STATS_FORMATTING_FUNCTIONS	1  //���configUSE_TRACE_FACILITYͬʱΪ1ʱ���������3������
+//任务运行时间信息统计
+//会更加耗时，仅在代码调试阶段使用
+#define configGENERATE_RUN_TIME_STATS	        0  //为1时启用运行时间统计功能
+#define configUSE_TRACE_FACILITY				1  //为1启用可视化跟踪调试
+#define configUSE_STATS_FORMATTING_FUNCTIONS	1  //与宏configUSE_TRACE_FACILITY同时为1时会编译下面3个函数
                                                    //prvWriteNameToBuffer(),vTaskList(),
                                                    //vTaskGetRunTimeStats()
                                                                         
 /***************************************************************************************************************/
-/*                                FreeRTOS��Э���йص�����ѡ��                                                  */
+/*                                FreeRTOS与协程有关的配置选项                                                  */
 /***************************************************************************************************************/
-//��Э���йص�����
-#define configUSE_CO_ROUTINES 			        0    //Ϊ1ʱ����Э�̣�����Э���Ժ���������ļ�croutine.c
-#define configMAX_CO_ROUTINE_PRIORITIES         ( 2 )//Э�̵���Ч���ȼ���Ŀ
+//与协程有关的内容
+#define configUSE_CO_ROUTINES 			        0    //为1时启用协程，启用协程以后必须添加文件croutine.c
+#define configMAX_CO_ROUTINE_PRIORITIES         ( 2 )//协程的有效优先级数目
 
 /***************************************************************************************************************/
-/*                                FreeRTOS��������ʱ���йص�����ѡ��                                            */
+/*                                FreeRTOS与软件定时器有关的配置选项                                            */
 /***************************************************************************************************************/
-#define configUSE_TIMERS				        1     //Ϊ1ʱ����������ʱ��
-#define configTIMER_TASK_PRIORITY		        (configMAX_PRIORITIES-1)//������ʱ�����ȼ�
-#define configTIMER_QUEUE_LENGTH		        5     //������ʱ�����г���
-#define configTIMER_TASK_STACK_DEPTH	        (configMINIMAL_STACK_SIZE*2)//������ʱ�������ջ��С
+#define configUSE_TIMERS				        1     //为1时启用软件定时器
+#define configTIMER_TASK_PRIORITY		        (configMAX_PRIORITIES-1)//软件定时器优先级
+#define configTIMER_QUEUE_LENGTH		        5     //软件定时器队列长度
+#define configTIMER_TASK_STACK_DEPTH	        (configMINIMAL_STACK_SIZE*2)//软件定时器任务堆栈大小
 
 /***************************************************************************************************************/
-/*                                FreeRTOS��ѡ��������ѡ��                                                      */
+/*                                FreeRTOS可选函数配置选项                                                      */
 /***************************************************************************************************************/
 #define INCLUDE_xTaskGetSchedulerState          1                       
 #define INCLUDE_vTaskPrioritySet		        1
@@ -190,43 +190,43 @@
 #define INCLUDE_xTimerPendFunctionCall	        1
 
 /***************************************************************************************************************/
-/*                                FreeRTOS���ж��йص�����ѡ��                                                  */
+/*                                FreeRTOS与中断有关的配置选项                                                  */
 /***************************************************************************************************************/
-//SCB->AIRCR�Ĵ�����, �ж����ȼ���λ��, оƬ���̾���
+//SCB->AIRCR寄存器中, 中断优先级的位数, 芯片厂商决定
 #ifdef __NVIC_PRIO_BITS
 	#define configPRIO_BITS       		__NVIC_PRIO_BITS
 #else
 	#define configPRIO_BITS       		4                  
 #endif
 
-#define configLIBRARY_LOWEST_INTERRUPT_PRIORITY			15     //bit[3:0], �ж�������ȼ�, оƬ���̾���
+#define configLIBRARY_LOWEST_INTERRUPT_PRIORITY			15     //bit[3:0], 中断最低优先级, 芯片厂商决定
 
-//�˺��������� FreeRTOS ϵͳ�ɹ�����������ȼ�
-//Ҳ���Ǹ��� 5 �����ȼ�(���ȼ���ֵС�� 5, ��ֵԽС, ���ȼ�Խ��)���� FreeRTOS ����
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY	5      //ϵͳ�ɹ���������ж����ȼ�
+//此宏用来设置 FreeRTOS 系统可管理的最大优先级
+//也就是高于 5 的优先级(优先级数值小于 5, 数值越小, 优先级越高)不归 FreeRTOS 管理
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY	5      //系统可管理的最高中断优先级
 
-//MSB ������Ҫ���� 4 λ, 0xF0 - 1111 0000
-//�� configKERNEL_INTERRUPT_PRIORITY �������� PendSV �͵δ�ʱ�����ж����ȼ�
+//MSB 所以需要左移 4 位, 0xF0 - 1111 0000
+//宏 configKERNEL_INTERRUPT_PRIORITY 用来设置 PendSV 和滴答定时器的中断优先级
 #define configKERNEL_INTERRUPT_PRIORITY 		( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 
-//���ڴ����ȼ����жϿ��԰�ȫ�ĵ��� FreeRTOS �� API ������
-//���ڴ����ȼ����ж� FreeRTOS �ǽ�ֹ�ģ����ܵ��� FreeRTOS �ṩ�� API����
-//�жϷ�����Ҳ���ܵ��� FreeRTOS �� API ����
-//���� 4 λ����Ϊ����Ĵ����ĸ�λ��Чλ(MSB)
+//低于此优先级的中断可以安全的调用 FreeRTOS 的 API 函数，
+//高于此优先级的中断 FreeRTOS 是禁止的（不能调用 FreeRTOS 提供的 API），
+//中断服务函数也不能调用 FreeRTOS 的 API 函数
+//左移 4 位是因为这个寄存器的高位有效位(MSB)
 //0x50  =  0x05 << 4
-//80, ���ֵ�� 80 ����Ͳ�����ѽ ?????????????????????????????????????????
+//80, 如果值是 80 结果就不对了呀 ?????????????????????????????????????????
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY 	( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 
 /***************************************************************************************************************/
-/*                                FreeRTOS���жϷ������йص�����ѡ��                                          */
+/*                                FreeRTOS与中断服务函数有关的配置选项                                          */
 /***************************************************************************************************************/
-#define xPortPendSVHandler 	PendSV_Handler	//PendSV ���жϷ�����
-#define vPortSVCHandler 	SVC_Handler		//SVC ���жϷ�����, ִ�� SVC ָ���ʱ���������
+#define xPortPendSVHandler 	PendSV_Handler	//PendSV 的中断服务函数
+#define vPortSVCHandler 	SVC_Handler		//SVC 的中断服务函数, 执行 SVC 指令的时候会调用这个
 
 /***************************************************************************************************************/
-/*                                FreeRTOS�뾲̬��������ѡ��                                          */
+/*                                FreeRTOS与静态任务配置选项                                          */
 /***************************************************************************************************************/
-#define configSUPPORT_STATIC_ALLOCATION 1           //֧�־�̬��������
+#define configSUPPORT_STATIC_ALLOCATION 1           //支持静态创建任务
 
 #endif /* FREERTOS_CONFIG_H */
 

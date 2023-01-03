@@ -286,17 +286,17 @@ to its original value when it is released. */
 #endif
 
 /*
- * Task control block. ÈÎÎñ¿ØÖÆ¿é
+ * Task control block. ä»»åŠ¡æ§åˆ¶å—
  * A task control block (TCB) is allocated for each task,
  * and stores task state information, including a pointer to the task's context
  * (the task's run time environment, including register values)
- * ¿ÉÒÔ¿´³öÀ´ FreeRTOS µÄÈÎÎñ¿ØÖÆ¿éÖĞµÄ³ÉÔ±±äÁ¿Ïà±È UCOSIII ÒªÉÙºÜ¶à£¬¶øÇÒ´ó¶àÊıÓë
- * ²Ã¼ôÓĞ¹Ø£¬µ±²»Ê¹ÓÃÄ³Ğ©¹¦ÄÜµÄÊ±ºòÓëÆäÏà¹ØµÄ±äÁ¿¾Í²»²ÎÓë±àÒë£¬ÈÎÎñ¿ØÖÆ¿é´óĞ¡¾Í»á½øÒ»
- * ²½µÄ¼õĞ¡¡£
+ * å¯ä»¥çœ‹å‡ºæ¥ FreeRTOS çš„ä»»åŠ¡æ§åˆ¶å—ä¸­çš„æˆå‘˜å˜é‡ç›¸æ¯” UCOSIII è¦å°‘å¾ˆå¤šï¼Œè€Œä¸”å¤§å¤šæ•°ä¸
+ * è£å‰ªæœ‰å…³ï¼Œå½“ä¸ä½¿ç”¨æŸäº›åŠŸèƒ½çš„æ—¶å€™ä¸å…¶ç›¸å…³çš„å˜é‡å°±ä¸å‚ä¸ç¼–è¯‘ï¼Œä»»åŠ¡æ§åˆ¶å—å¤§å°å°±ä¼šè¿›ä¸€
+ * æ­¥çš„å‡å°ã€‚
  */
 typedef struct tskTaskControlBlock
 {
-	//ÈÎÎñ¶ÑÕ»Õ»¶¥
+	//ä»»åŠ¡å †æ ˆæ ˆé¡¶
 	volatile StackType_t	*pxTopOfStack;	/*< Points to the location of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE TCB STRUCT. */
 
 	//MPU
@@ -304,34 +304,34 @@ typedef struct tskTaskControlBlock
 		xMPU_SETTINGS	xMPUSettings;		/*< The MPU settings are defined as part of the port layer.  THIS MUST BE THE SECOND MEMBER OF THE TCB STRUCT. */
 	#endif
 
-	//×´Ì¬ÁĞ±íÏî:Ready, Blocked, Suspended
+	//çŠ¶æ€åˆ—è¡¨é¡¹:Ready, Blocked, Suspended; é“¾è¡¨çš„ä½¿ç”¨, å®šä¹‰ä¸€ä¸ªç»“æ„ä½“æˆå‘˜, åŒ…å« ListItem_t æˆå‘˜
 	ListItem_t			xStateListItem;	/*< The list that the state list item of a task is reference from denotes the state of that task (Ready, Blocked, Suspended ). */
-	//ÊÂ¼şÁĞ±íÏî
+	//äº‹ä»¶åˆ—è¡¨é¡¹
 	ListItem_t			xEventListItem;		/*< Used to reference a task from an event list. */
-	//ÈÎÎñÓÅÏÈ¼¶
+	//ä»»åŠ¡ä¼˜å…ˆçº§
 	UBaseType_t			uxPriority;			/*< The priority of the task.  0 is the lowest priority. */
-	//ÈÎÎñ¶ÑÕ»ÆäÊµµØÖ·
+	//ä»»åŠ¡æ ˆ, ä»»åŠ¡å †æ ˆèµ·å§‹åœ°å€ 
 	StackType_t			*pxStack;			/*< Points to the start of the stack. */
-	//ÈÎÎñÃû×Ö
+	//ä»»åŠ¡åå­—
 	char				pcTaskName[ configMAX_TASK_NAME_LEN ];/*< Descriptive name given to the task when created.  Facilitates debugging only. */ /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
-	//ÈÎÎñ¶ÑÕ»½áÊøµØÖ·
+	//ä»»åŠ¡å †æ ˆç»“æŸåœ°å€
 	#if ( portSTACK_GROWTH > 0 )
 		StackType_t		*pxEndOfStack;		/*< Points to the end of the stack on architectures where the stack grows up from low memory. */
 	#endif
-	//ÁÙ½çÇøµÄÇ¶Ì×Éî¶È ????
+	//ä¸´ç•ŒåŒºçš„åµŒå¥—æ·±åº¦ ????
 	#if ( portCRITICAL_NESTING_IN_TCB == 1 )
 		UBaseType_t		uxCriticalNesting;	/*< Holds the critical section nesting depth for ports that do not maintain their own count in the port layer. */
 	#endif
-	//Debug µÄÊ±ºò»áÓÃµ½
+	//Debug çš„æ—¶å€™ä¼šç”¨åˆ°
 	#if ( configUSE_TRACE_FACILITY == 1 )
 		UBaseType_t		uxTCBNumber;		/*< Stores a number that increments each time a TCB is created.  It allows debuggers to determine when a task has been deleted and then recreated. */
 		UBaseType_t		uxTaskNumber;		/*< Stores a number specifically for use by third party trace code. */
 	#endif
 
 	#if ( configUSE_MUTEXES == 1 )
-		//ÈÎÎñ»ù´¡ÓÅÏÈ¼¶,ÓÅÏÈ¼¶·´×ªµÄÊ±ºòÓÃµ½
+		//ä»»åŠ¡åŸºç¡€ä¼˜å…ˆçº§,ä¼˜å…ˆçº§åè½¬çš„æ—¶å€™ç”¨åˆ°
 		UBaseType_t		uxBasePriority;		/*< The priority last assigned to the task - used by the priority inheritance mechanism. */
-		//ÈÎÎñ»ñÈ¡µ½µÄ»¥³âĞÅºÅÁ¿¸öÊı
+		//ä»»åŠ¡è·å–åˆ°çš„äº’æ–¥ä¿¡å·é‡ä¸ªæ•°
 		UBaseType_t		uxMutexesHeld;
 	#endif
 
@@ -339,15 +339,15 @@ typedef struct tskTaskControlBlock
 		TaskHookFunction_t pxTaskTag;
 	#endif
 
-	//Óë±¾µØ´æ´¢ÓĞ¹Ø
+	//ä¸æœ¬åœ°å­˜å‚¨æœ‰å…³
 	#if( configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 )
 		void *pvThreadLocalStoragePointers[ configNUM_THREAD_LOCAL_STORAGE_POINTERS ];
 	#endif
-	//¼ÇÂ¼ÈÎÎñÔËĞĞÊ±¼ä
+	//è®°å½•ä»»åŠ¡è¿è¡Œæ—¶é—´
 	#if( configGENERATE_RUN_TIME_STATS == 1 )
 		uint32_t		ulRunTimeCounter;	/*< Stores the amount of time the task has spent in the Running state. */
 	#endif
-	//¶¨ÒåÒ»¸ö newlib ½á¹¹Ìå±äÁ¿
+	//å®šä¹‰ä¸€ä¸ª newlib ç»“æ„ä½“å˜é‡
 	#if ( configUSE_NEWLIB_REENTRANT == 1 )
 		/* Allocate a Newlib reent structure that is specific to this task.
 		Note Newlib support has been included by popular demand, but is not
@@ -358,15 +358,15 @@ typedef struct tskTaskControlBlock
 		implements a system-wide malloc() that must be provided with locks. */
 		struct	_reent xNewLib_reent;
 	#endif
-	//Ê¹ÓÃÈÎÎñÍ¨Öª
+	//ä½¿ç”¨ä»»åŠ¡é€šçŸ¥
 	#if( configUSE_TASK_NOTIFICATIONS == 1 )
-		volatile uint32_t ulNotifiedValue;	//ÈÎÎñÍ¨ÖªÖµ
-		volatile uint8_t ucNotifyState;	//ÈÎÎñÍ¨Öª×´Ì¬
+		volatile uint32_t ulNotifiedValue;	//ä»»åŠ¡é€šçŸ¥å€¼
+		volatile uint8_t ucNotifyState;	//ä»»åŠ¡é€šçŸ¥çŠ¶æ€
 	#endif
 
 	/* See the comments above the definition of
 	tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE. */
-	//Ê¹ÓÃÊ¹ÓÃ¾²Ì¬·ÖÅäÄÚ´æµÄ·½Ê½´´½¨ÈÎÎñµÄ±êÖ¾: pdTRUE / pdFALSE
+	//ä½¿ç”¨ä½¿ç”¨é™æ€åˆ†é…å†…å­˜çš„æ–¹å¼åˆ›å»ºä»»åŠ¡çš„æ ‡å¿—: pdTRUE / pdFALSE
 	#if( tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE != 0 )
 		uint8_t	ucStaticallyAllocated; 		/*< Set to pdTRUE if the task is a statically allocated to ensure no attempt is made to free the memory. */
 	#endif
@@ -441,8 +441,8 @@ PRIVILEGED_DATA static volatile UBaseType_t uxSchedulerSuspended	= ( UBaseType_t
 /*-----------------------------------------------------------*/
 
 /* Callback function prototypes. --------------------------*/
-//Èç¹ûÊ¹ÓÃÁËºê: configCHECK_FOR_STACK_OVERFLOW, ÓÃ»§¾Í±ØĞëÌá¹©Ò»¸ö ¹³×Óº¯Êı
-//¶ÑÕ»Òç³öµÄ¹³×Óº¯Êı£¨»Øµ÷º¯Êı£©
+//å¦‚æœä½¿ç”¨äº†å®: configCHECK_FOR_STACK_OVERFLOW, ç”¨æˆ·å°±å¿…é¡»æä¾›ä¸€ä¸ª é’©å­å‡½æ•°
+//å †æ ˆæº¢å‡ºçš„é’©å­å‡½æ•°ï¼ˆå›è°ƒå‡½æ•°ï¼‰
 #if(  configCHECK_FOR_STACK_OVERFLOW > 0 )
 	extern void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName );
 #endif
@@ -630,6 +630,8 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 			#endif /* configSUPPORT_DYNAMIC_ALLOCATION */
 
 			prvInitialiseNewTask( pxTaskCode, pcName, ulStackDepth, pvParameters, uxPriority, &xReturn, pxNewTCB, NULL );
+
+			// è‡ªåŠ¨æ·»åŠ ä»»åŠ¡åˆ°å°±ç»ªé“¾è¡¨
 			prvAddNewTaskToReadyList( pxNewTCB );
 		}
 		else
@@ -715,10 +717,10 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 				/* Allocate space for the stack used by the task being created.
 				The base of the stack memory stored in the TCB so the task can
 				be deleted later if required. */
-				//ÕâÀï·ÖÅäµÄÄÚ´æ´óĞ¡£º ( ( size_t ) usStackDepth ) * sizeof( StackType_t ) )
+				//è¿™é‡Œåˆ†é…çš„å†…å­˜å¤§å°ï¼š ( ( size_t ) usStackDepth ) * sizeof( StackType_t ) )
 				//#define portSTACK_TYPE	uint32_t
 				//typedef portSTACK_TYPE StackType_t;
-				//ËùÒÔÊµ¼Ê·ÖÅäµÄÄÚ´æ´óĞ¡ÊÇ: usStackDepth µÄ 4 ±¶
+				//æ‰€ä»¥å®é™…åˆ†é…çš„å†…å­˜å¤§å°æ˜¯: usStackDepth çš„ 4 å€
 				pxNewTCB->pxStack = ( StackType_t * ) pvPortMalloc( ( ( ( size_t ) usStackDepth ) * sizeof( StackType_t ) ) ); /*lint !e961 MISRA exception as the casts are only redundant for some ports. */
 
 				if( pxNewTCB->pxStack == NULL )
@@ -733,12 +735,12 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 		{
 		StackType_t *pxStack;
 
-			/* Allocate space for the stack used by the task being created. */
+			/* Allocate space for the stack used by the task being created. OS åˆ†é… ä»»åŠ¡æ ˆ*/
 			pxStack = ( StackType_t * ) pvPortMalloc( ( ( ( size_t ) usStackDepth ) * sizeof( StackType_t ) ) ); /*lint !e961 MISRA exception as the casts are only redundant for some ports. */
 
 			if( pxStack != NULL )
 			{
-				/* Allocate space for the TCB. */
+				/* Allocate space for the TCB. OS åˆ†é… TCB*/
 				pxNewTCB = ( TCB_t * ) pvPortMalloc( sizeof( TCB_t ) ); /*lint !e961 MISRA exception as the casts are only redundant for some paths. */
 
 				if( pxNewTCB != NULL )
@@ -825,6 +827,7 @@ UBaseType_t x;
 	by the port. */
 	#if( portSTACK_GROWTH < 0 )
 	{
+		// æ ˆé¡¶æŒ‡å‘åœ°å€æœ€å¤§çš„ä½ç½®: pxNewTCB->pxStack  + ( ulStackDepth - ( uint32_t ) 1 )
 		pxTopOfStack = pxNewTCB->pxStack + ( ulStackDepth - ( uint32_t ) 1 );
 		pxTopOfStack = ( StackType_t * ) ( ( ( portPOINTER_SIZE_TYPE ) pxTopOfStack ) & ( ~( ( portPOINTER_SIZE_TYPE ) portBYTE_ALIGNMENT_MASK ) ) ); /*lint !e923 MISRA exception.  Avoiding casts between pointers and integers is not practical.  Size differences accounted for using portPOINTER_SIZE_TYPE type. */
 

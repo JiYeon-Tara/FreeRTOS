@@ -3,15 +3,29 @@
 #include "event_groups.h"
 #include "thread_manager.h"
 
-/**************************** task info ******************************/
-TaskHandle_t LED1Task_Handler; //LED0ÈÎÎñ¾ä±ú
+/********************
+ * MACRO
+ ********************/
 
-/**************************** global varible ******************************/
-extern EventGroupHandle_t manager_event_group; //ÊÂ¼ş±êÖ¾×é, ¿ÉÒÔÓÃÓÚÒ»¸öÈÎÎñ/ÊÂ¼şÓë¶à¸öÈÎÎñ/ÊÂ¼ş½øĞĞÍ¬²½
 
-/**************************** macro definition ******************************/
+/********************
+ * FUNCTION
+ ********************/
+static void led1_task(void *pvParameters);
+static void led1_task_exit(void *param);
 
-/**************************** macro definition ******************************/
+
+/********************
+ * GLOBAL VAR
+ ********************/
+thread_cb_t led1_thread = {
+	.thread_init = led1_task,
+	.thread_deinit = led1_task_exit,
+};
+
+extern EventGroupHandle_t manager_event_group; //äº‹ä»¶æ ‡å¿—ç»„, å¯ä»¥ç”¨äºä¸€ä¸ªä»»åŠ¡/äº‹ä»¶ä¸å¤šä¸ªä»»åŠ¡/äº‹ä»¶è¿›è¡ŒåŒæ­¥
+
+
 
 
 /**
@@ -29,8 +43,8 @@ static void hardware_init()
  */
 static void software_init()
 {
-    // //Í¨ÖªÆäËüÏß³Ì³õÊ¼»¯ -> Í¨³£Ê¹ÓÃÈÎÎñÍ¨ÖªÊµÏÖ
-    // //ÉèÖÃ±êÖ¾Î»
+    // //é€šçŸ¥å…¶å®ƒçº¿ç¨‹åˆå§‹åŒ– -> é€šå¸¸ä½¿ç”¨ä»»åŠ¡é€šçŸ¥å®ç°
+    // //è®¾ç½®æ ‡å¿—ä½
     // xEventGroupSetBits(manager_event_group, TASK_SYNC);
 }
 
@@ -40,28 +54,47 @@ static void software_init()
  */
 static void resource_init()
 {
-    
+    led1_thread.mutex = xQueueCreateMutex(1);
+    configASSERT(led1_thread.mutex);
+
+    led1_thread.queue = xQueueCreate(LED1_QUEUE_SIZE, sizeof(thread_msg_t));
+    configASSERT(led1_thread.queue != NULL);
+
+    led1_thread.sema = xSemaphoreCreateBinary();
+    configASSERT(led1_thread.sema != NULL);
+
+    led1_thread.event_group = xEventGroupCreate();
+    configASSERT(led1_thread.event_group != NULL);
 }
 
-//LED1ÈÎÎñÈë¿Úº¯Êı
-void led1_task(void *pvParameters)
+//LED1ä»»åŠ¡å…¥å£å‡½æ•°
+static void led1_task(void *pvParameters)
 {
+    taskENTER_CRITICAL();
     hardware_init();
     resource_init();
     software_init();
+    printf("thread led1 running...\r\n");
+	taskEXIT_CRITICAL();
 
     while(1)
     {
         // printf("%s running..\r\n", __func__);
         // LED1=0;
-        // vTaskDelay(2000);		//ÑÓÊ±£¬µ±Ç°ÈÎÎñ½øÈë×èÈûÌ¬£¬µ÷¶ÈÆ÷½øĞĞÈÎÎñµ÷¶È
+        // vTaskDelay(2000);		//å»¶æ—¶ï¼Œå½“å‰ä»»åŠ¡è¿›å…¥é˜»å¡æ€ï¼Œè°ƒåº¦å™¨è¿›è¡Œä»»åŠ¡è°ƒåº¦
         // LED1=1;
         // vTaskDelay(2000);
 
-        // ÏûÏ¢´¦ÀíÏß³Ì×èÈûµÈ´ıÊÂ¼ş
-        xEventGroupWaitBits(manager_event_group, TASK_SYNC, pdTRUE, pdTRUE, portMAX_DELAY);
-        LED1 = ~LED1;
-        printf("LED1 thread got a sync bit.\r\n");
+        // æ¶ˆæ¯å¤„ç†çº¿ç¨‹é˜»å¡ç­‰å¾…äº‹ä»¶
+        // xEventGroupWaitBits(manager_event_group, TASK_SYNC, pdTRUE, pdTRUE, portMAX_DELAY);
+        // LED1 = ~LED1;
+        // printf("LED1 thread got a sync bit.\r\n");
     }
-	//return;					//Õı³£À´ËµÖ´ĞĞ²»µ½ÕâÀï
+	//return; //æ­£å¸¸æ¥è¯´æ‰§è¡Œä¸åˆ°è¿™é‡Œ
 }
+
+static void led1_task_exit(void *param)
+{
+	
+}
+

@@ -15,24 +15,40 @@
 #include <stdint.h>
 #include <string.h>
 
-/**************************** global varible ******************************/
-//LCD Ë¢ÆÁÊ±Ê¹ÓÃµÄÑÕÉ«
+
+// LVGL åˆå§‹åŒ–
+/********************
+ * MACRO
+ ********************/
+
+
+/********************
+ * FUNCTION
+ ********************/
+void thread_ui_entry(void *pvParameters);
+static void ui_task_exit(void *param);
+
+
+/********************
+ * VAR
+ ********************/
+thread_cb_t ui_thread = { \
+	.thread_init = thread_ui_entry, \
+	.thread_deinit = ui_task_exit, \
+};
+
+//LCD åˆ·å±æ—¶ä½¿ç”¨çš„é¢œè‰²
 static int lcd_discolor[14] = { WHITE, BLACK, BLUE, BRED, 
-                        GRED, GBLUE, RED, MAGENTA, 
-                        GREEN, CYAN, YELLOW, BROWN, 
-                        BRRED, GRAY };
-extern xQueueHandle Key_Queue;          //ÏûÏ¢¶ÓÁĞ¾ä±ú, from thread_key.c
-extern xQueueHandle Dual_Comm_Queue;    //ÏûÏ¢¶ÓÁĞ¾ä±ú, from thread_dual_comm.c
-/**************************** macro definition ******************************/
+                                GRED, GBLUE, RED, MAGENTA, 
+                                GREEN, CYAN, YELLOW, BROWN, 
+                                BRRED, GRAY };
+extern xQueueHandle Key_Queue;          //æ¶ˆæ¯é˜Ÿåˆ—å¥æŸ„, from thread_key.c
+extern xQueueHandle Dual_Comm_Queue;    //æ¶ˆæ¯é˜Ÿåˆ—å¥æŸ„, from thread_dual_comm.c
 
-/**************************** macro definition ******************************/
-
-//thread ui task
-TaskHandle_t Thread_UI_Handler; //ÈÎÎñ¾ä±ú
 
 static void thread_ui_hardware_init()
 {
-    LCD_Init(); //³õÊ¼»¯ LCD
+    LCD_Init(); //åˆå§‹åŒ– LCD
 
     return;
 }
@@ -41,9 +57,9 @@ static void thread_ui_hardware_init()
 static void thread_ui_software_init()
 {
     POINT_COLOR = RED;
-    LCD_ShowString(30, 10, 200, 16, 16, "NingXia");
-    LCD_ShowString(30, 30, 200, 16, 16, "YinChuan");
-    LCD_ShowString(30, 50, 200, 16, 16, "Weather:sunny");
+    // LCD_ShowString(30, 10, 200, 16, 16, "NingXia");
+    // LCD_ShowString(30, 30, 200, 16, 16, "YinChuan");
+    // LCD_ShowString(30, 50, 200, 16, 16, "Weather:sunny");
     // LCD_ShowString(30, 70, 200, 16, 16, "");
     // LCD_ShowString(30, 90, 200, 16, 16, "2016/11/25");
 
@@ -53,52 +69,50 @@ static void thread_ui_software_init()
 void thread_ui_entry(void *pvParameters)
 {
     uint8_t num = 0;
-
+    taskENTER_CRITICAL();
     thread_ui_hardware_init();
     thread_ui_software_init();
     POINT_COLOR = BLACK;
-    LCD_DrawRectangle(5, 110, 115, 314); //»­Ò»¸ö¾ØĞÎ
-    LCD_DrawLine(5, 130, 115, 130); //»­Ïß
+    LCD_DrawRectangle(5, 110, 115, 314); //ç”»ä¸€ä¸ªçŸ©å½¢
+    LCD_DrawLine(5, 130, 115, 130); //ç”»çº¿
     POINT_COLOR = BLUE;
     LCD_ShowString(6, 111, 110, 16, 16, "Task1 Run:000");
+    printf("thread gui init\r\n");
+	taskEXIT_CRITICAL();
 
     while(1)
     {
         
-        //
-        // ×èÈû½ÓÊÕÀ´×Ô°´¼üÏß³ÌµÄÏûÏ¢
-        //
+        // é˜»å¡æ¥æ”¶æ¥è‡ªæŒ‰é”®çº¿ç¨‹çš„æ¶ˆæ¯
         if(Key_Queue != NULL)
         {
             uint8_t key_val;
             //
-            // ÒªÍ¨¹ı xQueueReceive µÄ·µ»ØÖµ½øĞĞÅĞ¶Ï
-            // UI Ïß³ÌÃ¿ 2s ²Å¿ÉÒÔ´¦ÀíÒ»¸ö¶ÓÁĞÖĞµÄÒ»¸öÏûÏ¢
-            // key thread »á½«ÏûÏ¢¶¼·Åµ½Ò»¸ö¶ÓÁĞÀï, ÂıÂı´¦Àí(Ì«¿ìµÄ»°¶ÓÁĞ»¹ÊÇ»á±¬)
-            // ÕâÀïÊ¹ÓÃÒ»Ö±×èÈû¶Á¶ÓÁĞµÄ·½Ê½, ¿ÉÒÔÊ¹ÓÃ ÈÎÎñÍ¨Öª + ¶ÓÁĞµÄ·½Ê½, ¶ÓÁĞÖĞÈûÈëÊı¾İ, ¾Í·¢¸öÍ¨Öª, ÈÃ UI Ïß³ÌÈ¥´¦Àí
+            // è¦é€šè¿‡ xQueueReceive çš„è¿”å›å€¼è¿›è¡Œåˆ¤æ–­
+            // UI çº¿ç¨‹æ¯ 2s æ‰å¯ä»¥å¤„ç†ä¸€ä¸ªé˜Ÿåˆ—ä¸­çš„ä¸€ä¸ªæ¶ˆæ¯
+            // key thread ä¼šå°†æ¶ˆæ¯éƒ½æ”¾åˆ°ä¸€ä¸ªé˜Ÿåˆ—é‡Œ, æ…¢æ…¢å¤„ç†(å¤ªå¿«çš„è¯é˜Ÿåˆ—è¿˜æ˜¯ä¼šçˆ†)
+            // è¿™é‡Œä½¿ç”¨ä¸€ç›´é˜»å¡è¯»é˜Ÿåˆ—çš„æ–¹å¼, å¯ä»¥ä½¿ç”¨ ä»»åŠ¡é€šçŸ¥ + é˜Ÿåˆ—çš„æ–¹å¼, é˜Ÿåˆ—ä¸­å¡å…¥æ•°æ®, å°±å‘ä¸ªé€šçŸ¥, è®© UI çº¿ç¨‹å»å¤„ç†
             // #define UI_THREAD_MSG_QUEUE_READY    0x00000001
             // xTaskNotify()
             //
-            if(xQueueReceive(Key_Queue, &key_val, portMAX_DELAY) == pdTRUE) //portMAX_DELAY, ×èÈûµÈ´ı
+            if(xQueueReceive(Key_Queue, &key_val, portMAX_DELAY) == pdTRUE) //portMAX_DELAY, é˜»å¡ç­‰å¾…
             {
                 printf("ui_thread receive key val = %d\r\n", key_val);
-                vTaskDelay(2000);   // Ä£Äâ UI Ïß³Ì 2s ²Å¿ÉÒÔ´¦ÀíÒ»´ÎÏûÏ¢
+                vTaskDelay(2000);   // æ¨¡æ‹Ÿ UI çº¿ç¨‹ 2s æ‰å¯ä»¥å¤„ç†ä¸€æ¬¡æ¶ˆæ¯
                 //UI show string
                 //LCD_fill();
             }
         }
 
-        //
-        // queue½ÓÊÕÀ´×ÔDual comm Ïß³ÌµÄÏûÏ¢
-        //
+        // queueæ¥æ”¶æ¥è‡ªDual comm çº¿ç¨‹çš„æ¶ˆæ¯
         if(Dual_Comm_Queue != NULL)
         {
             uint8_t uart_receive[200];
             
             //
-            // Ã¿´ÎÖ»ÄÜ¶ÁÈ¡Ò»¸ö×Ö½Ú ???????????????
+            // æ¯æ¬¡åªèƒ½è¯»å–ä¸€ä¸ªå­—èŠ‚ ???????????????
             //
-            if(xQueueReceive(Dual_Comm_Queue, uart_receive, 10))   //Ò»´ÎÖ»ÄÜ¶ÁÈ¡Ò»¸ö×Ö½ÚÂğ£¿£¿£¿
+            if(xQueueReceive(Dual_Comm_Queue, uart_receive, 10))   //ä¸€æ¬¡åªèƒ½è¯»å–ä¸€ä¸ªå­—èŠ‚å—ï¼Ÿï¼Ÿï¼Ÿ
             {
                 uint8_t ix = 0;
                 printf("ui_thread receive from usart:\r\n");
@@ -107,18 +121,23 @@ void thread_ui_entry(void *pvParameters)
             }
         }
 
-        num++; //ÈÎÎñÖ´ 1 ĞĞ´ÎÊı¼Ó 1 ×¢Òâ num ¼Óµ½ 255 µÄÊ±ºò»áÇåÁã£¡£¡
+        num++; //ä»»åŠ¡æ‰§ 1 è¡Œæ¬¡æ•°åŠ  1 æ³¨æ„ num åŠ åˆ° 255 çš„æ—¶å€™ä¼šæ¸…é›¶ï¼ï¼
         //LED0 =! LED0;
-        //printf("ÈÎÎñ 1 ÒÑ¾­Ö´ĞĞ£º%d ´Î\r\n", num);
+        //printf("ä»»åŠ¡ 1 å·²ç»æ‰§è¡Œï¼š%d æ¬¡\r\n", num);
         if(num==5) 
         {
-            //vTaskDelete(Task2Task_Handler);//ÈÎÎñ 1 Ö´ĞĞ 5 ´ÎÉ¾³ıÈÎÎñ 2 (4)
-            //printf("ÈÎÎñ 1 É¾³ıÁËÈÎÎñ 2!\r\n");
+            //vTaskDelete(Task2Task_Handler);//ä»»åŠ¡ 1 æ‰§è¡Œ 5 æ¬¡åˆ é™¤ä»»åŠ¡ 2 (4)
+            //printf("ä»»åŠ¡ 1 åˆ é™¤äº†ä»»åŠ¡ 2!\r\n");
         }
-        LCD_Fill(6, 131, 114, 313, lcd_discolor[num % 14]); //Ìî³äÇøÓò
-        //LCD_Fill(6, 131, 114, 313, BLACK); //Ìî³äÇøÓò
-        LCD_ShowxNum(86, 111, num, 3, 16, 0x80); //ÏÔÊ¾ÈÎÎñÖ´ĞĞ´ÎÊı
-        vTaskDelay(1000); //ÑÓÊ± 1s£¬Ò²¾ÍÊÇ 1000 ¸öÊ±ÖÓ½ÚÅÄ
+        LCD_Fill(6, 131, 114, 313, lcd_discolor[num % 14]); //å¡«å……åŒºåŸŸ
+        //LCD_Fill(6, 131, 114, 313, BLACK); //å¡«å……åŒºåŸŸ
+        LCD_ShowxNum(86, 111, num, 3, 16, 0x80); //æ˜¾ç¤ºä»»åŠ¡æ‰§è¡Œæ¬¡æ•°
+        vTaskDelay(1000); //å»¶æ—¶ 1sï¼Œä¹Ÿå°±æ˜¯ 1000 ä¸ªæ—¶é’ŸèŠ‚æ‹
     }
+}
+
+static void ui_task_exit(void *param)
+{
+	
 }
 

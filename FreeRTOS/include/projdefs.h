@@ -83,6 +83,7 @@ definition here is not suitable for your application. */
 	#define pdMS_TO_TICKS( xTimeInMs ) ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) * ( TickType_t ) configTICK_RATE_HZ ) / ( TickType_t ) 1000 ) )
 #endif
 
+// pd = project define
 #define pdFALSE			( ( BaseType_t ) 0 )
 #define pdTRUE			( ( BaseType_t ) 1 )
 
@@ -102,7 +103,7 @@ definition here is not suitable for your application. */
 #endif
 
 //#define configUSE_16_BIT_TICKS					0    
-//系统节拍计数器变量数据类型，
+// magic number to check list intergrity
 #if( configUSE_16_BIT_TICKS == 1 )
 	#define pdINTEGRITY_CHECK_VALUE 0x5a5a
 #else

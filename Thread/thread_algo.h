@@ -2,27 +2,28 @@
 #define __THREAD_ALOG_H__
 #include "FreeRTOS.h"
 #include "task.h"
+#include "thread.h"
 
 
-/**************************** global varible ******************************/
 
-/**************************** macro definition ******************************/
+// #define configSUPPORT_STATIC_ALLOCATION 1           //Ö§ï¿½Ö¾ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-/**************************** macro definition ******************************/
+/********************
+ * MACRO
+ ********************/
+#define     THREAD_ALGO_PRIO 2          //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½
+#define     THREAD_ALGO_STK_SIZE 128    //ï¿½ï¿½ï¿½ï¿½ï¿½Õ»ï¿½ï¿½Ð¡
 
-//
-// thread algo 
-// Ê¹ÓÃ¾²Ì¬·½·¨´´½¨ÈÎÎñÊ±, ÐèÒª´ò¿ªºê:
-// #define configSUPPORT_STATIC_ALLOCATION 1           //Ö§³Ö¾²Ì¬´´½¨ÈÎÎñ
-//
-#define     THREAD_ALGO_PRIO 2          //ÈÎÎñÓÅÏÈ¼¶
-#define     THREAD_ALGO_STK_SIZE 128    //ÈÎÎñ¶ÑÕ»´óÐ¡
-extern StackType_t ThreadAlgoStack[THREAD_ALGO_STK_SIZE]; //ÈÎÎñ¶ÑÕ»
-extern StaticTask_t ThreadAlgoTCB;             //ÈÎÎñ¿ØÖÆ¿é
-extern TaskHandle_t ThreadAlgo_Handler;        //ÈÎÎñ¾ä±ú
-void thread_algo_enery(void *pvParameters); //ÈÎÎñº¯Êý
-extern TaskHandle_t ThreadAlgo_Handler;        //ÈÎÎñ¾ä±ú
+extern StackType_t ThreadAlgoStack[THREAD_ALGO_STK_SIZE]; //ï¿½ï¿½ï¿½ï¿½ï¿½Õ»
+extern StaticTask_t ThreadAlgoTCB;             //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¿ï¿½
+extern TaskHandle_t ThreadAlgo_Handler;        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// void thread_algo_enery(void *pvParameters); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// extern TaskHandle_t ThreadAlgo_Handler;        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
+/********************
+ * GLOBAL VAR
+ ********************/
+extern thread_cb_t algo_thread;
 
 #endif //end __THREAD_ALOG_H__
 

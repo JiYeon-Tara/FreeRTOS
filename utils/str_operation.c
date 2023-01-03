@@ -1,7 +1,7 @@
 /**
  * @file str_operation.c
  * @author your name (you@domain.com)
- * @brief ×Ö·û´®²Ù×÷
+ * @brief ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  * @version 0.1
  * @date 2021-12-11
  * 
@@ -11,22 +11,22 @@
 #include "str_operation.h"
 
 /**
- * @brief ½«×Ö·û´®ÖÐµÄÐ¡Ð´×ÖÄ¸×ª»»Îª´óÐ´×ÖÄ¸
+ * @brief ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½Ðµï¿½Ð¡Ð´ï¿½ï¿½Ä¸×ªï¿½ï¿½Îªï¿½ï¿½Ð´ï¿½ï¿½Ä¸
  * 
  * @param str 
  * @param len 
  */
-void LowerToCapital(uint8_t *str, uint8_t len)
-{
-    uint8_t ix;
-    for(ix = 0; ix < len; ++ix)
-    {
-        if(str[ix]>96 && str[ix]<123)
-        {
-            str[ix] = str[ix] - 32;
-        }
-    }
+// void LowerToCapital(uint8_t *str, uint8_t len)
+// {
+//     uint8_t ix;
+//     for(ix = 0; ix < len; ++ix)
+//     {
+//         if(str[ix]>96 && str[ix]<123)
+//         {
+//             str[ix] = str[ix] - 32;
+//         }
+//     }
 
-    return;
-}
+//     return;
+// }
 

@@ -5,18 +5,24 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "thread.h"
 
-/**************************** global varible ******************************/
 
-/**************************** macro definition ******************************/
+/********************
+ * MACRO
+ ********************/
+#define THREAD_UI_PRIO 3 //ä»»åŠ¡ä¼˜å…ˆçº§
+#define THREAD_UI_STK_SIZE 128 //ä»»åŠ¡å †æ ˆå¤§å°
 
-/**************************** macro definition ******************************/
 
-//thread ui task
-#define THREAD_UI_PRIO 3 //ÈÎÎñÓÅÏÈ¼¶
-#define THREAD_UI_STK_SIZE 128 //ÈÎÎñ¶ÑÕ»´óĞ¡
-extern TaskHandle_t Thread_UI_Handler; //ÈÎÎñ¾ä±ú
-void thread_ui_entry(void *pvParameters); //ÈÎÎñº¯Êı
+
+/********************
+ * VAR
+ ********************/
+extern thread_cb_t ui_thread;
+// extern TaskHandle_t Thread_UI_Handler; //ä»»åŠ¡å¥æŸ„
+// void thread_ui_entry(void *pvParameters); //ä»»åŠ¡å‡½æ•°
+
 
 #endif
 

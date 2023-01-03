@@ -5,7 +5,7 @@
 /**************************** global varible ******************************/
 
 /**************************** macro definition ******************************/
-//ÓÃÓÚ´®¿Ú¿ØÖÆ LED µÄÃüÁî
+//ç”¨äºä¸²å£æ§åˆ¶ LED çš„å‘½ä»¤
 #define LED0_ON     1
 #define LED0_OFF    2
 #define LED1_ON     3
@@ -14,7 +14,7 @@
 
 /**************************** function declaration ******************************/
 
-uint8_t command_parse(uint8_t *command);
+// uint8_t command_parse(uint8_t *command);
 
 #endif //end __COMMAND_PARSE_H__
 

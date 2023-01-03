@@ -8,17 +8,17 @@
 //#define WK_UP     PAin(0)	 
  
 
-#define KEY0    GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5)    //¶ÁÈ¡°´¼ü0
-#define KEY1    GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15)   //¶ÁÈ¡°´¼ü1
-#define WK_UP   GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0)    //¶ÁÈ¡°´¼ü2 
+#define KEY0    GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5)    //è¯»å–æŒ‰é”®0
+#define KEY1    GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15)   //è¯»å–æŒ‰é”®1
+#define WK_UP   GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0)    //è¯»å–æŒ‰é”®2 
  
 
 #define KEY0_PRES	1		//KEY0  
 #define KEY1_PRES	2		//KEY1 
 #define WKUP_PRES	3		//WK_UP  
 
-void KEY_Init(void);//IO³õÊ¼»¯
-u8 KEY_Scan(u8 mode);  	//°´¼üÉ¨Ãèº¯Êı		
+void KEY_Init(void);//IOåˆå§‹åŒ–
+u8 KEY_Scan(u8 mode);  	//æŒ‰é”®æ‰«æå‡½æ•°		
 
 
 #endif //end __KEY_H__

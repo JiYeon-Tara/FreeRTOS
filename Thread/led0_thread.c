@@ -1,21 +1,39 @@
 #include "led0_thread.h"
 #include "str_operation.h"
 #include "command_parse.h"
-#include "usart.h"  //ÐèÒªÓÃµ½´®¿ÚÖÐµÄÈ«¾Ö±äÁ¿
+#include "usart.h"  //éœ€è¦ç”¨åˆ°ä¸²å£ä¸­çš„å…¨å±€å˜é‡
+#include "FreeRTOS.h"
 #include "event_groups.h"
 #include "thread_manager.h"
 //#include "timer.h"
-/**************************** task info ******************************/
-TaskHandle_t LED0Task_Handler; //LED0ÈÎÎñ¾ä±ú
 
-/**************************** global varible ******************************/
-extern SemaphoreHandle_t BinarySemaphore;      //¶þÖµÐÅºÅÁ¿ -> »áµ¼ÖÂ"ÓÅÏÈ¼¶·­×ª", Ê¹ÓÃ»¥³âÐÅºÅÁ¿
-extern xSemaphoreHandle key_sema;      //¼ÆÊýÐÍÐÅºÅÁ¿
-extern EventGroupHandle_t manager_event_group; //ÊÂ¼þ±êÖ¾×é, ¿ÉÒÔÓÃÓÚÒ»¸öÈÎÎñ/ÊÂ¼þÓë¶à¸öÈÎÎñ/ÊÂ¼þ½øÐÐÍ¬²½
 
-/**************************** macro definition ******************************/
+/********************
+ * MACRO
+ ********************/
 
-/**************************** macro definition ******************************/
+
+/********************
+ * FUNCTION
+ ********************/
+static void led0_task(void *pvParameters);
+static void led0_task_exit(void *param);
+static void _thread_service_msg_process();
+
+
+/********************
+ * GLOBAL VAR
+ ********************/
+thread_cb_t led0_thread = {
+	.thread_init = led0_task,
+	.thread_deinit = led0_task_exit,
+};
+
+extern SemaphoreHandle_t BinarySemaphore;      //äºŒå€¼ä¿¡å·é‡ -> ä¼šå¯¼è‡´"ä¼˜å…ˆçº§ç¿»è½¬", ä½¿ç”¨äº’æ–¥ä¿¡å·é‡
+extern xSemaphoreHandle key_sema;      //è®¡æ•°åž‹ä¿¡å·é‡
+extern EventGroupHandle_t manager_event_group; //äº‹ä»¶æ ‡å¿—ç»„, å¯ä»¥ç”¨äºŽä¸€ä¸ªä»»åŠ¡/äº‹ä»¶ä¸Žå¤šä¸ªä»»åŠ¡/äº‹ä»¶è¿›è¡ŒåŒæ­¥
+
+
 
 /**
  * @brief hardware_init
@@ -23,6 +41,7 @@ extern EventGroupHandle_t manager_event_group; //ÊÂ¼þ±êÖ¾×é, ¿ÉÒÔÓÃÓÚÒ»¸öÈÎÎñ/ÊÂ
  */
 static void hardware_init()
 {
+    LED_Init();
     LED0 = 0;
 }
 
@@ -32,8 +51,8 @@ static void hardware_init()
  */
 static void software_init()
 {
-    // //Í¨ÖªÆäËüÏß³Ì³õÊ¼»¯ -> Í¨³£Ê¹ÓÃÈÎÎñÍ¨ÖªÊµÏÖ
-    // //ÉèÖÃ±êÖ¾Î»
+    // //é€šçŸ¥å…¶å®ƒçº¿ç¨‹åˆå§‹åŒ– -> é€šå¸¸ä½¿ç”¨ä»»åŠ¡é€šçŸ¥å®žçŽ°
+    // //è®¾ç½®æ ‡å¿—ä½
     // xEventGroupSetBits(manager_event_group, TASK_SYNC);
 }
 
@@ -43,31 +62,56 @@ static void software_init()
  */
 static void resource_init()
 {
+    led0_thread.mutex = xQueueCreateMutex(1);
+    configASSERT(led0_thread.mutex);
 
+    // printf("sizeof(thrad_msg_t) = %d\r\n", sizeof(thrad_msg_t));
+    led0_thread.queue = xQueueCreate(LED0_QUEUE_SIZE, sizeof(thread_msg_t));
+    configASSERT(led0_thread.queue != NULL);
+
+    led0_thread.sema = xSemaphoreCreateBinary();
+    configASSERT(led0_thread.sema != NULL);
+
+    led0_thread.event_group = xEventGroupCreate();
+    configASSERT(led0_thread.event_group != NULL);
 }
 
-//LED1ÈÎÎñÈë¿Úº¯Êý
-void led0_task(void *pvParameters)
+//LED1ä»»åŠ¡å…¥å£å‡½æ•°
+static void led0_task(void *pvParameters)
 {
 //    uint8_t len = 0;
 //    uint8_t CommandVal = COMMAND_ERR;
 //    uint8_t *pCommandStr;
 //    uint8_t semaCnt;
+    uint32_t event;
+    BaseType_t ret;
+	taskENTER_CRITICAL();
     hardware_init();
     resource_init();
     software_init();
+    printf("thread led0 running...\r\n");
+	taskEXIT_CRITICAL();
 
     while(1)
     {
+        event = 0;
+        ret = xTaskNotifyWait(0, 0xFFFFFFFF, &event, portMAX_DELAY);
+        if(ret == pdFALSE){ // æˆ–è€…ç­‰å¾…è¶…æ—¶, å¯ä»¥è®¾ç½®æœ€é•¿ç­‰å¾…è¶…æ—¶æ—¶é—´
+
+        }
+
+        if(event & SYSTEM_TASK_NOTIFY_MSG_READY){
+            _thread_service_msg_process();
+        }
         // LED0=~LED0;
-		// //ÕâÀïÑÓÊ±²»ÊÇ500 ms ¶øÊÇ¸ù¾Ý FreeRTOSConfig.h ÖÐÅäÖÃÀ´¾ö¶¨µÄ
+		// //è¿™é‡Œå»¶æ—¶ä¸æ˜¯500 ms è€Œæ˜¯æ ¹æ® FreeRTOSConfig.h ä¸­é…ç½®æ¥å†³å®šçš„
 		// //#define configTICK_RATE_HZ						(1000)   
-		// //ËùÒÔ500´Î£¬ ¾ÍÊÇ500ms
+		// //æ‰€ä»¥500æ¬¡ï¼Œ å°±æ˜¯500ms
         // printf("%s running..\r\n", __func__);
-        // vTaskDelay(500);		//ÑÓÊ±£¬µ±Ç°ÈÎÎñ½øÈë×èÈûÌ¬£¬µ÷¶ÈÆ÷½øÐÐÈÎÎñµ÷¶È
+        // vTaskDelay(500);		//å»¶æ—¶ï¼Œå½“å‰ä»»åŠ¡è¿›å…¥é˜»å¡žæ€ï¼Œè°ƒåº¦å™¨è¿›è¡Œä»»åŠ¡è°ƒåº¦
 
         //
-        // ¶ÔÀ´×Ô dual_comm Ïß³ÌµÄÊý¾Ý½øÐÐ½âÎö
+        // å¯¹æ¥è‡ª dual_comm çº¿ç¨‹çš„æ•°æ®è¿›è¡Œè§£æž
         //
         // uint8_t err;
         // if(BinarySemaphore != NULL)
@@ -80,19 +124,57 @@ void led0_task(void *pvParameters)
         // }
 
         //
-        //×èÈû»ñÈ¡¼ÆÊýÐÍÐÅºÅÁ¿
+        //é˜»å¡žèŽ·å–è®¡æ•°åž‹ä¿¡å·é‡
         //
         // xSemaphoreTake(key_sema, portMAX_DELAY);
         // semaCnt = uxSemaphoreGetCount(key_sema);
         // printf("led thread take semapthore, sema cnt:%d", semaCnt);
 
-        // ÏûÏ¢´¦ÀíÏß³Ì×èÈûµÈ´ýÊÂ¼þ
-        xEventGroupWaitBits(manager_event_group, TASK_SYNC, pdTRUE, pdTRUE, portMAX_DELAY);
-        LED0 = ~LED0;
-        printf("LED0 thread got a sync bit.\r\n");
+        // æ¶ˆæ¯å¤„ç†çº¿ç¨‹é˜»å¡žç­‰å¾…äº‹ä»¶
+        // xEventGroupWaitBits(manager_event_group, TASK_SYNC, pdTRUE, pdTRUE, portMAX_DELAY);
+        // LED0 = ~LED0;
+        // printf("LED0 thread got a sync bit.\r\n");
         
     }
-	//return;					//Õý³£À´ËµÖ´ÐÐ²»µ½ÕâÀï
+	//return;					//æ­£å¸¸æ¥è¯´æ‰§è¡Œä¸åˆ°è¿™é‡Œ
 } 
 
+static void led0_task_exit(void *param)
+{
+	
+}
 
+/**
+ * @brief get message from message queue
+ * 
+ */
+static void _thread_service_msg_process()
+{
+    BaseType_t ret;
+    thread_msg_t *p_msg;
+
+    while(1){
+        ret = xQueueReceive(led0_thread.queue, &p_msg, 0);
+        if(ret != pdPASS || p_msg == NULL){
+            break;
+        }
+        printf("data received msg_id:%d msg_len:%d\r\n", p_msg->head.msg_id, p_msg->head.msg_len);
+        switch(p_msg->head.msg_id){
+            case THREAD_LED0_MSG_ID_RAW:
+            {
+
+            }
+            break;
+            case THREAD_LED0_MSG_ID_DATA:
+            {
+            }
+            break;
+            default:
+            break;
+        }
+        free(p_msg); // free memeory
+        p_msg = NULL;
+    }
+
+    return;
+}

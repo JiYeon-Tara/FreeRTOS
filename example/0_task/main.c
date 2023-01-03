@@ -1,21 +1,30 @@
+/**
+ * @file main.c
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-01-01
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include "main.h"
 
-/************************* FreeRTOS ¿ò¼Ü´î½¨ºÃÒÔºó£¬½øĞĞ¼òµ¥²âÊÔ *******************/
+/************************* FreeRTOS ï¿½ï¿½Ü´î½¨ï¿½ï¿½ï¿½Ôºó£¬½ï¿½ï¿½Ğ¼òµ¥²ï¿½ï¿½ï¿½ *******************/
 int main(void)
 {
     hardware_init();
 	software_init();
 
-    //´´½¨¿ªÊ¼ÈÎÎñ
-	xTaskCreate((TaskFunction_t )start_task,            //ÈÎÎñÈë¿Úº¯Êı
-				(const char*    )"start_task",          //ÈÎÎñÃû³Æ
-				(uint16_t       )START_STK_SIZE,        //ÈÎÎñ¶ÑÕ»´óĞ¡
-				(void*          )NULL,                  //´«µİ¸øÈÎÎñº¯ÊıµÄ²ÎÊı
-				(UBaseType_t    )START_TASK_PRIO,       //ÈÎÎñÓÅÏÈ¼¶
-				(TaskHandle_t*  )&StartTask_Handler);   //ÈÎÎñ¾ä±ú              
-	vTaskStartScheduler();          //¿ªÆôÈÎÎñµ÷¶È
+	xTaskCreate((TaskFunction_t )start_task,            //
+				(const char*    )"start_task",          //
+				(uint16_t       )START_STK_SIZE,        //
+				(void*          )NULL,                  //
+				(UBaseType_t    )START_TASK_PRIO,       //
+				(TaskHandle_t*  )&StartTask_Handler);   //              
+	vTaskStartScheduler();          //
     		
-	return 0;		//Õı³£À´ËµÖ´ĞĞ²»µ½ÕâÀï
+	return 0;
 }
 
 

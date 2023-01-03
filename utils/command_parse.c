@@ -1,7 +1,7 @@
 /**
  * @file command_parse.c
  * @author your name (you@domain.com)
- * @brief ÃüÁî½âÎö
+ * @brief å‘½ä»¤è§£æ
  * @version 0.1
  * @date 2021-12-11
  * 
@@ -12,32 +12,32 @@
 #include <string.h>
 
 /**
- * @brief ´®¿ÚÊäÈëÃüÁî½âÎö
+ * @brief ä¸²å£è¾“å…¥å‘½ä»¤è§£æ
  * 
  * @param command 
  * @return uint8_t 
  */
-uint8_t command_parse(uint8_t *command)
-{
-    uint8_t command_val = COMMAND_ERR;
+// uint8_t command_parse(uint8_t *command)
+// {
+//     uint8_t command_val = COMMAND_ERR;
 
-    if(strcmp((char*)command, "LED0_ON") == 0)
-    {
-        command_val = LED0_ON;
-    }
-    else if(strcmp((char*)command, "LED0_OFF") == 0)
-    {
-        command_val = LED0_OFF;
-    }
-    else if(strcmp((char*)command, "LED1_ON") == 0)
-    {
-        command_val = LED1_ON;
-    }
-    else if(strcmp((char*)command, "LED1_OFF") == 0)
-    {
-        command_val = LED1_OFF;
-    }
+//     if(strcmp((char*)command, "LED0_ON") == 0)
+//     {
+//         command_val = LED0_ON;
+//     }
+//     else if(strcmp((char*)command, "LED0_OFF") == 0)
+//     {
+//         command_val = LED0_OFF;
+//     }
+//     else if(strcmp((char*)command, "LED1_ON") == 0)
+//     {
+//         command_val = LED1_ON;
+//     }
+//     else if(strcmp((char*)command, "LED1_OFF") == 0)
+//     {
+//         command_val = LED1_OFF;
+//     }
 
-    return command_val;
-}
+//     return command_val;
+// }
 

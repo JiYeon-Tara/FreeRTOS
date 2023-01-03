@@ -1,7 +1,7 @@
 /**
  * @file thread_dual_comm.c
  * @author your name (you@domain.com)
- * @brief PC ´Ó´®¿Ú·¢ËÍÊı¾İ, STM32 ½øĞĞ½âÎö
+ * @brief PC ä»ä¸²å£å‘é€æ•°æ®, STM32 è¿›è¡Œè§£æ
  * @version 0.1
  * @date 2021-12-09
  * 
@@ -9,26 +9,44 @@
  * 
  */
 #include "thread_dual_comm.h"
+#include "thread.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "usart.h"
 #include "my_timer.h"
+#include "led0_thread.h"
 
-/**************************** global varible ******************************/
-TaskHandle_t DualCommTask_Handler;      //ÈÎÎñ¾ä±ú
-xQueueHandle Dual_Comm_Queue;           //ÏûÏ¢¶ÓÁĞ¾ä±ú
-SemaphoreHandle_t BinarySemaphore;      //¶şÖµĞÅºÅÁ¿ -> »áµ¼ÖÂ"ÓÅÏÈ¼¶·­×ª", Ê¹ÓÃ»¥³âĞÅºÅÁ¿
-xTimerHandle g_timer_handle;            //¶¨Ê±Æ÷¾ä±ú
-/**************************** macro definition ******************************/
-//ÓÃÓÚ´®¿Ú¿ØÖÆ LED µÄÃüÁî
+/********************
+ * MACRO
+ ********************/
+//ç”¨äºä¸²å£æ§åˆ¶ LED çš„å‘½ä»¤
 #define LED0_ON     1
 #define LED0_OFF    2
 #define LED1_ON     3
 #define LED1_OFF    4
 #define COMMAND_ERR 0xFF
 
-/**************************** macro definition ******************************/
+/********************
+ * FUNCTION
+ ********************/
+void dual_comm_task(void *pvParameters);
+static void dual_comm_task_exit(void *param);
+
+
+/********************
+ * GLOBAL VAR
+ ********************/
+thread_cb_t dual_comm_thread = {
+	.thread_init = dual_comm_task,
+	.thread_deinit = dual_comm_task_exit,
+};
+
+TaskHandle_t DualCommTask_Handler;      //ä»»åŠ¡å¥æŸ„
+xQueueHandle Dual_Comm_Queue;           //æ¶ˆæ¯é˜Ÿåˆ—å¥æŸ„
+SemaphoreHandle_t BinarySemaphore;      //äºŒå€¼ä¿¡å·é‡ -> ä¼šå¯¼è‡´"ä¼˜å…ˆçº§ç¿»è½¬", ä½¿ç”¨äº’æ–¥ä¿¡å·é‡
+xTimerHandle g_timer_handle;            //å®šæ—¶å™¨å¥æŸ„
+
 
 /**
  * @brief hardware_init
@@ -36,7 +54,7 @@ xTimerHandle g_timer_handle;            //¶¨Ê±Æ÷¾ä±ú
  */
 static void hardware_init()
 {
-	//uart_init(115200);					//³õÊ¼»¯´®¿Ú
+	//uart_init(115200);					//åˆå§‹åŒ–ä¸²å£
 
     return;
 }
@@ -56,17 +74,13 @@ static void software_init()
  */
 static void resource_init()
 {
-    //
-    // initialize queue
-    //
     Dual_Comm_Queue = xQueueCreate(DUAL_COMM_Q_SIZE, sizeof(uint8_t));  
+    configASSERT(Dual_Comm_Queue != NULL);
 
-    //
-    // ³õÊ¼»¯¶şÖµĞÅºÅÁ¿
-    //
     BinarySemaphore = xSemaphoreCreateBinary();
+    configASSERT(BinarySemaphore != NULL);
 
-    //³õÊ¼»¯¶¨Ê±Æ÷
+    //åˆå§‹åŒ–å®šæ—¶å™¨
     // g_timer_handle = xTimerCreate((const char*)"periodic_timer",
     //                               (TickType_t)1000,
     //                               (UBaseType_t)pdTRUE,
@@ -83,47 +97,54 @@ static void resource_init()
 void dual_comm_task(void *pvParameters)
 {
     uint8_t t = 0;
+    taskENTER_CRITICAL();
     hardware_init();
     software_init();
     resource_init();
+    printf("thread dual comm running...\r\n");
+	taskEXIT_CRITICAL();
 
     while(1)
     {
         //printf("dualcomm task running...\r\n");
 
-        //Õâ¸öÊÇ ÂÖÑ¯µÄ·½Ê½, Õâ¸ö·½Ê½²»ĞĞ -> ´®¿ÚÖĞ¶Ï
+        //è¿™ä¸ªæ˜¯ è½®è¯¢çš„æ–¹å¼, è¿™ä¸ªæ–¹å¼ä¸è¡Œ -> ä¸²å£ä¸­æ–­
         if(USART_RX_STA & 0x8000)
 		{
-			uint16_t len = USART_RX_STA & 0x3fff;  //µÃµ½½ÓÊÕµÄÊı¾İ³¤¶È
+			uint16_t len = USART_RX_STA & 0x3fff;  //å¾—åˆ°æ¥æ”¶çš„æ•°æ®é•¿åº¦
 
 			printf("received:\r\n");
 			for(t = 0; t < len; ++t)
 			{
 				USART1->DR = USART_RX_BUF[t];
-				while((USART1->SR & 0X40) == 0); //µÈ´ıÊı¾İ·¢ËÍ½áÊø
+				while((USART1->SR & 0X40) == 0); //ç­‰å¾…æ•°æ®å‘é€ç»“æŸ
                 //printf("%c", )
 			}
-            //
-            // ÊÕµ½µÄÊı¾İ·¢ËÍµ½¶ÓÁĞÖĞ
-            // Ò»´Î·¢ËÍ´óÁ¿Êı¾İ
-            //
-            xQueueSend(Dual_Comm_Queue, USART_RX_BUF, 10);
 
-            //
-            // Í¨¹ı semaphore ·¢ËÍµ½ thread_led0 Ïß³Ì
-            // Ó¦¸ÃÊÇ´®¿ÚÖĞ¶ÏÖĞÊÍ·ÅĞÅºÅÁ¿: dual_comm_thread ÖĞ½øĞĞ½âÎö
-            //
-            if(BinarySemaphore != NULL)
-            {
-                xSemaphoreGive(BinarySemaphore);
+            // æ”¶åˆ°çš„æ•°æ®å‘é€åˆ°é˜Ÿåˆ—ä¸­, ä¸€æ¬¡å‘é€å¤§é‡æ•°æ®
+            // xQueueSend(Dual_Comm_Queue, USART_RX_BUF, 10);
+            if(!thread_msg_send(&led0_thread, THREAD_LED0_MSG_ID_DATA, (void*)USART_RX_BUF, len)){
+                printf("thread dual comm msg send failed, msg_id:%d, msg_len:%d\r\n", 0, len);
             }
+
+            // é€šè¿‡ semaphore å‘é€åˆ° thread_led0 çº¿ç¨‹
+            // åº”è¯¥æ˜¯ä¸²å£ä¸­æ–­ä¸­é‡Šæ”¾ä¿¡å·é‡: dual_comm_thread ä¸­è¿›è¡Œè§£æ
+            // if(BinarySemaphore != NULL)
+            // {
+            //     xSemaphoreGive(BinarySemaphore);
+            // }
             
 
-			USART_RX_STA = 0;   //¸´Î»±êÖ¾Î»
-            memset(USART_RX_BUF, 0, USART_REC_LEN); //Çå³ıÈ«¾Ö±äÁ¿»º´æ
+			USART_RX_STA = 0;   //å¤ä½æ ‡å¿—ä½
+            memset(USART_RX_BUF, 0, USART_REC_LEN); //æ¸…é™¤å…¨å±€å˜é‡ç¼“å­˜
 		}
 
-        vTaskDelay(10); //ÑÓÊ± 10ms
+        // vTaskDelay(10); //å»¶æ—¶ 10ms
     }
+}
+
+static void dual_comm_task_exit(void *param)
+{
+	
 }
 

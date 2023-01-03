@@ -3,23 +3,31 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-
-/**************************** task info ******************************/
-#define     THREAD_MOINITOR_PRIO 2          //ÈÎÎñÓÅÏÈ¼¶
-#define     THREAD_MONITOR_STK_SIZE 128    //ÈÎÎñ¶ÑÕ»´óĞ¡
-extern StackType_t ThreadMonitorStack[THREAD_MONITOR_STK_SIZE]; //ÈÎÎñ¶ÑÕ»
-extern StaticTask_t ThreadMonitorTCB;             //ÈÎÎñ¿ØÖÆ¿é
-extern TaskHandle_t ThreadMonitor_Handler;        //ÈÎÎñ¾ä±ú
-extern SemaphoreHandle_t monitor_binary_handle;    //¶şÖµĞÅºÅÁ¿
-/**************************** global varible ******************************/
+#include "thread.h"
 
 
+/********************
+ * MACRO
+ ********************/
+#define     THREAD_MOINITOR_PRIO        2           //ä»»åŠ¡ä¼˜å…ˆçº§
+#define     THREAD_MONITOR_STK_SIZE     128         //ä»»åŠ¡å †æ ˆå¤§å°
+extern StackType_t ThreadMonitorStack[THREAD_MONITOR_STK_SIZE]; //ä»»åŠ¡å †æ ˆ
+extern StaticTask_t ThreadMonitorTCB;               //ä»»åŠ¡æ§åˆ¶å—
 
-/**************************** function declaration ******************************/
-void thread_monitor_enery(void *pvParameters);
+
+/********************
+ * VAR
+ ********************/
+extern thread_cb_t monitor_thread;
+extern TaskHandle_t ThreadMonitor_Handler;          //ä»»åŠ¡å¥æŸ„
+extern SemaphoreHandle_t monitor_binary_handle;     //äºŒå€¼ä¿¡å·é‡
+
+
+
+
+// void thread_monitor_enery(void *pvParameters);
 uint8_t CommandParse(char *str);
 
-/**************************** macro definition ******************************/
 
 #endif // end __THREAD_MONITOR_H__
 

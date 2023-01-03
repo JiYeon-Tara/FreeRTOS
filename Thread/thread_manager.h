@@ -1,7 +1,7 @@
 /**
  * @file thread_manager.h
  * @author your name (you@domain.com)
- * @brief Ïß³ÌÖĞÓĞ¹ØµÄºêÒÔ¼°ĞèÒª¶ÔÍâ±©Â¶µÄ½Ó¿Ú¶¼·ÅÔÚ .h ÖĞ
+ * @brief çº¿ç¨‹ä¸­æœ‰å…³çš„å®ä»¥åŠéœ€è¦å¯¹å¤–æš´éœ²çš„æ¥å£éƒ½æ”¾åœ¨ .h ä¸­
  * @version 0.1
  * @date 2021-12-01
  * 
@@ -12,25 +12,33 @@
 #define __THREAD_MANAGER_H__
 #include "FreeRTOS.h"
 #include "event_groups.h"
-/**************************** task info ******************************/
-#define MANAGER_TASK_PRIO 5         //ÈÎÎñÓÅÏÈ¼¶
-#define MANAGER_STK_SIZE 128        //ÈÎÎñ¶ÑÕ»´óĞ¡
-extern TaskHandle_t ManagerTask_Handler;   //ÈÎÎñ¾ä±ú
-void thread_manager_task(void *pvParameters); //ÈÎÎñº¯Êı
+#include "thread.h"
 
-/**************************** global varible ******************************/
-extern EventGroupHandle_t event_group; //ÊÂ¼ş±êÖ¾×é, ¿ÉÒÔÓÃÓÚÒ»¸öÈÎÎñ/ÊÂ¼şÓë¶à¸öÈÎÎñ/ÊÂ¼ş½øĞĞÍ¬²½
 
-/**************************** macro definition ******************************/
-#define LED0_EVENT      (1 << 0) //0x00000001
+/********************
+ * MACRO
+ ********************/
+#define MANAGER_TASK_PRIO   5          //ä»»åŠ¡ä¼˜å…ˆçº§
+#define MANAGER_STK_SIZE    128        //ä»»åŠ¡å †æ ˆå¤§å°
+
+ //0x00000001
+#define LED0_EVENT      (1 << 0)
 #define LED1_EVENT      (1 << 1)
 #define KET_EVENT       (1 << 2)
 #define GUI_EVENT       (1 << 3)
 
 #define TASK_SYNC       (1 << 4)
 #define TASK_EXIT       (1 << 5)
-#define EVENT_BIT_ALL    LED0_EVENT | LED1_EVENT | KET_EVENT | GUI_EVENT
-/**************************** macro definition ******************************/
+#define EVENT_BIT_ALL   (LED0_EVENT | LED1_EVENT | KET_EVENT | GUI_EVENT)
+
+
+/********************
+ * GLOBAL VAR
+ ********************/
+extern thread_cb_t manager_thread;
+extern EventGroupHandle_t event_group; //äº‹ä»¶æ ‡å¿—ç»„, å¯ä»¥ç”¨äºä¸€ä¸ªä»»åŠ¡/äº‹ä»¶ä¸å¤šä¸ªä»»åŠ¡/äº‹ä»¶è¿›è¡ŒåŒæ­¥
+
+
 
 
 #endif // end __THREAD_MANAGER_H__

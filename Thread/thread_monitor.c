@@ -1,7 +1,7 @@
 /**
  * @file thread_monitor.c
  * @author your name (you@domain.com)
- * @brief ¹ÜÀí AT ÃüÁîµÈµÄÏß³Ì, FI ÃüÁîµÈ
+ * @brief ç®¡ç† AT å‘½ä»¤ç­‰çš„çº¿ç¨‹, FI å‘½ä»¤ç­‰
  * @version 0.1
  * @date 2021-12-01
  * 
@@ -11,36 +11,45 @@
 #include "thread_monitor.h"
 #include "sys.h"
 #include "str_operation.h"
-#include "string.h"
 #include "usart.h"
 //#include "memory.h"
 #include "led.h"
 #include "beep.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-/**
- * @brief ¿ÉÒÔÊ¹ÓÃÒ»¸ö½á¹¹Ìå(Àà)¶ÔÃ¿Ò»¸öÈÎÎñµÄÕâĞ©×ÊÔ´½øĞĞ¹ÜÀí
- *        ºóÆÚ¿ÉÒÔĞŞ¸Ä
- */
-/**************************** task info ******************************/
-StackType_t ThreadMonitorStack[THREAD_MONITOR_STK_SIZE]; //ÈÎÎñ¶ÑÕ»
-StaticTask_t ThreadMonitorTCB;             //ÈÎÎñ¿ØÖÆ¿é
-TaskHandle_t ThreadMonitor_Handler;        //ÈÎÎñ¾ä±ú
-SemaphoreHandle_t monitor_binary_handle;    //¶şÖµĞÅºÅÁ¿
-
-/**************************** global varible ******************************/
-
-
-/**************************** macro definition ******************************/
-//´®¿ÚÃüÁî½âÎö
+/********************
+ * MACRO
+ ********************/
+//ä¸²å£å‘½ä»¤è§£æ
 #define LED1ON          1
 #define LED1OFF         2
 #define BEEPON          3
 #define BEEPOFF         4
 #define COMMAND_ERR     0xFF
 
-/**************************** macro definition ******************************/
+/********************
+ * FUNCTION
+ ********************/
+static void thread_monitor_enery(void *pvParameters);
+static void monitor_task_exit(void *param);
+
+
+/********************
+ * VAR
+ ********************/
+thread_cb_t monitor_thread = {
+	.thread_init = thread_monitor_enery,
+	.thread_deinit = monitor_task_exit,
+};
+
+StackType_t ThreadMonitorStack[THREAD_MONITOR_STK_SIZE]; //ä»»åŠ¡å †æ ˆ, ä½¿ç”¨ xTaskCreate() ç”± OS åŠ¨æ€åˆ†é…å†…å­˜, ä¸æ–¹ä¾¿è°ƒè¯•
+StaticTask_t ThreadMonitorTCB;                           //ä»»åŠ¡æ§åˆ¶å—
+TaskHandle_t ThreadMonitor_Handler;                      //ä»»åŠ¡å¥æŸ„
+SemaphoreHandle_t monitor_binary_handle;                 //äºŒå€¼ä¿¡å·é‡
+
+
 static void hardware_init()
 {
 
@@ -54,6 +63,7 @@ static void software_init()
 static void resource_init()
 {
     monitor_binary_handle = xSemaphoreCreateBinary();
+    configASSERT(monitor_binary_handle != NULL);
 }
 
 /**
@@ -61,42 +71,46 @@ static void resource_init()
  * 
  * @param pvParameters 
  */
-void thread_monitor_enery(void *pvParameters)
+static void thread_monitor_enery(void *pvParameters)
 {
+    taskENTER_CRITICAL();
     //BaseType_t ret = pdFALSE;
-    //uint8_t len = 0;    //½ÓÊÕµ½Êı¾İ³¤¶È
+    //uint8_t len = 0;    //æ¥æ”¶åˆ°æ•°æ®é•¿åº¦
     //uint8_t cmdVal = COMMAND_ERR;
-    //uint8_t *cmdStr = NULL; //Ö¸Ïò½ÓÊÕµ½Êı¾İµÄÖ¸Õë
+    //uint8_t *cmdStr = NULL; //æŒ‡å‘æ¥æ”¶åˆ°æ•°æ®çš„æŒ‡é’ˆ
     //uint8_t cmdStr[256];
     
     hardware_init();
     resource_init();
     software_init();
+    printf("thread monitor running...\r\n");
+	taskEXIT_CRITICAL();
+
     while(1)
     {
-        printf("thread_moonitor running...");
+        // printf("thread_moonitor running...");
         vTaskDelay(1000);
         /*if(monitor_binary_handle != NULL)
         {
             //
-            // ×èÈûµÈ´ıĞÅºÅÁ¿
+            // é˜»å¡ç­‰å¾…ä¿¡å·é‡
             //
             ret = xSemaphoreTake(monitor_binary_handle, portMAX_DELAY);
             if(ret == pdTRUE)
             {
                 len = USART_RX_STA & 0x3FFF;
                 //
-                // Ò»¶¯Ì¬·ÖÅäÄÚ´æ¾Í±¨:Ê²Ã´°ëÖ÷»úµÄ´íÎó
+                // ä¸€åŠ¨æ€åˆ†é…å†…å­˜å°±æŠ¥:ä»€ä¹ˆåŠä¸»æœºçš„é”™è¯¯
                 //
-                //cmdStr = (uint8_t*)malloc(len + 1);   //×Ö·û´®½áÎ² '\0'
-                sprintf((char*)cmdStr, "%s", USART_RX_BUF); //¸ñÊ½×ª»»Îª×Ö·û´®
+                //cmdStr = (uint8_t*)malloc(len + 1);   //å­—ç¬¦ä¸²ç»“å°¾ '\0'
+                sprintf((char*)cmdStr, "%s", USART_RX_BUF); //æ ¼å¼è½¬æ¢ä¸ºå­—ç¬¦ä¸²
                 cmdStr[len] = '\0';
                 LowerToCapital(cmdStr, len);
-                cmdVal = CommandParse((char*)cmdStr);  //ÃüÁî½âÎö
+                cmdVal = CommandParse((char*)cmdStr);  //å‘½ä»¤è§£æ
                 if(cmdVal != COMMAND_ERR)
                 {
                     //
-                    // ¸ø GUI Ïß³Ì¶ÓÁĞÈûÏûÏ¢
+                    // ç»™ GUI çº¿ç¨‹é˜Ÿåˆ—å¡æ¶ˆæ¯
                     //
                     //printf("cmd:%d", cmdVal);
                 }
@@ -106,7 +120,7 @@ void thread_monitor_enery(void *pvParameters)
                 }
 
                 //
-                // ¸ù¾İÃüÁî½øĞĞÏàÓ¦²Ù×÷
+                // æ ¹æ®å‘½ä»¤è¿›è¡Œç›¸åº”æ“ä½œ
                 //
                 switch(cmdVal)
                 {
@@ -126,21 +140,21 @@ void thread_monitor_enery(void *pvParameters)
                         break;
                 }
                 USART_RX_STA = 0;
-                memset(USART_RX_BUF, 0, USART_REC_LEN); //ÇåÁã»º³åÇø
+                memset(USART_RX_BUF, 0, USART_REC_LEN); //æ¸…é›¶ç¼“å†²åŒº
                 free(cmdStr);
             }
             else
             {
-                vTaskDelay(10); //µÈ´ı 10 ¸ö½ÚÅÄ
+                vTaskDelay(10); //ç­‰å¾… 10 ä¸ªèŠ‚æ‹
             }
         }*/
     }
 }
 
 /**
- * @brief ÃüÁî½âÎöº¯Êı
+ * @brief å‘½ä»¤è§£æå‡½æ•°
  * 
- * @param str ÊäÈë×Ö·û´®
+ * @param str è¾“å…¥å­—ç¬¦ä¸²
  */
 uint8_t CommandParse(char *str)
 {
@@ -164,7 +178,7 @@ uint8_t CommandParse(char *str)
     return cmdVal;
 }
 
-//AT ÃüÁî½âÎöÊÇ½«×Ö·û´®·Åµ½Ò»¸öÊı×é, Êı×éÔªËØ char*, pFun
+//AT å‘½ä»¤è§£ææ˜¯å°†å­—ç¬¦ä¸²æ”¾åˆ°ä¸€ä¸ªæ•°ç»„, æ•°ç»„å…ƒç´  char*, pFun
 // typedef void (*pFun)(const char *para1, const char *para2);
 // typedef struct 
 // {
@@ -177,3 +191,9 @@ uint8_t CommandParse(char *str)
 //     .init = pFun;
 //     .deinit = deinit;
 // }
+
+static void monitor_task_exit(void *param)
+{
+	
+}
+

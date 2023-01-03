@@ -70,7 +70,7 @@
 /*
  * This is the list implementation used by the scheduler.  While it is tailored
  * heavily for the schedulers needs, it is also available for use by
- * application code.
+ * application code.用户代码也可以使用这个链表
  *
  * list_ts can only store pointers to list_item_ts.  Each ListItem_t contains a
  * numeric value (xItemValue).  Most of the time the lists are sorted in
@@ -184,9 +184,10 @@ struct xLIST_ITEM
 	configLIST_VOLATILE TickType_t xItemValue;			/*< The value being listed.  In most cases this is used to sort the list in descending order. */
 	struct xLIST_ITEM * configLIST_VOLATILE pxNext;		/*< Pointer to the next ListItem_t in the list. */
 	struct xLIST_ITEM * configLIST_VOLATILE pxPrevious;	/*< Pointer to the previous ListItem_t in the list. */
-	//������ pvOwner �� pvContainer
+	// 指向拥有该节点的内核对象, 通畅是个 TCB
     void * pvOwner;										/*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
-	void * configLIST_VOLATILE pvContainer;				/*< Pointer to the list in which this list item is placed (if any). */
+	// 指向该节点所在的链表
+    void * configLIST_VOLATILE pvContainer;				/*< Pointer to the list in which this list item is placed (if any). */
 	listSECOND_LIST_ITEM_INTEGRITY_CHECK_VALUE			/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
 };
 typedef struct xLIST_ITEM ListItem_t;					/* For some reason lint wants this as two separate definitions. */
@@ -194,9 +195,9 @@ typedef struct xLIST_ITEM ListItem_t;					/* For some reason lint wants this as 
 struct xMINI_LIST_ITEM
 {
 	listFIRST_LIST_ITEM_INTEGRITY_CHECK_VALUE			/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
-	configLIST_VOLATILE TickType_t xItemValue;          //��ǰ�ڵ��ֵ
-	struct xLIST_ITEM * configLIST_VOLATILE pxNext;     //ָ���̽ڵ�
-	struct xLIST_ITEM * configLIST_VOLATILE pxPrevious; //ָ��ǰ���ڵ�
+	configLIST_VOLATILE TickType_t xItemValue;          // 辅助排序的值
+	struct xLIST_ITEM * configLIST_VOLATILE pxNext;     //
+	struct xLIST_ITEM * configLIST_VOLATILE pxPrevious; //
 };
 typedef struct xMINI_LIST_ITEM MiniListItem_t;
 
@@ -206,11 +207,12 @@ typedef struct xMINI_LIST_ITEM MiniListItem_t;
 typedef struct xLIST
 {
 	listFIRST_LIST_INTEGRITY_CHECK_VALUE				/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
-	//�б������
+	// 链表中节点数量
     configLIST_VOLATILE UBaseType_t uxNumberOfItems;
-    //��ǰ�б�������
+    // 链表节点索引指针
 	ListItem_t * configLIST_VOLATILE pxIndex;			/*< Used to walk through the list.  Points to the last item returned by a call to listGET_OWNER_OF_NEXT_ENTRY (). */
-    //�б������һ���б���
+    // 链表最后一个节点
+    // 使用这种写法就不需要额外申请节点, 直接让字节的成员 pxIndex 指向自己的尾节点成员 xListEnd
     MiniListItem_t xListEnd;							/*< List item that contains the maximum possible item value meaning it is always at the end of the list and is therefore used as a marker. */
 	listSECOND_LIST_INTEGRITY_CHECK_VALUE				/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
 } List_t;
@@ -301,6 +303,7 @@ typedef struct xLIST
 
 /*
  * Access function to obtain the owner of the next entry in a list.
+ * 获取链表第一个节点的 owner
  *
  * The list member pxIndex is used to walk through a list.  Calling
  * listGET_OWNER_OF_NEXT_ENTRY increments pxIndex to the next item in the list
@@ -313,8 +316,8 @@ typedef struct xLIST
  * The pxOwner parameter effectively creates a two way link between the list
  * item and its owner.
  *
- * @param pxTCB pxTCB is set to the address of the owner of the next list item.
- * @param pxList The list from which the next item owner is to be returned.
+ * @param[out] pxTCB pxTCB is set to the address of the owner of the next list item.
+ * @param[in] pxList The list from which the next item owner is to be returned.
  *
  * \page listGET_OWNER_OF_NEXT_ENTRY listGET_OWNER_OF_NEXT_ENTRY
  * \ingroup LinkedList

@@ -1,34 +1,48 @@
 #include "thread_algo.h"
 #include "sys.h"
 
-/**************************** global varible ******************************/
-static StackType_t IdleTaskStack[configMINIMAL_STACK_SIZE]; //¿ÕÏÐÈÎÎñÈÎÎñ¶ÑÕ»
-static StaticTask_t IdleTaskTCB; //¿ÕÏÐÈÎÎñ¿ØÖÆ¿é
-
-static StackType_t TimerTaskStack[configTIMER_TASK_STACK_DEPTH]; //¶¨Ê±Æ÷·þÎñÈÎÎñ¶ÑÕ»
-static StaticTask_t TimerTaskTCB; //¶¨Ê±Æ÷·þÎñÈÎÎñ¿ØÖÆ¿é
-
-/**************************** macro definition ******************************/
-
-/**************************** macro definition ******************************/
-
-//´´½¨thread algorithmÈÎÎñÓÐ¹Ø
-StackType_t ThreadAlgoStack[THREAD_ALGO_STK_SIZE]; //ÈÎÎñ¶ÑÕ»
-StaticTask_t ThreadAlgoTCB;             //ÈÎÎñ¿ØÖÆ¿é
-TaskHandle_t ThreadAlgo_Handler;        //ÈÎÎñ¾ä±ú
+/********************
+ * MACRO
+ ********************/
 
 
-//Èç¹ûÊ¹ÓÃ¾²Ì¬·½
-// ·¨ µÄ »° Ðè Òª ÓÃ »§ Êµ ÏÖ Á½ ¸ö º¯ Êý vApplicationGetIdleTaskMemory() ºÍ
-// vApplicationGetTimerTaskMemory()¡£Í¨¹ýÕâÁ½¸öº¯ÊýÀ´¸ø¿ÕÏÐÈÎÎñºÍ¶¨Ê±Æ÷·þÎñÈÎÎñµÄÈÎÎñ¶Ñ
-// Õ»ºÍÈÎÎñ¿ØÖÆ¿é·ÖÅäÄÚ´æ£¬ÕâÁ½¸öº¯ÊýÎÒÃÇÔÚ mainc.c ÖÐ¶¨Òå£¬
+/********************
+ * FUNCTION
+ ********************/
+static void thread_algo_enery(void *pvParameters);
+static void algo_task_exit(void *param);
+
+
+/********************
+ * GLOBAL VAR
+ ********************/
+thread_cb_t algo_thread = {
+	.thread_init = thread_algo_enery,
+	.thread_deinit = algo_task_exit,
+};
+
+static StackType_t IdleTaskStack[configMINIMAL_STACK_SIZE]; //
+static StaticTask_t IdleTaskTCB; //
+
+static StackType_t TimerTaskStack[configTIMER_TASK_STACK_DEPTH]; //
+static StaticTask_t TimerTaskTCB; //
+
+StackType_t ThreadAlgoStack[THREAD_ALGO_STK_SIZE]; //
+StaticTask_t ThreadAlgoTCB;             //
+TaskHandle_t ThreadAlgo_Handler;        //
+
+
+//ï¿½ï¿½ï¿½Ê¹ï¿½Ã¾ï¿½Ì¬ï¿½ï¿½
+// ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ Òª ï¿½ï¿½ ï¿½ï¿½ Êµ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ vApplicationGetIdleTaskMemory() ï¿½ï¿½
+// vApplicationGetTimerTaskMemory()ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¶ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½ï¿½ï¿½ï¿½Ú´æ£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ mainc.c ï¿½Ð¶ï¿½ï¿½å£¬
 
 /**
- * @brief ¿ÕÏÐÈÎÎñµÄÈÎÎñ¶ÑÕ»ºÍÈÎÎñ¿ØÖÆ¿éµÄÄÚ´æÓ¦¸ÃÓÉÓÃ»§À´Ìá¹©
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½ï¿½Ú´ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½á¹©
  * 
- * @param ppxIdleTaskTCBBuffer ÈÎÎñ¿ØÖÆ¿éÄÚ´æ
- * @param ppxIdleTaskStackBuffer ÈÎÎñ¶ÑÕ»ÄÚ´æ
- * @param pulIdleTaskStackSize ÈÎÎñ¶ÑÕ»´óÐ¡
+ * @param ppxIdleTaskTCBBuffer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½Ú´ï¿½
+ * @param ppxIdleTaskStackBuffer ï¿½ï¿½ï¿½ï¿½ï¿½Õ»ï¿½Ú´ï¿½
+ * @param pulIdleTaskStackSize ï¿½ï¿½ï¿½ï¿½ï¿½Õ»ï¿½ï¿½Ð¡
  */
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, 
                                     StackType_t **ppxIdleTaskStackBuffer, 
@@ -40,12 +54,12 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
 }
 
 /**
- * @brief »ñÈ¡¶¨Ê±Æ÷ÈÎÎñµÄÈÎÎñ¿ØÖÆ¿éÄÚ´æµÈ
- *         ×î ºó ´´ ½¨ ¿Õ ÏÐ ÈÎ Îñ ºÍ ¶¨ Ê± Æ÷ ·þ Îñ ÈÎ Îñ µÄ API º¯Êý»áµ÷ÓÃ
-*          vApplicationGetIdleTaskMemory()ºÍ vApplicationGetTimerTaskMemory()À´»ñÈ¡ÕâÐ©ÄÚ´æ¡£
- * @param ppxTimerTaskTCBBuffer ÈÎÎñ¿ØÖÆ¿éÄÚ´æ
- * @param ppxTimerTaskStackBuffer ÈÎÎñ¶ÑÕ»ÄÚ´æ
- * @param pulTimerTaskStackSize ÈÎÎñ¶ÑÕ»´óÐ¡
+ * @brief ï¿½ï¿½È¡ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½Ú´ï¿½ï¿½
+ *         ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ Ê± ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ API ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+*          vApplicationGetIdleTaskMemory()ï¿½ï¿½ vApplicationGetTimerTaskMemory()ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Ð©ï¿½Ú´æ¡£
+ * @param ppxTimerTaskTCBBuffer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½Ú´ï¿½
+ * @param ppxTimerTaskStackBuffer ï¿½ï¿½ï¿½ï¿½ï¿½Õ»ï¿½Ú´ï¿½
+ * @param pulTimerTaskStackSize ï¿½ï¿½ï¿½ï¿½ï¿½Õ»ï¿½ï¿½Ð¡
  * @retval None
  */
 void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, 
@@ -58,17 +72,25 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
 }
 
 /**
- * @brief Ïß³ÌÈë¿Úº¯Êý
+ * @brief ï¿½ß³ï¿½ï¿½ï¿½Úºï¿½ï¿½ï¿½
  * 
  * @param pvParameters 
  */
-void thread_algo_enery(void *pvParameters) //ÈÎÎñº¯Êý
+static void thread_algo_enery(void *pvParameters)
 {
+    taskENTER_CRITICAL();
+    printf("thread algorithm running...\r\n");
+	taskEXIT_CRITICAL();
 
     while(1)
     {
         //printf("Thread_algo running...\r\n");
         vTaskDelay(2000);
-    }
+    };
+}
+
+static void algo_task_exit(void *param)
+{
+	
 }
 

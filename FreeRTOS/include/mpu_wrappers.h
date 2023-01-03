@@ -192,7 +192,7 @@ only for ports that are using the MPU. */
 
 	#define PRIVILEGED_FUNCTION
 	#define PRIVILEGED_DATA
-	#define portUSING_MPU_WRAPPERS 0 // «∑Ò π”√ MPU
+	#define portUSING_MPU_WRAPPERS 0 //ÊòØÂê¶‰ΩøÁî® MPU
 
 #endif /* portUSING_MPU_WRAPPERS */
 

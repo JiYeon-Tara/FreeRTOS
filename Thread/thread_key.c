@@ -1,15 +1,33 @@
 #include "thread_key.h"
 #include "thread_manager.h"
-/**************************** task info ******************************/
-TaskHandle_t KeyTask_Handler;   //ÈÎÎñ¾ä±ú
 
-/**************************** global varible ******************************/
-xQueueHandle Key_Queue;          //ÏûÏ¢¶ÓÁÐ¾ä±ú
-xSemaphoreHandle key_sema;      //¼ÆÊýÐÍÐÅºÅÁ¿
+
+/********************
+ * MACRO
+ ********************/
+
+
+/********************
+ * FUNCTION
+ ********************/
+void key_task(void *pvParameters);
+static void key_task_exit(void *param);
+
+
+/********************
+ * GLOBAL VAR
+ ********************/
+thread_cb_t key_thread = {
+	.thread_init = key_task,
+	.thread_deinit = key_task_exit,
+};
+
+xQueueHandle Key_Queue;          //ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Ð¾ï¿½ï¿½
+xSemaphoreHandle key_sema;      //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½
 extern EventGroupHandle_t manager_event_group;  
-/**************************** macro definition ******************************/
 
-/**************************** macro definition ******************************/
+
+
 
 /**
  * @brief hardware_init
@@ -38,7 +56,7 @@ static void software_init()
 static void resource_init()
 {
     //Queue
-    Key_Queue = xQueueCreate(KEY_Q_SIZE, sizeof(uint8_t));  //³õÊ¼»¯ÏûÏ¢¶ÓÁÐ
+    Key_Queue = xQueueCreate(KEY_Q_SIZE, sizeof(uint8_t));  //ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
     //Semaphore
     key_sema = xSemaphoreCreateCounting(255, 0);
     // event group
@@ -56,56 +74,65 @@ void key_task(void *pvParameters)
     BaseType_t ret;
     uint8_t key = 0;
     uint8_t cntSemVal = 0;
+
+    taskENTER_CRITICAL();
     hardware_init();
     software_init();
     resource_init();
+    printf("thread key running...\r\n");
+	taskEXIT_CRITICAL();
 
     while(1)
     {
         //printf("Key thread running...\r\n");
-        //ÔÚÓÐ²Ù×÷ÏµÍ³µÄµØ·½Ê¹ÓÃ ÂÖÑ¯°´¼üÓÐÎÊÌâ
+        //ï¿½ï¿½ï¿½Ð²ï¿½ï¿½ï¿½ÏµÍ³ï¿½ÄµØ·ï¿½Ê¹ï¿½ï¿½ ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         key = KEY_Scan(0);
 
-        //·¢ËÍ
+        //ï¿½ï¿½ï¿½ï¿½
         //printf("thread_key = %d\r\n", key);
-        if(Key_Queue!=NULL && key!=0)
-        {
-            xQueueSend(Key_Queue, &key, 0);   //·¢ËÍµ½ÏûÏ¢¶ÓÁÐ
-        }
+        // if(Key_Queue!=NULL && key!=0)
+        // {
+        //     xQueueSend(Key_Queue, &key, 0);   //ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
+        // }
         switch(key)
         {
-            /********************* °´¼ü WKUP »µÁË *********************************/
-            //µ¼ÖÂ°´¼üÒ»Ö±ÍùÕâÀïÅÜ, ÆäËü°´¼üÒ²ÎÞÐ§ÁË
+            /********************* ï¿½ï¿½ï¿½ï¿½ WKUP ï¿½ï¿½ï¿½ï¿½ *********************************/
+            //ï¿½ï¿½ï¿½Â°ï¿½ï¿½ï¿½Ò»Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½Ð§ï¿½ï¿½
             case WKUP_PRES:
-                //vTaskSuspend(Task1Task_Handler); //¹ÒÆðÈÎÎñ 1 (2)
-                //printf("¹ÒÆðÈÎÎñ 1 µÄÔËÐÐ!\r\n");
+                //vTaskSuspend(Task1Task_Handler); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1 (2)
+                //printf("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!\r\n");
                 break;
             case KEY0_PRES:
-                //vTaskResume(Task1Task_Handler); //»Ö¸´ÈÎÎñ 1 (3)
-                //printf("»Ö¸´ÈÎÎñ 1 µÄÔËÐÐ!\r\n");
+                //vTaskResume(Task1Task_Handler); //ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ 1 (3)
+                //printf("ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ 1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!\r\n");
                 //
-                // ÊÍ·ÅÐÅºÅÁ¿
+                // ï¿½Í·ï¿½ï¿½Åºï¿½ï¿½ï¿½
                 //
                 ret = xSemaphoreGive(key_sema);
                 if(ret == pdFALSE)
                 {
                     printf("give semaphore failed.\r\n");
                 }
-                cntSemVal = uxSemaphoreGetCount(key_sema); //»ñÈ¡¼ÆÊýÐÍÐÅºÅÁ¿µÄÖµ
+                cntSemVal = uxSemaphoreGetCount(key_sema); //ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½Öµ
                 printf("key thread give semaphore, sema val:%d\r\n", cntSemVal);
                 break;
             case KEY1_PRES:
-                //Í¨ÖªÆäËüÏß³Ì³õÊ¼»¯ -> Í¨³£Ê¹ÓÃÈÎÎñÍ¨ÖªÊµÏÖ
-                //ÉèÖÃ±êÖ¾Î»
+                //Í¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ß³Ì³ï¿½Ê¼ï¿½ï¿½ -> Í¨ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ÖªÊµï¿½ï¿½
+                //ï¿½ï¿½ï¿½Ã±ï¿½Ö¾Î»
                 xEventGroupSetBits(manager_event_group, TASK_SYNC);
-                //vTaskSuspend(Task2Task_Handler);//¹ÒÆðÈÎÎñ 2 (4)
-                //printf("¹ÒÆðÈÎÎñ 2 µÄÔËÐÐ!\r\n");
+                //vTaskSuspend(Task2Task_Handler);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2 (4)
+                //printf("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!\r\n");
                 break;
             default:
                 //printf("%s No keyboard input.\r\n", __func__);
                 break;
         }
 
-        vTaskDelay(10); //ÑÓÊ± 10ms
+        // vTaskDelay(10); //ï¿½ï¿½Ê± 10ms
     }
+}
+
+static void key_task_exit(void *param)
+{
+	
 }

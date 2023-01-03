@@ -1,55 +1,55 @@
 #include "key.h"
 #include "delay.h"
 
-//°´¼ü³õÊ¼»¯º¯Êı 
-//PA0.15ºÍPC5 ÉèÖÃ³ÉÊäÈë
+//æŒ‰é”®åˆå§‹åŒ–å‡½æ•° 
+//PA0.15å’ŒPC5 è®¾ç½®æˆè¾“å…¥
 void KEY_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
- 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOC, ENABLE);//Ê¹ÄÜPORTA,PORTCÊ±ÖÓ
+ 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOC, ENABLE);//ä½¿èƒ½PORTA,PORTCæ—¶é’Ÿ
 
-	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);//¹Ø±Õjtag£¬Ê¹ÄÜSWD£¬¿ÉÒÔÓÃSWDÄ£Ê½µ÷ÊÔ
+	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);//å…³é—­jtagï¼Œä½¿èƒ½SWDï¼Œå¯ä»¥ç”¨SWDæ¨¡å¼è°ƒè¯•
 	
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_15;//PA15
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //ÉèÖÃ³ÉÉÏÀ­ÊäÈë
- 	GPIO_Init(GPIOA, &GPIO_InitStructure);//³õÊ¼»¯GPIOA15
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //è®¾ç½®æˆä¸Šæ‹‰è¾“å…¥
+ 	GPIO_Init(GPIOA, &GPIO_InitStructure);//åˆå§‹åŒ–GPIOA15
 	
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_5;//PC5
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //ÉèÖÃ³ÉÉÏÀ­ÊäÈë
- 	GPIO_Init(GPIOC, &GPIO_InitStructure);//³õÊ¼»¯GPIOC5
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //è®¾ç½®æˆä¸Šæ‹‰è¾“å…¥
+ 	GPIO_Init(GPIOC, &GPIO_InitStructure);//åˆå§‹åŒ–GPIOC5
  
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_0;//PA0
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD; //PA0ÉèÖÃ³ÉÊäÈë£¬Ä¬ÈÏÏÂÀ­	  
-	GPIO_Init(GPIOA, &GPIO_InitStructure);//³õÊ¼»¯GPIOA.0
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD; //PA0è®¾ç½®æˆè¾“å…¥ï¼Œé»˜è®¤ä¸‹æ‹‰	  
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//åˆå§‹åŒ–GPIOA.0
 	
     return;
 } 
 
-//°´¼ü´¦Àíº¯Êı
-//·µ»Ø°´¼üÖµ
-//mode:0,²»Ö§³ÖÁ¬Ğø°´;1,Ö§³ÖÁ¬Ğø°´;
-//·µ»ØÖµ£º
-//0£¬Ã»ÓĞÈÎºÎ°´¼ü°´ÏÂ
-//KEY0_PRES£¬KEY0°´ÏÂ
-//KEY1_PRES£¬KEY1°´ÏÂ
-//WKUP_PRES£¬WK_UP°´ÏÂ 
-//×¢Òâ´Ëº¯ÊıÓĞÏìÓ¦ÓÅÏÈ¼¶,KEY0>KEY1>WK_UP!!
+//æŒ‰é”®å¤„ç†å‡½æ•°
+//è¿”å›æŒ‰é”®å€¼
+//mode:0,ä¸æ”¯æŒè¿ç»­æŒ‰;1,æ”¯æŒè¿ç»­æŒ‰;
+//è¿”å›å€¼ï¼š
+//0ï¼Œæ²¡æœ‰ä»»ä½•æŒ‰é”®æŒ‰ä¸‹
+//KEY0_PRESï¼ŒKEY0æŒ‰ä¸‹
+//KEY1_PRESï¼ŒKEY1æŒ‰ä¸‹
+//WKUP_PRESï¼ŒWK_UPæŒ‰ä¸‹ 
+//æ³¨æ„æ­¤å‡½æ•°æœ‰å“åº”ä¼˜å…ˆçº§,KEY0>KEY1>WK_UP!!
 u8 KEY_Scan(u8 mode)
 {	 
-	static u8 key_up = 1;//°´¼ü°´ËÉ¿ª±êÖ¾
+	static u8 key_up = 1;//æŒ‰é”®æŒ‰æ¾å¼€æ ‡å¿—
 	if(mode)
-        key_up = 1;  //Ö§³ÖÁ¬°´		  
+        key_up = 1;  //æ”¯æŒè¿æŒ‰		  
 	if(key_up && (KEY0==0 || KEY1==0))	//if(key_up && (KEY0==0 || KEY1==0 || WK_UP==1))
 	{
-		delay_ms(20);//È¥¶¶¶¯ 
+		delay_ms(20);//å»æŠ–åŠ¨ 
 		key_up = 0;
 		if(KEY0 == 0)
             return KEY0_PRES;
 		else if(KEY1 == 0)
             return KEY1_PRES;
 		//
-		// WK_UP °´¼üÓĞÎÊÌâ
+		// WK_UP æŒ‰é”®æœ‰é—®é¢˜
 		//
 		//else if(WK_UP == 1)
             //return WKUP_PRES; 
@@ -59,5 +59,5 @@ u8 KEY_Scan(u8 mode)
 		key_up = 1; 	 
 	}
 
-    return 0;// ÎŞ°´¼ü°´ÏÂ
+    return 0;// æ— æŒ‰é”®æŒ‰ä¸‹
 }

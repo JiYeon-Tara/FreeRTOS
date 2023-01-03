@@ -5,21 +5,30 @@
 #include "queue.h"
 #include "semphr.h"
 #include "timers.h"
+#include "thread.h"
 
-/**************************** global varible ******************************/
-extern xQueueHandle Dual_Comm_Queue;          //¶ÓÁĞ¾ä±ú
-extern SemaphoreHandle_t BinarySemaphore;      //¶şÖµĞÅºÅÁ¿
-/**************************** macro definition ******************************/
-#define DUAL_COMM_Q_SIZE            256     //¶ÓÁĞ´óĞ¡
 
-/**************************** macro definition ******************************/
 
-//dual_comm Task
-#define DUAL_COMM_TASK_PRIO 4         //ÈÎÎñÓÅÏÈ¼¶
-#define DUAL_COMM_STK_SIZE 128        //ÈÎÎñ¶ÑÕ»´óĞ¡
-extern TaskHandle_t DualCommTask_Handler;   //ÈÎÎñ¾ä±ú
-void dual_comm_task(void *pvParameters); //ÈÎÎñº¯Êı
 
+
+/********************
+ * MACRO
+ ********************/
+#define DUAL_COMM_TASK_PRIO 4         //ä»»åŠ¡ä¼˜å…ˆçº§
+#define DUAL_COMM_STK_SIZE 128        //ä»»åŠ¡å †æ ˆå¤§å°
+
+
+#define DUAL_COMM_Q_SIZE            256     //é˜Ÿåˆ—å¤§å°
+
+// extern TaskHandle_t DualCommTask_Handler;   //ä»»åŠ¡å¥æŸ„
+// void dual_comm_task(void *pvParameters); //ä»»åŠ¡å‡½æ•°
+
+/********************
+ * GLOBAL VAR
+ ********************/
+extern thread_cb_t dual_comm_thread;
+extern xQueueHandle Dual_Comm_Queue;          //é˜Ÿåˆ—å¥æŸ„
+extern SemaphoreHandle_t BinarySemaphore;      //äºŒå€¼ä¿¡å·é‡
 
 #endif // end __THREAD_DUAL_COMM_H__
 

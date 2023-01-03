@@ -214,12 +214,12 @@ typedef enum
  * \defgroup taskENTER_CRITICAL taskENTER_CRITICAL
  * \ingroup SchedulerControl
  */
-//task.h жп╤╗рЕак╫ЬхКакаы╫Г╤н ╨м мкЁЖаы╫Г╤н╣д╢ЗбК
-//╣╠сппХр╙яо╦Я╟╢ууй╠пРж╢ппё╛╡╩©ирт╠╩╢Р╤о╣д╢ЗбКй╠ё╛©иртй╧сцаы╫Г╤н
-//FreeRTOS втиМр╡╧Ц╥╨й╧сцаы╫Г╤н╢ЗбК╠ё╩╓╣д╧╕дэ
-//eg: вт╪╨й╧сц: дЁп╘мБиХ╩РуъгЩ╤╞иХ╠╦╣дЁУй╪╩╞....
+//task.h О©╫п╤О©╫О©╫О©╫О©╫к╫О©╫О©╫О©╫О©╫О©╫О©╫ы╫О©╫О©╫ О©╫О©╫ О©╫кЁО©╫О©╫ы╫О©╫н╣д╢О©╫О©╫О©╫
+//О©╫О©╫О©╫О©╫О©╫О©╫р╙О©╫о╦О©╫О©╫О©╫й╠О©╫О©╫ж╢О©╫пёО©╫О©╫О©╫О©╫О©╫О©╫т╠О©╫О©╫О©╫о╣д╢О©╫О©╫О©╫й╠О©╫О©╫О©╫О©╫О©╫О©╫й╧О©╫О©╫О©╫ы╫О©╫О©╫
+//FreeRTOS О©╫О©╫О©╫О©╫р╡О©╫Ц╥╨й╧О©╫О©╫О©╫ы╫О©╫н╢О©╫О©╫К╠ёО©╫О©╫О©╫д╧О©╫О©╫О©╫
+//eg: О©╫т╪О©╫й╧О©╫О©╫: дЁп╘О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫Х╠╦О©╫дЁО©╫й╪О©╫О©╫....
 #define taskENTER_CRITICAL()		portENTER_CRITICAL()
-#define taskENTER_CRITICAL_FROM_ISR() portSET_INTERRUPT_MASK_FROM_ISR()//жп╤о╪╤╠П
+#define taskENTER_CRITICAL_FROM_ISR() portSET_INTERRUPT_MASK_FROM_ISR()//О©╫п╤о╪О©╫О©╫О©╫
 
 /**
  * task. h
@@ -234,7 +234,7 @@ typedef enum
  * \ingroup SchedulerControl
  */
 #define taskEXIT_CRITICAL()			portEXIT_CRITICAL()
-#define taskEXIT_CRITICAL_FROM_ISR( x ) portCLEAR_INTERRUPT_MASK_FROM_ISR( x )//жп╤о╪╤╠П
+#define taskEXIT_CRITICAL_FROM_ISR( x ) portCLEAR_INTERRUPT_MASK_FROM_ISR( x )//О©╫п╤о╪О©╫О©╫О©╫
 
 /**
  * task. h
