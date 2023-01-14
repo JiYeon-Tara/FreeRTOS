@@ -11,11 +11,16 @@
 #include "test.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "board_config.h"
-#include "bsp_config.h"
+#include <string.h>
+
 #include "sys.h"
 #include "usart.h"		
 #include "delay.h"	
+
+#include "board_config.h"
+#include "bsp_config.h"
+#include "third_party_config.h"
+
 #include "led.h" 
 #include "key_stm.h" 
 #include "service_usart.h"
@@ -26,16 +31,19 @@
 #include "usmart.h"
 #include "dma_stm.h"
 #include "exti.h"
-#include "third_party_config.h"
 #include "at_cmd_parse.h"
-#include "string.h"
 #include "service_at.h"
 #include "touch.h"
 #include "mouse.h"
 #include "sdcard.h"
-#include "malloc.h"
 
- 
+#include "malloc.h"
+#include "service_fs_api.h"
+#include "exfuns.h"
+#include "fattester.h"
+#include "fs_test.h"
+
+
 // Program Size: Code=14966 RO-data=7166 RW-data=408 ZI-data=1848  
 // FromELF: creating hex file...
 // "..\OBJ\test.axf" - 0 Error(s), 13 Warning(s).
@@ -73,7 +81,7 @@ void bsp_init()
     uint16_t year = 2022, month = 9, day = 1, hour = 8, min = 0, sec = 0; 
     uint8_t count = 0;
     uint8_t ret;
-    uint8_t sd_sect_size;
+    uint32_t sd_sect_size;
 
     Stm32_Clock_Init(9); 		 //系统时钟设置
     delay_init(72000000);	     //延时初始化
@@ -217,9 +225,56 @@ void bsp_init()
 
 void service_init()
 {
+    u32 total, free;
+    u8 ret;
+
 #if MEMORY_MANAGE_ENABLE
     mem_init();
 #endif
+
+#if FATFS_ENABLE
+    // 默认 SDcard 以及 内存管理模块已经初始化成功
+    // sdcard 上的文件系统需要格式化以后才可以在 STM32 上挂载成功???
+    // 使用自己写过的 SDcard 挂载文件系统会失败
+    if((ret = exfuns_init()) != 0){
+        printf("FATFS init failed, ret:%d\r\n", ret);
+        goto EXIT;
+    }
+
+    // 文件系统挂载失败
+    if((ret = f_mount(fs[0], FS_FILE_SYSTEM_NAME, 1)) != FR_OK) { // 挂载 SDcard
+    // if((ret = f_mount(fs[0], "0:", 1)) != FR_OK) { // 挂载 SDcard
+        printf("mount sdcard failed, ret:%d\r\n", ret);
+        goto EXIT;
+    }
+    printf("FS:%s mount success\r\n", FS_FILE_SYSTEM_NAME);
+    if((ret = f_mount(fs[1], "1", 1)) != FR_OK){ // 挂载外部 flash
+        printf("mount external flash failed, ret:%d\r\n", ret);
+        goto EXIT;
+    }
+    printf("FS:%s mount success\r\n", "1");
+
+    while(exf_getfree(FS_FILE_SYSTEM_NAME, &total, &free)){
+        printf("get sdcard free fail\r\n");
+    }
+    printf("disk capacity, total:%dKB(%dMB), free:%dKB(%dMB)\r\n", total, total/1024, free, free/1024);
+    // 挂载两个物理磁盘有问题
+    // 目前先只测试 flash
+    while(exf_getfree("1", &total, &free)){
+        printf("get flash free fail\r\n");
+    }
+    printf("external flash capacity, total:%dKB(%dMB), free:%dKB(%dMB)\r\n", total, total/1024, free, free/1024);
+
+
+#endif
+
+#if FS_API_ENABLE
+    // 文件系统 API 支持
+    file_system_ctx_init();
+#endif
+    return;
+EXIT:
+    return;
 }
 
 
@@ -808,27 +863,240 @@ void memmang_test(uint8_t flag)
 /**
  * @brief 读取 SD card 指定扇区的内容
  * 
- * @param sect 
+ * @param sect 第几扇区
+ * @param dir 0:read; 1-write
  */
-static void sdcard_read_sectorx(u32 sect)
+void sdcard_read_write_sectorx_test(u32 sect, u8 dir)
 {
     u8 *buf;
     u16 i;
 
     buf = (u8*)mymalloc(512 * sizeof(u8));
     mymemset(buf, 0, 12);
-    if(SD_ReadDisk(buf, sect, 1) == 0){
-        printf("Sector 0 data:\r\n");
-        for(i = 0; i < 512; ++i){
-            printf("%02X ", buf[i]);
+    if(!dir){
+        if(SD_ReadDisk(buf, sect, 1) == MSD_RESPONSE_NO_ERROR){
+            printf("Sector %d data:\r\n", sect);
+            for(i = 0; i < 512; ++i){
+                printf("%02X ", buf[i]);
+            }
+            printf("\r\n");
         }
-        printf("\r\n");
+        else{
+            printf("sdcard read error\r\n");
+        }
+    }
+    else{
+        strcpy(buf, "123456789");
+        if(SD_WriteDisk(buf, sect, 1) == MSD_RESPONSE_NO_ERROR){
+            printf("sector write success\r\n");
+        }
+        else{
+            printf("sector write failed\r\n");
+        }
     }
     myfree(buf);
     return;
 }
 
-void sdcard_test(u32 sect)
+/**
+ * @brief FATFS 提供的接口测试
+ *        这文件系统真坑爹啊, 还是要多看看官方例程具体是怎么操作的!!!!!!!!!!!!!!!!
+ * @param op 
+ */
+void fatfs_test(uint8_t op)
 {
-    sdcard_read_sectorx(sect);
+    uint8_t *path = "0:test.txt";
+    uint8_t *data = "Hello, world\r\n";
+    uint8_t readData[100];
+    uint8_t *dirPath = "0:";
+    u8 ret;
+
+    switch(op){
+        case 0:
+        {
+            // write test
+            if(mf_open(path, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK){
+                printf("ERROR path:%s\r\n", path);
+                return;
+            }
+            if(mf_write(data, strlen(data)) != FR_OK){
+                printf("ERROR path:%s\r\n", path);
+                return;
+            }
+            if(mf_close() != FR_OK) {
+                printf("ERROR path:%s\r\n", path);
+                return;
+            }     
+   
+            // read test
+            if(mf_open(path, FA_READ) != FR_OK){
+                printf("ERROR path:%s\r\n", path);
+                return;
+            }
+            if(mf_read(strlen(data)) != FR_OK){
+                printf("ERROR path:%s\r\n", path);
+                return;
+            }
+            if(mf_close() != FR_OK){
+                printf("ERROR path:%s\r\n", path);
+                return;
+            }
+        }
+        break;
+        case 1:
+        {
+            // 仅仅打开当前目录, 不糊递归访问子目录
+            if(ret = mf_opendir(dirPath) != FR_OK){
+                printf("ERROR directory path:%s, errNo:%d\r\n", dirPath, ret);
+            }
+            mf_readdir();
+            mf_closedir();
+        }
+        break;
+        case 2:
+        {
+            if(ret = mf_scan_files(dirPath) != FR_OK){
+                printf("ERROR directory path:%s, errNo:%d\r\n", dirPath, ret);
+            }
+        }
+        break;
+        case 3:
+        {
+            // 难道 FATFS 不可以以读写方式打开文件 ??????????????
+            if(ret = mf_open(path, FA_READ ) != FR_OK){
+                printf("ERROR path:%s errNo:%d\r\n", path, ret);
+                return;
+            }
+            if(ret = mf_read(strlen(data)) != FR_OK){
+                printf("ERROR path:%s errNo:%d\r\n", path, ret);
+                return;
+            }
+
+            if(ret = mf_close() != FR_OK){
+                printf("ERROR path:%s, errNo:%d\r\n", path, ret);
+                return;
+            }
+        }
+        break;
+        case 4:
+        {
+            // 0: 表示盘符
+            // 格式化
+        //    if((ret = mf_fmkfs("0", FA_CREATE_ALWAYS, 1024)) != FR_OK){
+        //         printf("create directory %s failed, errNo:%d\r\n", "0:TestDir", ret);
+        //         return;
+        //    }
+        }
+        break;
+        case 5:
+        {
+            if((ret = mf_unlink(path)) != FR_OK){
+                printf("delete %s failed, errNo:%d\r\n", path, ret);
+                return;
+           }
+        }
+        break;
+        case 6:
+        {
+            if((ret = mf_mkdir("0:TestDir")) != FR_OK){
+                printf("create dir %s failed, errNo:%d\r\n", "0:TestDir", ret);
+                return;
+            }
+        }
+        case 7:
+        {
+            char *filePath = "0:TestDir/abc.txt";
+            if((ret = mf_open(filePath, FA_WRITE | FA_CREATE_ALWAYS)) != FR_OK){
+                printf("file %s create failed, errNo:%d", filePath, ret);
+                return;
+            }
+            if((ret = mf_write(data, strlen(data))) != FR_OK){
+                printf("file %s read failed, errNo:%d", filePath, ret);
+                mf_close();
+                return;
+            }
+        }
+        break;
+        break;
+        default:
+        break;
+    }
+
+
+    return;
 }
+
+/**
+ * @brief FS API 测试
+ * 
+ * @param op 
+ */
+void fs_api_test(uint8_t op)
+{
+    switch(op){
+        case 0:
+        {
+            char *fileName = "0:test1.txt";
+            FRESULT res;
+            int fd;
+            char *buff = mymalloc(sizeof(uint8_t) * 256);
+            if(!buff){
+                printf("malloc error\r\n");
+                return;
+            }
+            // 暂时还不知道怎么支持同时读写文件
+            fd = open(fileName, FA_CREATE_NEW | FA_WRITE);
+            if(fd < 0){
+                printf("open ERROR, fd:%d\r\n", fd);
+                free(buff);
+                return;
+            }
+            res = write(fd, fileName, strlen(fileName) + 1);
+            if(res < 0){
+                printf("write ERROR, res:%d\r\n", res);
+                free(buff);
+                return;
+            }
+            printf("write len:%d\r\n", res);
+                res = close(fd);
+            if(res < 0) {
+                printf("write ERROR, res:%d\r\n", res);
+                free(buff);
+                return;
+            }
+
+            // 再次打开文件 读文件
+            fd = open(fileName, FA_READ);
+            if(fd < 0){
+                printf("open ERROR, fd:%d\r\n", fd);
+                free(buff);
+                return;
+            }
+            res = read(fd, buff, 156);
+            if(res < 0){
+                printf("write ERROR, res:%d\r\n", res);
+                free(buff);
+                return;
+            }
+            printf("read len:%d\r\n", res);
+            res = close(fd);
+            if(res < 0) {
+                printf("write ERROR, res:%d\r\n", res);
+                free(buff);
+                return;
+            }
+            free(buff);
+        }
+        break;
+        case 8:
+            fs_test();
+        break;
+        case 9:
+            fs_speed_test(1);
+        default:
+        break;
+    }
+
+    return;
+}
+

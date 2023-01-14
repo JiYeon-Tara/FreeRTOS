@@ -7,7 +7,8 @@
 #define SD_TYPE_MMC     0X01
 #define SD_TYPE_V1      0X02
 #define SD_TYPE_V2      0X04
-#define SD_TYPE_V2HC    0X06	   
+#define SD_TYPE_V2HC    0X06	
+   
 // SD卡指令表  	   
 #define CMD0    0       //卡复位
 #define CMD1    1
@@ -25,6 +26,7 @@
 #define CMD55   55      //命令55，应返回0x01
 #define CMD58   58      //命令58，读OCR信息
 #define CMD59   59      //命令59，使能/禁止CRC，应返回0x00
+
 //数据写入回应字意义
 #define MSD_DATA_OK                0x05
 #define MSD_DATA_CRC_ERROR         0x0B

@@ -11,7 +11,7 @@
 #define SPI_SPEED_32 		4
 #define SPI_SPEED_64 		5
 #define SPI_SPEED_128 		6
-#define SPI_SPEED_256 		7
+#define SPI_SPEED_256 		7           // 111
 						  	    													  
 void SPI1_Init(void);			 //初始化SPI口
 void SPI1_SetSpeed(u8 SpeedSet); //设置SPI速度   

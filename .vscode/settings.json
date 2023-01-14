@@ -32,6 +32,16 @@
         "stdint.h": "c",
         "rtc.h": "c",
         "dlps.h": "c",
-        "touch.h": "c"
+        "touch.h": "c",
+        "string.h": "c",
+        "malloc.h": "c",
+        "fs_api.h": "c",
+        "sdcard.h": "c",
+        "ff.h": "c",
+        "exfuns.h": "c",
+        "fattester.h": "c",
+        "service_fs_api.h": "c",
+        "ulog.h": "c",
+        "stdbool.h": "c"
     }
 }

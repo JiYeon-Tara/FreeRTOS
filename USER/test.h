@@ -31,6 +31,8 @@
 #include "service_config.h"
 #include "malloc.h"
 #include "timer.h"
+// #include "service_fs_api.h"
+
 
 void bsp_init();
 void service_init();
@@ -56,7 +58,8 @@ void external_flash_test(uint8_t dir);
 void remote_test();
 void tp_test();
 void memmang_test(uint8_t flag);
-void sdcard_test(u32 sect);
+void sdcard_read_write_sectorx_test(u32 sect, u8 dir);
+void fatfs_test(uint8_t op);
 
 #endif
 

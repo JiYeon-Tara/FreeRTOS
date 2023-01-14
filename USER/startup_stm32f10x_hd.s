@@ -152,7 +152,7 @@ Reset_Handler   PROC
                 ;IMPORT  SystemInit			
                 ;LDR     R0, =SystemInit	
                 ;BLX     R0                  
-                LDR     R0, =__main
+                LDR     R0, =__main                 ; __main 地址拿到 R0 寄存器
                 BX      R0
                 ENDP
                 

@@ -57,7 +57,7 @@
 #define REMOTE_CONTROL_TEST_ENABLE      0
 
 // temperature
-#define TEMP_ENABLE             1
+#define TEMP_ENABLE             0
 #define TEMP_TEST_ENABLE        0
 
 // mouse

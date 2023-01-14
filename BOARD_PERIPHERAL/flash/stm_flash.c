@@ -11,7 +11,8 @@
 #include "stm_flash.h"
 #include "usart.h"
 
-// 内部 flash: 大小256 K bytes
+// 内部 flash: 大小256 KBytes(0x40000 KByte)
+// 地址:0X08000000 - 08040000
 // 1 page = 2K bytes
 // 包括主存储器, 信息块, 闪存存储器接口寄存器
  

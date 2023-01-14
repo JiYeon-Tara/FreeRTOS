@@ -89,15 +89,15 @@ struct _m_mallco_dev mallco_dev =
  * 
  */
 void mem_init(void)  
-{  
+{
     mymemset(mallco_dev.memmap, 0, memtblsize * 2);//内存状态表数据清零  
     mymemset(mallco_dev.membase, 0, memsize);	//内存池所有数据清零  
     mallco_dev.memrdy = 1;						//内存管理初始化OK  
     printf("memory management init\r\n");
     printf("start address:%d \r\n", (uint32_t)mallco_dev.membase);
-    printf("memory block size:0x%04X memory total size:0x%04X, block num:0x%04X\r\n", MEM_BLOCK_SIZE, \
-            MEM_MAX_SIZE, \
-            MEM_ALLOC_TABLE_SIZE);
+    printf("block size:0x%04X, block num:0x%04X, total size:0x%04X\r\n", MEM_BLOCK_SIZE, \
+            MEM_ALLOC_TABLE_SIZE, \
+            MEM_MAX_SIZE);
     return;
 }
 

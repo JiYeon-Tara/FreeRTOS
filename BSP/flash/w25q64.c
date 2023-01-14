@@ -22,13 +22,14 @@
 // SPI1 MISO - PA6
 // SPI1 MOSI - PA7
 
-
-u16 SPI_FLASH_TYPE = W25Q64;//默认就是25Q64
-
 // 4Kbytes 为一个 Sector(扇区)
 // 16 个sector 为 1 个 Block
 // W25Q64
 // 容量为 8M 字节,共有 128 个 Block, 2048 个 Sector 
+
+u16 SPI_FLASH_TYPE = W25Q64;//默认就是25Q64
+
+
 
 
 /**

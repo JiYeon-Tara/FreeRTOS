@@ -15,8 +15,9 @@ Questions:
 
 
 
-- **Ã÷ÈÕÑ§Ï°¼Æ»®:ch35, ch36, ch15, ch16¡ª¡ªOLED ºÍ LCD ÏÔÊ¾µÄÏêÏ¸Ñ§Ï°£¬¿ÉÒÔ·ÅÍíµã£¬¿ªÊ¼Ñ§Ï°ÆäËûÄÚÈÝ£¬±¾ÖÜÁù¡¢ÖÜÌì»¨Á½ÌìÊ±¼ä¸ã¶¨**£»LVGL:
+- **TODO:Ã÷ÈÕÑ§Ï°¼Æ»®:ch35, ch36, ch15, ch16£¬ TP¡ª¡ªOLED ºÍ LCD ÏÔÊ¾µÄÏêÏ¸Ñ§Ï°£¬¿ÉÒÔ·ÅÍíµã£¬¿ªÊ¼Ñ§Ï°ÆäËûÄÚÈÝ£¬±¾ÖÜÁù¡¢ÖÜÌì»¨Á½ÌìÊ±¼ä¸ã¶¨, LVGL:**
 - Ñ§ÓÐÓàÁ¦µÄÇé¿öÏÂ¿ÉÒÔÑ§Ï° freeRTOS, nuttx ÒÔ¼° repo;
+- LVGL Ñ§µ½ÁË¸÷ÖÖ widgets ÕÂ½Ú£¬»¹Í£ÁôÔÚ PC ·ÂÕæÆ÷½×¶Î£»
 
 
 
@@ -90,5 +91,34 @@ flash page »®·Ö£º²Î¿¼ STM32 Êý¾ÝÊÖ²á£¬ ARM Ö»ÊÇ¹æ¶¨Ò»¸ö´óÖÂ·¶Î§£¬ÕæÕýµÄ page ·Ö²
 
 
 
+##### 8.FATFS ÒÆÖ²
+
+http://elm-chan.org/fsw/ff/00index_e.html
+
+U ÅÌÉÏµÄÎÄ¼þÏµÍ³ÐèÒª¸ñÊ½»¯ÒÔºó²Å¿ÉÒÔÔÚ STM32 ÉÏ¹ÒÔØ³É¹¦???
 
 
+
+##### 9.FreeRTOS ÒÆÖ²
+
+https://www.freertos.org/zh-cn-cmn-s/
+
+
+
+##### 10. UCOS ÒÆÖ²
+
+
+
+##### 11. Nuttx ÒÆÖ²
+
+https://nuttx.apache.org/
+
+
+
+##### 12. OTA(´®¿Ú IAP)
+
+boot.bin
+
+app.bin
+
+ota.bin:¶Ô user_flash ½øÐÐ¸üÐÂ

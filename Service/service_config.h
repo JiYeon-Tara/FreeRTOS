@@ -16,6 +16,7 @@
 #define YAFFS_ENABLE                1
 #define FATFS_ENABLE                1
 #define FS_TEST_ENABLE              1
+#define FS_API_ENABLE               1
 
 
 

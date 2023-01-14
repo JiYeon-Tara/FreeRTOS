@@ -20,6 +20,7 @@
 #include "rtc.h"
 #include "tp_test.h"
 #include "stm_flash.h"
+#include "test.h"
 
 // 流程大约是:串口接收数据 -> 解析 -> 执行提前注册好的回调函数
 
@@ -64,6 +65,7 @@ static bool at_tp_calibration(const char *para1, const char *para2);
 static bool at_inner_flash_test(const char *para1, const char *para2);
 static bool at_memory_manage_test(const char *para1, const char *para2);
 static bool at_sdcard_test(const char *para1, const char *para2);
+static bool at_fatfs_test(const char *para1, const char *para2);
 
 // variables
 const static at_callback_t atCmdList[] = {
@@ -80,6 +82,7 @@ const static at_callback_t atCmdList[] = {
     {"AT^INNER_FLASH_TEST",                 at_inner_flash_test},
     {"AT^MEMORY_TEST",                      at_memory_manage_test},
     {"AT^SDCARD_TEST",                      at_sdcard_test},
+    {"AT^FATFS_TEST",                       at_fatfs_test}, 
 };
 static uint8_t _g_at_send_temp_buff[512];
 static AT_DIR_E atDir = AT_DIR_UART;
@@ -451,15 +454,39 @@ static bool at_memory_manage_test(const char *para1, const char *para2)
 
 static bool at_sdcard_test(const char *para1, const char *para2)
 {
-    uint8_t sectNum = 0;
-    if(!para1){
+    uint8_t dir = 0;
+    uint8_t sect = 0;
+    if(!para1 || !para2){
         AT_TRANS("ERROR\r\n");
         return false;
     }
-    sectNum = (uint8_t)atoi(para1);
-    printf("sectNum:%d\r\n");
-    sdcard_test(sectNum);
+    dir = (uint8_t)atoi(para1);
+    sect = (uint8_t)atoi(para2);
+    printf("dir:%d sect:%d\r\n", dir, sect);
+    sdcard_read_write_sectorx_test(sect, dir);
     AT_TRANS("OK\r\n");
     return true; 
 }
 
+static bool at_fatfs_test(const char *para1, const char *para2)
+{
+    enum {
+        FATFS_TEST,
+        FS_API_TEST,
+        TEST_MAX
+    };
+    uint8_t op = 0;
+    uint8_t testAPI = 0;
+    if(!para1 || !para2){
+        AT_TRANS("ERROR\r\n");
+        return false;
+    }
+    testAPI = (uint8_t)atoi(para1);
+    op = (uint8_t)atoi(para2);
+    if(testAPI == 0)
+        fatfs_test(op);
+    else
+        fs_api_test(op);
+    AT_TRANS("OK\r\n");
+    return true; 
+}

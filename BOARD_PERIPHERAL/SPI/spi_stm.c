@@ -69,7 +69,7 @@ void SPI1_Init(void)
 void SPI1_SetSpeed(u8 SpeedSet)
 {
     SpeedSet &= 0X07;			//限制范围0-7
-    SPI1->CR1 &= 0XFFC7; 		// 1100 0111, clear bit
+    SPI1->CR1 &= 0XFFC7; 		// bit[5:3], 1100 0111, clear bit
     SPI1->CR1 |= SpeedSet << 3;	//设置SPI1速度  
     SPI1->CR1 |= 1 << 6; 		//SPI设备使能 
 } 
