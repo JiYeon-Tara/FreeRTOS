@@ -146,11 +146,11 @@ void GPIO_NVIC_Config(u8 GPIOx, u8 BITx, u8 TRIM)
 //把所有时钟寄存器复位		  
 void MYRCC_DeInit(void)
 {	
-     RCC->APB1RSTR = 0x00000000;//复位结束			 
+    RCC->APB1RSTR = 0x00000000;//复位结束			 
     RCC->APB2RSTR = 0x00000000; 
-      RCC->AHBENR = 0x00000014;  //睡眠模式闪存和SRAM时钟使能, 其他关闭.	  
-      RCC->APB2ENR = 0x00000000; //外设时钟关闭.			   
-      RCC->APB1ENR = 0x00000000;   
+    RCC->AHBENR = 0x00000014;  //睡眠模式闪存和SRAM时钟使能, 其他关闭.	  
+    RCC->APB2ENR = 0x00000000; //外设时钟关闭.			   
+    RCC->APB1ENR = 0x00000000;   
     RCC->CR |= 0x00000001;     //使能内部高速时钟HSION, 系统刚上电的时候使用的是内部高速时钟, 之后会切换为外部高速时钟							 
     RCC->CFGR &= 0xF8FF0000;   //复位SW[1:0],HPRE[3:0],PPRE1[2:0],PPRE2[2:0],ADCPRE[1:0],MCO[2:0]					 
     RCC->CR &= 0xFEF6FFFF;     //复位HSEON,CSSON,PLLON
@@ -163,7 +163,7 @@ void MYRCC_DeInit(void)
 #ifdef  VECT_TAB_RAM
     MY_NVIC_SetVectorTable(0x20000000, 0x0);	// 内部 RAM 区
 #else   
-    MY_NVIC_SetVectorTable(0x08000000, 0x0);	// Code 区
+    MY_NVIC_SetVectorTable(0x08000000, 0x0);	// Code 区, flash 区域
 #endif
 
     return;
