@@ -441,6 +441,11 @@
               <FilePath>..\BSP\LCD\ILI93xx.c</FilePath>
             </File>
             <File>
+              <FileName>ssd1306.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\OLED\ssd1306.c</FilePath>
+            </File>
+            <File>
               <FileName>remote.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\remote_control\remote.c</FilePath>
@@ -450,67 +455,6 @@
               <FileType>1</FileType>
               <FilePath>..\BSP\temperature\ds18b20.c</FilePath>
             </File>
-            <File>
-              <FileName>oled.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\OLED\oled.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssh_1106.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\OLED\ssh_1106.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssd1306.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\OLED\ssd_1306\ssd1306.c</FilePath>
-            </File>
-            <File>
-              <FileName>ft5206.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\TP\ft5206.c</FilePath>
-            </File>
-            <File>
-              <FileName>gt9147.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\TP\gt9147.c</FilePath>
-            </File>
-            <File>
-              <FileName>ott2001a.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\TP\ott2001a.c</FilePath>
-            </File>
-            <File>
-              <FileName>touch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\TP\touch.c</FilePath>
-            </File>
-            <File>
-              <FileName>tp_test.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\TP\tp_test.c</FilePath>
-            </File>
-            <File>
-              <FileName>mouse.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\PS2\mouse.c</FilePath>
-            </File>
-            <File>
-              <FileName>ps2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\PS2\ps2.c</FilePath>
-            </File>
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
-            <File>
-              <FileName>sdcard.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\SD_card\sdcard.c</FilePath>
-            </File>
->>>>>>> Stashed changes
->>>>>>> Stashed changes
           </Files>
         </Group>
         <Group>
@@ -565,6 +509,11 @@
               <FilePath>..\BOARD_PERIPHERAL\DMA\dma_stm.c</FilePath>
             </File>
             <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\I2C\i2c.c</FilePath>
+            </File>
+            <File>
               <FileName>rtc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BOARD_PERIPHERAL\RTC\rtc.c</FilePath>
@@ -588,21 +537,6 @@
               <FileName>stm_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BOARD_PERIPHERAL\flash\stm_flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>i2c.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BOARD_PERIPHERAL\I2C\i2c.c</FilePath>
-            </File>
-            <File>
-              <FileName>i2c_soft.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BOARD_PERIPHERAL\I2C\i2c_soft.c</FilePath>
-            </File>
-            <File>
-              <FileName>ctiic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BOARD_PERIPHERAL\I2C\ctiic.c</FilePath>
             </File>
           </Files>
         </Group>
