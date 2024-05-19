@@ -9,6 +9,7 @@
  * 
  */
  #include "spi_stm.h"
+ #include "ulog.h"
  
 // 对应的 GPIO
 // 全部都接 45K 电阻上拉
@@ -19,47 +20,44 @@
  
 // SPI initialization
 //以下是SPI模块的初始化代码，配置成主机模式，访问SD Card/W25Q64/24L01, 上面挂了很多外设, 通过 CS 控制
+//这几个器件在使用的时候, 必须分时复用
 
 
+// #define	SPI_FLASH_CS PAout(2)  	//选中FLASH	
 
 
 /**
- * @brief SPI口初始化
+ * @brief SPI口初始化， master mode
  *        这里针是对SPI1的初始化
  * 
  */
 void SPI1_Init(void)
 {
-    RCC->APB2ENR |= 1 << 2;       // PORTA时钟使能 	 
-    RCC->APB2ENR |= 1 << 12;      // SPI1时钟使能 
+    RCC->APB2ENR |= 1 << 2; // PORTA时钟使能 	 
+    RCC->APB2ENR |= 1 << 12; // SPI1时钟使能 
            
     //这里只针对SPI口初始化
-    GPIOA->CRL &= 0X000FFFFF; 
-    GPIOA->CRL|= 0XBBB00000;    // PA5.6.7复用 	    
-    GPIOA->ODR |= 0X7 << 5;     // PA5.6.7上拉
+    GPIOA->CRL &= 0X000FFFFF; // clear
+    GPIOA->CRL|= 0XBBB00000; // PA5.6.7复用, 0x0B= 1011b, 10: Input with pull-up / pull-down; 11: Output mode, max speed 50 MHz.    
+    GPIOA->ODR |= 0X7 << 5; // PA5.6.7上拉
         
-    SPI1->CR1 |= 0 << 10;       // 全双工模式(发送和接收)
-    SPI1->CR1 |= 1 << 9;        // 软件nss管理
-    SPI1->CR1 |= 1 << 8;        // 
+    SPI1->CR1 |= 0 << 10; // 全双工模式(发送和接收)
+    SPI1->CR1 |= 1 << 9; // 软件nss管理(Slave Select, CS)
+    SPI1->CR1 |= 1 << 8;
 
-    SPI1->CR1 |= 1 << 2;        // SPI主机
-    SPI1->CR1 |= 0 << 11;       // 8bit数据格式	
-    SPI1->CR1 |= 1 << 1;        // 空闲模式下SCK为1 CPOL=1
-    SPI1->CR1 |= 1 << 0;        // 数据采样从第二个时间边沿开始,CPHA=1  
-    SPI1->CR1 |= 7 << 3;        // Fsck=Fcpu/256, 波特率控制(正在通信是不可以修改该位)
-    SPI1->CR1 |= 0 << 7;        // MSBfirst
-    SPI1->CR1 |= 1 << 6;        // SPI设备使能
-    SPI1_ReadWriteByte(0xff);   // 启动传输(主要作用：维持MOSI为高)， 写 0xFF 什么作用?
-    printf("SPI1 init\r\n");
+    SPI1->CR1 |= 1 << 2; // SPI主机
+    SPI1->CR1 |= 0 << 11; // 8bit数据格式	
+    SPI1->CR1 |= 1 << 1; // 空闲模式下SCK为1 CPOL=1
+    SPI1->CR1 |= 1 << 0; // 数据采样从第二个时间边沿开始,CPHA=1  
+    SPI1->CR1 |= 7 << 3; // Fsck=Fcpu/256, 波特率控制(正在通信时不可以修改该位)
+    SPI1->CR1 |= 0 << 7; // MSBfirst
+    SPI1->CR1 |= 1 << 6; // SPI设备使能
+    // SPI1_ReadWriteByte(0xff); // 启动传输(主要作用：维持MOSI为高)， 写 0xFF 什么作用?
+    LOG_I("SPI1 init\r\n");
 
     return;
 }   
 
-
-//
-//SpeedSet:
-//
-//
 /**
  * @brief SPI1 速度设置函数
  * 		  SPI速度=fAPB2/2^(SpeedSet+1), APB2时钟一般为72Mhz
@@ -68,11 +66,11 @@ void SPI1_Init(void)
  */
 void SPI1_SetSpeed(u8 SpeedSet)
 {
-    SpeedSet &= 0X07;			//限制范围0-7
-    SPI1->CR1 &= 0XFFC7; 		// bit[5:3], 1100 0111, clear bit
-    SPI1->CR1 |= SpeedSet << 3;	//设置SPI1速度  
-    SPI1->CR1 |= 1 << 6; 		//SPI设备使能 
-} 
+    SpeedSet &= 0X07; //限制范围0-7
+    SPI1->CR1 &= 0XFFC7; // bit[5:3], 1100 0111, clear bit
+    SPI1->CR1 |= SpeedSet << 3;	//设置SPI1速度(baudrate)
+    SPI1->CR1 |= 1 << 6; //SPI设备使能 
+}
 
 /**
  * @brief SPI1 读写一个字节
@@ -86,16 +84,16 @@ void SPI1_SetSpeed(u8 SpeedSet)
 u8 SPI1_ReadWriteByte(u8 TxData)
 {
     u16 retry = 0;				 
-    while((SPI1->SR & (1 << 1)) == 0)//等待发送区空	
+    while((SPI1->SR & (1 << 1)) == 0)//SR[1] 等待发送区空	
     {
         retry++;
         if(retry > 0XFFFE)
             return 0;
     }
-    SPI1->DR = TxData;	 	  //发送一个byte
+    SPI1->DR = TxData; //发送一个byte
 
     retry = 0;
-    while((SPI1->SR & 1 << 0) == 0) //等待接收完一个byte  
+    while((SPI1->SR & (1 << 0)) == 0) //SR[0] 等待接收完一个byte  
     {
         retry++;
         if(retry > 0XFFFE)
@@ -104,5 +102,8 @@ u8 SPI1_ReadWriteByte(u8 TxData)
                             
     return SPI1->DR;          //返回收到的数据				    
 }
+
+//TODO:
+//spi slave init
 
 

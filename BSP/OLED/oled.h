@@ -3,6 +3,8 @@
 #define __OLED_H			  	 
 #include "sys.h"
 #include "stdlib.h"
+#include "bmp.h"
+#include "oledfont.h"
 
 /**************
  * MACRO
@@ -21,18 +23,18 @@
 #endif
 
 
-//-----------------OLED端口定义---------------- 
+/*-----------------OLED端口定义----------------*/
 #if OLED_MODE == OLED_SPI
-/********************************************** 调好之后这部分移到 spi_soft.h 里面去 ***************************/
     // #include "spi_soft.h"
+    // GPIO 模拟 SPI, 四线 SPI 模式下, 只能向模块写, 不能读
     #define OLED_CS     PCout(9)        // 片选引脚
 // #if OLED_RESET_GPIO_CTR
-    #define OLED_RST    PBout(14)   // 在MINISTM32上直接接到了STM32的复位脚！
+    #define OLED_RST    PBout(14)       // 在MINISTM32上直接接到了STM32的复位脚！
 // #endif // OLED_RESET_GPIO_CTR
     #define OLED_DC     PCout(8)        // 命令/数据选择引脚:0,表示命令;1,表示数据;
     #define OLED_SCLK   PBout(0)        // SCLK, D0 SPI 时钟线
-    #define OLED_SDIN   PBout(1)        // SDIN, D1 SPI 数据线
-#elif OLED_MODE == OLED_8080
+    #define OLED_SDIN   PBout(1)        // SDIN(MOSI), D1 SPI 数据线
+#elif (OLED_MODE == OLED_8080)
     // #include "parallel_8080.h"
     #define OLED_CS     PCout(9)        // 片选引脚
     #define OLED_DC     PCout(8)        // 命令/数据选择引脚:0,表示命令;1,表示数据;
@@ -62,17 +64,16 @@
     #define OLED_WR_Set() GPIO_SetBits(GPIOG,GPIO_Pin_14)
     #define OLED_RD_Clr() GPIO_ResetBits(GPIOG,GPIO_Pin_13)
     #define OLED_RD_Set() GPIO_SetBits(GPIOG,GPIO_Pin_13)
-
 #elif OLED_MODE == OLED_SPI // SPI, 使用4线串行接口
-    #define OLED_CS_Clr()   (OLED_CS = 0)   //CS
+    #define OLED_CS_Clr()   (OLED_CS = 0)   // CS
     #define OLED_CS_Set()   (OLED_CS = 1)
-    #define OLED_RST_Clr()  (OLED_RST = 0)  //RES
+    #define OLED_RST_Clr()  (OLED_RST = 0)  // RES
     #define OLED_RST_Set()  (OLED_RST = 1)
-    #define OLED_DC_Clr()   (OLED_DC = 0)   //DC
+    #define OLED_DC_Clr()   (OLED_DC = 0)   // DC
     #define OLED_DC_Set()   (OLED_DC = 1)
-    #define OLED_SCLK_Clr() (OLED_SCLK = 0) //CLK
+    #define OLED_SCLK_Clr() (OLED_SCLK = 0) // CLK
     #define OLED_SCLK_Set() (OLED_SCLK = 1)
-    #define OLED_SDIN_Clr() (OLED_SDIN = 0) //DIN
+    #define OLED_SDIN_Clr() (OLED_SDIN = 0) // DIN
     #define OLED_SDIN_Set() (OLED_SDIN = 1)
 #else
     #error "unknown oled chip"

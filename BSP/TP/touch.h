@@ -5,6 +5,8 @@
 #include "gt9147.h"	      
 #include "ft5206.h"	    
 
+#if TP_ENABLE
+
 #define TP_PRES_DOWN 0x80  //触屏被按下	  
 #define TP_CATH_PRES 0x40  //有按键按下了 
 #define CT_MAX_TOUCH  5    //电容屏支持的点数,固定为5点
@@ -63,21 +65,6 @@ void TP_Adj_Info_Show(u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u16 y2,u16 x3,u16 y3,u1
 u8 TP_Scan(u8 tp);								//扫描
 u8 TP_Init(void);								//初始化
  
+#endif // TP_ENABLE
+
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

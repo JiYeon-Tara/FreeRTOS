@@ -15,6 +15,8 @@
 #include "math.h"
 #include "24cxx.h" 
 
+#if TP_ENABLE
+
 _m_tp_dev tp_dev=
 {
     TP_Init,
@@ -564,3 +566,4 @@ u8 TP_Init(void)
     return 1; 									 
 }
 
+#endif // TP_ENABLE

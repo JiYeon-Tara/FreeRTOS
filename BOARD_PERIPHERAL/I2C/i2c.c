@@ -10,6 +10,16 @@
  */
 #include "i2c.h"
 
+//TODO:
 // 硬件 I2C -> DMA
+
+
+
+// PB7/I2C1_SDA/TIM4_CH2
+// PB6/I2C1_SCL/TIM4_CH1
+// PB10/I2C2_SCL/U3_TX
+// PB11/I2C2_SDA/U3_RX
+
+
 
 

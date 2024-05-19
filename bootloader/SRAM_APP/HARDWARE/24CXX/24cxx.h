@@ -1,18 +1,7 @@
 #ifndef __24CXX_H
 #define __24CXX_H
 #include "myiic.h"   
-//////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEK MiniSTM32¿ª·¢°å
-//24CXXÇı¶¯ ´úÂë(ÊÊºÏ24C01~24C512)		   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//ĞŞ¸ÄÈÕÆÚ:2014/3/9
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾ 2009-2019
-//All rights reserved									  
-//////////////////////////////////////////////////////////////////////////////////
+
 
 #define AT24C01		127
 #define AT24C02		255
@@ -24,18 +13,21 @@
 #define AT24C128	16383
 #define AT24C256	32767  
 #define AT24C512	65535  
-//Mini STM32¿ª·¢°åÊ¹ÓÃµÄÊÇ24c02£¬ËùÒÔ¶¨ÒåEE_TYPEÎªAT24C02
+//Mini STM32å¼€å‘æ¿ä½¿ç”¨çš„æ˜¯24c02ï¼Œæ‰€ä»¥å®šä¹‰EE_TYPEä¸ºAT24C02
 #define EE_TYPE AT24C02
-					  
-u8 AT24CXX_ReadOneByte(u16 ReadAddr);							//Ö¸¶¨µØÖ·¶ÁÈ¡Ò»¸ö×Ö½Ú
-void AT24CXX_WriteOneByte(u16 WriteAddr,u8 DataToWrite);		//Ö¸¶¨µØÖ·Ğ´ÈëÒ»¸ö×Ö½Ú
-void AT24CXX_WriteLenByte(u16 WriteAddr,u32 DataToWrite,u8 Len);//Ö¸¶¨µØÖ·¿ªÊ¼Ğ´ÈëÖ¸¶¨³¤¶ÈµÄÊı¾İ
-u32 AT24CXX_ReadLenByte(u16 ReadAddr,u8 Len);					//Ö¸¶¨µØÖ·¿ªÊ¼¶ÁÈ¡Ö¸¶¨³¤¶ÈÊı¾İ
-void AT24CXX_Write(u16 WriteAddr,u8 *pBuffer,u16 NumToWrite);	//´ÓÖ¸¶¨µØÖ·¿ªÊ¼Ğ´ÈëÖ¸¶¨³¤¶ÈµÄÊı¾İ
-void AT24CXX_Read(u16 ReadAddr,u8 *pBuffer,u16 NumToRead);   	//´ÓÖ¸¶¨µØÖ·¿ªÊ¼¶Á³öÖ¸¶¨³¤¶ÈµÄÊı¾İ
 
-u8 AT24CXX_Check(void);  //¼ì²éÆ÷¼ş
-void AT24CXX_Init(void); //³õÊ¼»¯IIC
+
+void AT24CXX_Init(void); //åˆå§‹åŒ–IIC
+u8 AT24CXX_ReadOneByte(u16 ReadAddr);							//æŒ‡å®šåœ°å€è¯»å–ä¸€ä¸ªå­—èŠ‚
+void AT24CXX_WriteOneByte(u16 WriteAddr,u8 DataToWrite);		//æŒ‡å®šåœ°å€å†™å…¥ä¸€ä¸ªå­—èŠ‚
+void AT24CXX_WriteLenByte(u16 WriteAddr,u32 DataToWrite,u8 Len);//æŒ‡å®šåœ°å€å¼€å§‹å†™å…¥æŒ‡å®šé•¿åº¦çš„æ•°æ®
+u32 AT24CXX_ReadLenByte(u16 ReadAddr,u8 Len);					//æŒ‡å®šåœ°å€å¼€å§‹è¯»å–æŒ‡å®šé•¿åº¦æ•°æ®
+void AT24CXX_Write(u16 WriteAddr,u8 *pBuffer,u16 NumToWrite);	//ä»æŒ‡å®šåœ°å€å¼€å§‹å†™å…¥æŒ‡å®šé•¿åº¦çš„æ•°æ®
+void AT24CXX_Read(u16 ReadAddr,u8 *pBuffer,u16 NumToRead);   	//ä»æŒ‡å®šåœ°å€å¼€å§‹è¯»å‡ºæŒ‡å®šé•¿åº¦çš„æ•°æ®
+
+u8 AT24CXX_Check(void);  //æ£€æŸ¥å™¨ä»¶
+void AT24CXX_read_write_test(void); // io test
+
 #endif
 
 

@@ -1,54 +1,35 @@
-#ifndef __MYIIC_H
-#define __MYIIC_H
+#ifndef __I2C_H__
+#define __I2C_H__
 #include "sys.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌÐòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßÐí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEK MiniSTM32¿ª·¢°å
-//IICÇý¶¯ ´úÂë	   
-//ÕýµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//ÐÞ¸ÄÈÕÆÚ:2014/3/9
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓÐ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾ 2009-2019
-//All rights reserved									  
-//////////////////////////////////////////////////////////////////////////////////
-   	   		   
-//IO·½ÏòÉèÖÃ
-#define SDA_IN()  {GPIOC->CRH&=0XFFFF0FFF;GPIOC->CRH|=8<<12;}
-#define SDA_OUT() {GPIOC->CRH&=0XFFFF0FFF;GPIOC->CRH|=3<<12;}
 
-//IO²Ù×÷º¯Êý	 
-#define IIC_SCL    PCout(12) //SCL
-#define IIC_SDA    PCout(11) //SDA	 
-#define READ_SDA   PCin(11)  //ÊäÈëSDA 
+/*****************
+ * MACRO
+ *****************/
+#define I2C_SUCCESS         0
+#define I2C_ERR             1
 
-//IICËùÓÐ²Ù×÷º¯Êý
-void IIC_Init(void);                //³õÊ¼»¯IICµÄIO¿Ú				 
-void IIC_Start(void);				//·¢ËÍIIC¿ªÊ¼ÐÅºÅ
-void IIC_Stop(void);	  			//·¢ËÍIICÍ£Ö¹ÐÅºÅ
-void IIC_Send_Byte(u8 txd);			//IIC·¢ËÍÒ»¸ö×Ö½Ú
-u8 IIC_Read_Byte(unsigned char ack);//IIC¶ÁÈ¡Ò»¸ö×Ö½Ú
-u8 IIC_Wait_Ack(void); 				//IICµÈ´ýACKÐÅºÅ
-void IIC_Ack(void);					//IIC·¢ËÍACKÐÅºÅ
-void IIC_NAck(void);				//IIC²»·¢ËÍACKÐÅºÅ
+
+// IO æ–¹å‘è®¾ç½®(è®¾ç½® SDA ä¸ºè¾“å…¥/è¾“å‡ºæ¨¡å¼, I2C ä¸ºåŠåŒå·¥, åˆ†æ—¶æ”¶å‘)
+#define IIC_SDA_IN()  {GPIOC->CRH&=0XFFFF0FFF; GPIOC->CRH|=8<<12;} // ä¸Šæ‹‰/ä¸‹æ‹‰è¾“å…¥æ¨¡å¼
+#define IIC_SDA_OUT() {GPIOC->CRH&=0XFFFF0FFF; GPIOC->CRH|=3<<12;} // è¾“å‡ºæ¨¡å¼, æœ€å¤§ 50 MHz
+
+// IO æ“ä½œå‡½æ•°	 
+#define IIC_SCL        PCout(12)    // SCL, è®¾ç½® GPIO è¾“å‡ºå€¼
+#define IIC_SDA        PCout(11)    // SDA, è®¾ç½® GPIO è¾“å‡ºå€¼
+#define IIC_READ_SDA   PCin(11)     // è¾“å…¥SDA, è¯»å– GPIO è¾“å…¥
+
+// IIC æ‰€æœ‰æ“ä½œå‡½æ•°
+void IIC_Init(void);                //åˆå§‹åŒ–IICçš„IOå£
+void IIC_Start(void);				//å‘é€IICå¼€å§‹ä¿¡å·
+void IIC_Stop(void);	  			//å‘é€IICåœæ­¢ä¿¡å·
+void IIC_Send_Byte(u8 txd);			//IICå‘é€ä¸€ä¸ªå­—èŠ‚
+u8 IIC_Read_Byte(unsigned char ack);//IICè¯»å–ä¸€ä¸ªå­—èŠ‚
+u8 IIC_Wait_Ack(void); 				//IICç­‰å¾…ACKä¿¡å·
+void IIC_Ack(void);					//IICå‘é€ACKä¿¡å·
+void IIC_NAck(void);				//IICä¸å‘é€ACKä¿¡å·
 
 void IIC_Write_One_Byte(u8 daddr,u8 addr,u8 data);
-u8 IIC_Read_One_Byte(u8 daddr,u8 addr);	  
+u8 IIC_Read_One_Byte(u8 daddr,u8 addr);	 
+
+
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

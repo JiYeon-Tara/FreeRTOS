@@ -21,6 +21,7 @@
 #include "tp_test.h"
 #include "stm_flash.h"
 #include "test.h"
+#include "bsp_config.h"
 
 // 流程大约是:串口接收数据 -> 解析 -> 执行提前注册好的回调函数
 
@@ -288,16 +289,30 @@ static bool at_oled_display_test(const char *para1, const char *para2)
     displayNum = (uint8_t)atoi(para1);
 
     AT_TRANS("displayNum:%d\r\n", displayNum);
-
+#if OLED_SCREEN_ENABLE
     switch(displayNum){
         case 1:
+
             OLED_ShowString(0, 0, "static bool at_oled_display_test(const char *para1, const char *para2)");
             break;
         case 2:
+            OLED_ShowChar(0, 50, '.');
             break;
+        case 3:
+            OLED_ShowString(0, 0, "abcdefghigklmnopqrstuvwsyzabcdefghigklmnopqrstuvwsyz");
+            break;
+        case 4:
+            OLED_Clear();
+            OLED_DrawBMP(0, 0, 127, 7, BMP1);
+        break;
+        case 5:
+            OLED_Clear();
+            OLED_DrawBMP(0, 0, 127, 7, BMP2);
+        break;
         default:
             break;
     }
+#endif
     AT_TRANS("OK\r\n");
     return true;
 }
@@ -419,7 +434,9 @@ static bool at_external_flash_test(const char *para1, const char *para2)
 
 static bool at_tp_calibration(const char *para1, const char *para2)
 {
+#if TP_ENABLE
     enter_tp_adjust();
+#endif // TP_ENABLE
     AT_TRANS("OK\r\n");
     return true;
 }

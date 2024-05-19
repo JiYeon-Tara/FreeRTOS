@@ -1,6 +1,10 @@
 #ifndef __TP_TEST_H__
 #define __TP_TEST_H__
 
+#include "bsp_config.h"
+
+#if TP_ENABLE
+
 void Load_Drow_Dialog(void);
 void gui_draw_hline(u16 x0, u16 y0, u16 len, u16 color);
 void gui_fill_circle(u16 x0, u16 y0, u16 r, u16 color);
@@ -10,6 +14,7 @@ void rtp_test(void);
 void enter_tp_adjust();
 void ctp_test(void);
 
+#endif // TP_ENABLE
 
 #endif
 

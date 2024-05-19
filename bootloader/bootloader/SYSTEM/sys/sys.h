@@ -64,6 +64,7 @@
  
 //IO口操作,只对单一的IO口!
 //确保n的值小于16!
+// stm32 独有的操作, bit 映射到 byte
 #define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //输出 
 #define PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  //输入 
 

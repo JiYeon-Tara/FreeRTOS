@@ -10,7 +10,7 @@
 #define CT_IIC_SCL    PCout(0) 			//SCL     
 #define CT_IIC_SDA    PCout(3) 			//SDA	 
 #define CT_READ_SDA   PCin(3)  			//输入SDA 
- 
+
 
 //IIC所有操作函数
 void CT_IIC_Init(void);                	//初始化IIC的IO口				 

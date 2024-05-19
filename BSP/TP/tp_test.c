@@ -12,6 +12,9 @@
 #include "LCD.h"
 #include "led.h"
 
+#if TP_ENABLE
+
+
 /**
  * @brief 
  * 
@@ -241,3 +244,5 @@ void ctp_test(void)
         //     LED0 =! LED0;
 	// }	
 }
+
+#endif // TP_ENABLE

@@ -13,7 +13,8 @@
  * 
  */
 #include "i2c_soft.h"
-#include "delay.h" 	
+#include "delay.h"
+#include "ulog.h"
 
 // 串行总线
 // 开始信号, 结束信号, 应答信号
@@ -32,59 +33,70 @@
  */
 void IIC_Init(void)
 {
-    RCC->APB2ENR |= 1 << 4;     // 先使能外设IO PORTC时钟 							 
-    GPIOC->CRH &= 0XFFF00FFF;   // clear
-    GPIOC->CRH |= 0X00033000;	// PC11/12 推挽输出，输出模式, 最大 50MHz, 复用功能, 推挽输出
-    GPIOC->ODR |= 3 << 11;      // PC11,12 输出高
+    LOG_D("%s\n", __func__);
+    RCC->APB2ENR |= 1 << 4; // 先使能外设IO PORTC时钟
+    GPIOC->CRH &= 0XFFF00FFF; // clear
+    GPIOC->CRH |= 0X00033000; // PC11/12 推挽输出，输出模式, 最大 50MHz, 复用功能, 推挽输出
+    GPIOC->ODR |= 3 << 11; // PC11,12 输出高, (1 << 11) | (1 << 12)
+    // LOG_D("or val:%#08X", (1 << 11) | (1 << 12));
 }
 
-//产生IIC起始信号
-// SDA 由高电平向低电平跳变(产生下降沿)表示开始传送数据
+/**
+ * @brief 产生 IIC "起始信号"
+ *        SCL拉高, SDA 由高电平向低电平跳变(产生下降沿)表示开始传送数据
+ *        I2C 为半双工, 分时收发
+ * 
+ */
 void IIC_Start(void)
 {
-    SDA_OUT();     // sda 线输出
-    IIC_SDA = 1;	  	  
-    IIC_SCL = 1;
+    IIC_SDA_OUT(); // SDA 线输出
+    IIC_SDA = 1;
+    IIC_SCL = 1; // TODO:是不是要先把这里拉高
     delay_us(4);
-    IIC_SDA = 0;    // START:when CLK is high, DATA change form high to low(falling edge)
+    IIC_SDA = 0; // START:when CLK is high, DATA change form high to low(falling edge)
     delay_us(4);
-    IIC_SCL = 0;    // 钳住I2C总线，准备发送或接收数据(外部带上拉)
+    IIC_SCL = 0; // 钳住I2C总线，准备发送或接收数据(外部带上拉)
 
     return;
 }
 
-//产生IIC停止信号
-// SDA 由低电平向高电平跳变, 表示产生停止信号
+/**
+ * @brief 产生IIC停止信号
+ *        SDA 由低电平向高电平跳变, 表示产生停止信号
+ * 
+ */
 void IIC_Stop(void)
 {
-    SDA_OUT();//sda线输出
+    IIC_SDA_OUT(); //sda线设置输出
     IIC_SCL = 0;
     IIC_SDA = 0;
     delay_us(4); 
-    IIC_SCL = 1;	//STOP:when CLK is high DATA change form low to high(rolling edge)
-     delay_us(4); 
-    IIC_SDA = 1;//发送I2C总线结束信号 						   	
+    IIC_SCL = 1;
+    delay_us(4); 
+    IIC_SDA = 1; //发送I2C总线结束信号 STOP:when CLK is high DATA change form low to high(rolling edge)
 }
   
 /**
  * @brief 等待应答信号到来
- *        I2C 发完一个信号后要等待对方恢复一个 ACK，根据情况判断是否继续发送
- * 
+ *        I2C 发完一个信号后要等待对方回复一个 ACK，根据情况判断是否继续发送
+ *        接收数据的 IC 在接收到 8bit 数据后，向发送数据的 IC 发出特定的低电平脉冲，表示已收到数据。
+ *        CPU 向受控单元发出一个信号后，等待受控单元发出一个应答信号，CPU 接收到应答信号后，根据实际情况作出是否继续传递信号的判断。
+ *        若未收到应答信号，由判断为受控单元出现故障。
+ *
  * @return u8 1，接收应答失败; 0，接收应答成功
  */
 u8 IIC_Wait_Ack(void)
 {
     u8 ucErrTime=0;
-    SDA_IN();      // SDA设置为输入  
-    IIC_SDA = 1;	// 设置为输入还可以写吗?
+
+    IIC_SDA_IN(); // SDA设置为输入  
+    IIC_SDA = 1; // 设置为输入还可以写吗?, 这里是不是没必要
     delay_us(1);	   
     IIC_SCL = 1;
     delay_us(1);	 
-    while(READ_SDA) // 对方拉低一段时间 DA 作为应答
-    {
+    while (IIC_READ_SDA) { // 对方拉低一段时间 DA 作为应答
         ucErrTime++;
-        if(ucErrTime > 250) // I2C 异常
-        {
+        if (ucErrTime > 250) { // I2C 异常
             IIC_Stop();
             return I2C_ERR;
         }
@@ -92,52 +104,57 @@ u8 IIC_Wait_Ack(void)
     IIC_SCL = 0; // 时钟拉低
 
     return I2C_SUCCESS;  
-} 
+}
 
-//产生ACK应答
-// SDA 产生特定的低电平脉冲, 表示应答
+/**
+ * @brief 产生ACK应答
+ *        SDA 产生特定的低电平脉冲, 表示应答
+ * 
+ */
 void IIC_Ack(void)
 {
     IIC_SCL = 0;
-    SDA_OUT();
-    IIC_SDA = 0;
+    IIC_SDA_OUT();
+    IIC_SDA = 0; // 拉低 DA
     delay_us(2);
     IIC_SCL = 1;
     delay_us(2);
     IIC_SCL = 0;
 }
 
-//不产生ACK应答		 
-// SDA 拉高就不产生应答   
+/**
+ * @brief 不产生ACK应答
+ *        SDA 拉高就不产生应答
+ * 
+ */
 void IIC_NAck(void)
 {
     IIC_SCL = 0;
-    SDA_OUT();
+    IIC_SDA_OUT();
     IIC_SDA = 1; // SDA 拉高
     delay_us(2);
     IIC_SCL = 1;
     delay_us(2);
     IIC_SCL = 0;
-}	
+}
 
 
 /**
  * @brief IIC发送一个字节
  *        返回从机有无应答
  * 
- * @param txd 
+ * @param txd data byte
  * @return * void 1，有应答; 0，无应答
  */
 void IIC_Send_Byte(u8 txd)
 {
     u8 t;   
-    SDA_OUT(); 	    
-    IIC_SCL = 0;        // 钳住低电平, 拉低时钟开始数据传输
+    IIC_SDA_OUT(); 	    
+    IIC_SCL = 0; // 钳住低电平, 拉低时钟开始数据传输
 
-    // 一位一位的写, 从高位开始发送
-    for(t = 0; t < 8; t++)
-    {
-        IIC_SDA = (txd & 0x80) >> 7;
+    // 一位一位的写,从高位开始发送
+    for (t = 0; t < 8; t++) {
+        IIC_SDA = (txd & 0x80) >> 7; // 10000000 >> 7, 发送 bit[7]
         txd <<= 1; 	  
         delay_us(2);   // 对TEA5767这三个延时都是必须的
         IIC_SCL = 1;
@@ -153,28 +170,30 @@ void IIC_Send_Byte(u8 txd)
  * @brief 读1个字节
  *        每读取一个字节都发送 ACK
  *        
- * @param ack ack=1时，发送ACK; ack=0，发送nACK
+ * @param ack ack=1时，发送ACK; ack=0，不发送ACK
  * @return u8 返回接收到的数据(1个字节)
  */
 u8 IIC_Read_Byte(unsigned char ack)
 {
     unsigned char i, receive = 0;
-    SDA_IN(); // SDA设置为输入
-    for(i = 0; i < 8; i++ )
-    {
+
+    IIC_SDA_IN(); // SDA设置为输入
+    for (i = 0; i < 8; i++) {
         IIC_SCL = 0; 
         delay_us(2);
-        IIC_SCL = 1;	// CLK 上升沿
-        receive <<= 1;
-        if(READ_SDA)
-            receive++;   
-        delay_us(1); 
+        IIC_SCL = 1; // CLK 上升沿
+        receive <<= 1; // 读取数据也是从 bit[7] 开始
+        //TODO:
+        // 不需要 delay?
+        if (IIC_READ_SDA) // bit[x] == 1
+            receive++;
+        delay_us(1); // 1+2 = 3us 读取一个 bit
     }
 
     if (!ack)
-        IIC_NAck();//发送nACK
+        IIC_NAck();//ack=1时，发送ACK
     else
-        IIC_Ack(); //发送ACK 
+        IIC_Ack(); //ack=0，不发送ACK
 
     return receive;
 }

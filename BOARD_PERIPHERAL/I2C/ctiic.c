@@ -15,7 +15,8 @@
 void CT_Delay(void)
 {
 	delay_us(5);
-} 
+}
+
 //电容触摸芯片IIC接口初始化
 void CT_IIC_Init(void)
 {

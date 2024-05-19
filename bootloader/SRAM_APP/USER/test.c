@@ -171,7 +171,7 @@ void ctp_test(void)
 }
 
 int main(void)
-{		 
+{
  	Stm32_Clock_Init(9);	//系统时钟设置
 	uart_init(72,9600);	 	//串口初始化为9600
 	delay_init(72);	   	 	//延时初始化 

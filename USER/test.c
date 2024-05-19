@@ -88,7 +88,7 @@ void bsp_init()
     delay_ms(100);
 #if USART1_ENABLE
     // 初始化之后才可以使用 printf()
-    uart1_init(72000000, 9600);	 //串口初始化为9600
+    uart1_init(72000000, 115200);	 //串口初始化为9600
     printf("\r\n\r\n\r\n\r\n\r\nsystem restart\r\n");
     printf("uart init\r\n");
 #endif
@@ -162,10 +162,17 @@ void bsp_init()
 
 #if EEPROM_ENABLE
     AT24CXX_Init();
+    AT24CXX_Check();
+#if EEPROM_TEST_ENABLE
+    AT24CXX_read_write_test();
+#endif
 #endif
 
 #if FLASH_ENABLE
     SPI_Flash_Init();
+#if FLASH_TEST_ENABLE
+    flash_read_write_test();
+#endif
 #endif
 
 #if REMOTE_CONTROL_ENABLE
@@ -355,18 +362,18 @@ void watch_dog_test()
 void oled_screen_test()
 {
     OLED_Clear();
-    OLED_ShowCHinese(0,0,0);//中
-    OLED_ShowCHinese(18,0,1);//景
-    OLED_ShowCHinese(36,0,2);//园
-    OLED_ShowCHinese(54,0,3);//电
-    OLED_ShowCHinese(72,0,4);//子
-    OLED_ShowCHinese(90,0,5);//科
-    OLED_ShowCHinese(108,0,6);//技
-    OLED_ShowString(0,3,"1.3' OLED TEST");
-    //OLED_ShowString(8,2,"ZHONGJINGYUAN");  
-    //	OLED_ShowString(20,4,"2014/05/01");  
-    OLED_ShowString(0,6,"ASCII:");  
-    OLED_ShowString(63,6,"CODE:");  
+    // OLED_ShowCHinese(0,0,0);//中
+    // OLED_ShowCHinese(18,0,1);//景
+    // OLED_ShowCHinese(36,0,2);//园
+    // OLED_ShowCHinese(54,0,3);//电
+    // OLED_ShowCHinese(72,0,4);//子
+    // OLED_ShowCHinese(90,0,5);//科
+    // OLED_ShowCHinese(108,0,6);//技
+    // OLED_ShowString(0,3,"1.3' OLED TEST");
+    // //OLED_ShowString(8,2,"ZHONGJINGYUAN");  
+    // //	OLED_ShowString(20,4,"2014/05/01");  
+    // OLED_ShowString(0,6,"ASCII:");  
+    // OLED_ShowString(63,6,"CODE:");  
     // OLED_DrawBMP()
     return;
 }
@@ -789,12 +796,19 @@ void Mouse_Show_Pos(u16 x, u16 y, short pos)
 {
     if(pos<0)
     { 
+#if LCD_SCREEN_ENABLE
         LCD_ShowChar(x, y, '-', 16, 0); //显示负号
+#endif
         pos = -pos; //转为正数
     }
     else 
+#if LCD_SCREEN_ENABLE
         LCD_ShowChar(x, y, ' ', 16, 0);//去掉负号
+#endif
+
+#if LCD_SCREEN_ENABLE
     LCD_ShowNum(x + 8, y, pos, 5, 16); //显示值 
+#endif
     return;
 }
 

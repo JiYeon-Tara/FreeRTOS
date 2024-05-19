@@ -37,7 +37,7 @@
 
 // RTC
 #define RTC_ENABLE                  1
-#define RTC_TEST_ENABLE             1
+#define RTC_TEST_ENABLE             0
 
 // DLPS
 #define DLPS_ENABLE                 1

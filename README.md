@@ -18,6 +18,7 @@ Questions:
 - **TODO:明日学习计划:ch35, ch36, ch15, ch16， TP——OLED 和 LCD 显示的详细学习，可以放晚点，开始学习其他内容，本周六、周天花两天时间搞定, LVGL:**
 - 学有余力的情况下可以学习 freeRTOS, nuttx 以及 repo;
 - LVGL 学到了各种 widgets 章节，还停留在 PC 仿真器阶段；
+- DHT11 温湿度传感器——单总线通讯方式，使用自己定的简单通信协议；
 
 
 
