@@ -3,9 +3,10 @@
  * @author your name (you@domain.com)
  * @brief 代码框架整理, 与芯片相关的分别放到不同的文件夹下, OLED 都放在 oled.c/oled.h 中
  *        供应商提供
+ *
  * @version 0.1
  * @date 2022-12-18
- * 
+ *
  * @copyright Copyright (c) 2022
  * 
  */
@@ -24,9 +25,29 @@
 #include "oled.h"
 #include "ssh_1106.h"
 #include "usart.h"
+#include "ulog.h"
 
 
-//OLED的显存
+// OLED screen hardware parameter
+#define SIZE        16 // font_size, 一个字符的大小:32/16/12, font size 与字库对应关系
+#define XLevelL		0x00
+#define XLevelH		0x10
+#define Max_Column	128
+#define Max_Row		64
+#define	Brightness	0xFF 
+#define X_WIDTH 	128
+#define Y_WIDTH 	64	    		
+
+// command or data
+#define OLED_CMD    0	// 写命令
+#define OLED_DATA   1	// 写数据
+
+
+// SSH1106 显存:
+//OLED的显存 大小:128 * 64 像素点: 128*8 bytes
+// uint8_t OLED_GRAM[8][128]; // row(y):0-7, col:0-127(x)
+// 列地址(x):0-127, 行地址(y):0-7
+
 //存放格式如下.
 //[0]0 1 2 3 ... 127	
 //[1]0 1 2 3 ... 127	
@@ -35,12 +56,23 @@
 //[4]0 1 2 3 ... 127	
 //[5]0 1 2 3 ... 127	
 //[6]0 1 2 3 ... 127	
-//[7]0 1 2 3 ... 127 			   
+//[7]0 1 2 3 ... 127
+// OLED 字体大小与显存的关系: 
+//对于 16*16 的字符, 一个字符占用两行 page, 由上半部和下半部组成
+//对于 32*32 的中文, 一个字符占用 4 行 page, 从字库也可以看出
+
+
+//ssh_1106 支持的命令:
+// 其他命令，我们就不在这里一一介绍了，大家可以参考 SSD1306 datasheet 的第 28 页。从
+// 这页开始，对 SSD1306 的指令有详细的介绍。
 
 #if OLED_MODE == OLED_8080
-//向SSD1106写入一个字节。
-//dat:要写入的数据/命令
-//cmd:数据/命令标志 0,表示命令;1,表示数据;
+/**
+ * @brief 向SSD1106写入一个字节。
+ * 
+ * @param dat 要写入的数据/命令
+ * @param cmd 数据/命令标志 0,表示命令;1,表示数据;
+ */
 void OLED_WR_Byte(u8 dat,u8 cmd)
 {
     DATAOUT(dat);	    
@@ -51,61 +83,46 @@ void OLED_WR_Byte(u8 dat,u8 cmd)
     OLED_CS_Clr();
     OLED_WR_Clr();	 
     OLED_WR_Set();
-    OLED_CS_Set();	  
+    OLED_CS_Set();
     OLED_DC_Set();	 
-} 	    	    
+}
 #else
 /**
- * @brief 通过 SPI 向 SSD1106 写入一个字节。
+ * @brief 通过 SPI 向 SSD1106 写入一个字节
  * 
  * @param dat 要写入的数据/命令
  * @param cmd 数据/命令标志, 0:表示命令; 1:表示数据;
  */
-void OLED_WR_Byte(u8 dat, u8 cmd)
+void OLED_WR_Byte(u8 data, u8 cmd)
 {
-    u8 i;
-
-    // command/data
-    if(cmd == OLED_DATA)
+    if(cmd == OLED_DATA) // command/data
         OLED_DC_Set();
     else 
         OLED_DC_Clr();
-		  
-    OLED_CS_Clr(); // 片选
 
-    for(i = 0; i < 8; i++) { // 从高位到低位依次写入
-        OLED_SCLK_Clr(); // 拉低时钟, SPI 仅仅在时钟的边沿通信, 所以这里拉低拉低时钟
-        // 先把数据准备好, 然后制造上升沿, 让从机读取
-        if(dat & 0x80) 
-           OLED_SDIN_Set(); // 1
-        else 
-           OLED_SDIN_Clr(); // 0
-        OLED_SCLK_Set(); // 拉高时钟, 产生上升沿
-        dat <<= 1;
-        // 这里不用加点延时吗? 不同型号的 CPU 可以接受的能力不一样吧????
-    }
-    OLED_CS_Set(); // 恢复片选
+    SPI1_Soft_Write(data);
     OLED_DC_Set(); // 恢复 DC
 
     return;
-} 
+}
 #endif
 
 /**
  * @brief 设置要显示的位置
- * 
+ *
  * @param x 0~127
- * @param y 0~63
+ * @param y 0~7 设置页地址, 其低三位的值对应着 GRAM 的页地址
  */
 void OLED_Set_Pos(unsigned char x, unsigned char y) 
 {
-    // 0xB0 - 0xB7 为要设置的页地址
-    OLED_WR_Byte(0xb0 + y, OLED_CMD); // y 轴偏移 176 ???????????
-    // x 轴偏移 2
+    // OLED 交互命令:0xB0 - 0xB7 为要设置的页地址, 低三位:0x00-0x07
+    OLED_WR_Byte(0xb0 + y, OLED_CMD);
 
+    // 命令参数:
     // (x + 2) & (1111 0000)b >> 4 | 0x10
-    OLED_WR_Byte((((x + 2) & 0xf0) >> 4) | 0x10, OLED_CMD); // 设置列地址高四位
-    OLED_WR_Byte(((x + 2) & 0x0f), OLED_CMD); 
+    // x 轴偏移 2 ——开头的两个像素点空开, 不显示字符
+    OLED_WR_Byte((((x + 2) & 0xf0) >> 4) | 0x10, OLED_CMD); // 设置列地址高四位, 该指令用于设置显示时的起始列地址高四位:0x10-0x1F
+    OLED_WR_Byte(((x + 2) & 0x0f), OLED_CMD); // 0x00-0x0F, 列地址的低四位, 该指令用于设置显示时的起始列地址低四位:0x00-0x0F
 }
 
 //开启OLED显示    
@@ -119,9 +136,9 @@ void OLED_Display_On(void)
 //关闭OLED显示     
 void OLED_Display_Off(void)
 {
-    OLED_WR_Byte(0X8D,OLED_CMD);  //SET DCDC命令
-    OLED_WR_Byte(0X10,OLED_CMD);  //DCDC OFF, 0x10:00010000
-    OLED_WR_Byte(0XAE,OLED_CMD);  //DISPLAY OFF, 0xAE:10101110
+    OLED_WR_Byte(0X8D, OLED_CMD);  //SET DCDC命令
+    OLED_WR_Byte(0X10, OLED_CMD);  //DCDC OFF, 0x10:00010000
+    OLED_WR_Byte(0XAE, OLED_CMD);  //DISPLAY OFF, 0xAE:10101110
 }		
 
 /**
@@ -134,12 +151,13 @@ void OLED_Clear(void)
 
     // 0 - 7 页依次清除
     // 分辨率:128 * 64 -> GRAM:128 * 8 bytes
-    for(i = 0; i < 8; i++) {  
-        OLED_WR_Byte (0xb0 + i, OLED_CMD);    //设置页地址（0~7）-> 0xB0-0xB7
-        OLED_WR_Byte (0x02, OLED_CMD);        //0x00-0x0F:设置显示位置-列低地址, 显示时, 起始列地址的低四位 0010
-        OLED_WR_Byte (0x10, OLED_CMD);        //0x10-0x1F:设置显示位置—列高地址高四位, 0000
-        // 显示时, 起始位置列地址:00000010 
-        for(n = 0; n < 128; n++) // 一页 128 bytes
+    for (i = 0; i < 8; i++) {
+        OLED_WR_Byte (0xb0 + i, OLED_CMD); //设置页地址（0~7）-> 0xB0-0xB7
+        // 设置起始地址
+        OLED_WR_Byte (0x02, OLED_CMD); //低四位:0010b:设置显示位置-列低地址, 显示时, 起始列地址的低四位:0x00-0x0F
+        OLED_WR_Byte (0x10, OLED_CMD); //高四位:0000b:设置显示位置—列地址高四位, 显示时, 起始列地址的低高位:0x10-0x1F
+        // 显示时, 起始位置列地址:00000010
+        for (n = 0; n < 128; n++) // 一页 128 bytes
             OLED_WR_Byte(0, OLED_DATA); 
     } //更新显示
 
@@ -150,41 +168,46 @@ void OLED_Clear(void)
  * @brief 在指定位置显示字符
  * 
  * @param x 0~127 在指定位置显示一个字符,包括部分字符
- * @param y 0~63
+ * @param y 0~7 行数, 显存的页数, 每一页的宽度是 8 个像素点
  * @param chr 
  * @param mode 0,反白显示;1,正常显示	
  * @param SIZE 选择字体 16/12
  */
 void OLED_ShowChar(u8 x, u8 y, u8 chr)
 {
-    unsigned char c = 0, i = 0;	
-    c = chr - ' ';//得到偏移后的值
+    unsigned char char_idx = 0, i = 0;	
+    char_idx = chr - ' ';//得到字符相对于 ' ' 偏移后的值
 
-    if(x > Max_Column - 1){
+    if (x > Max_Column - 1) { // 自动换行
         x = 0; 
-        y = y + 1; // 换行, y + 2??
+        y = y + 1; // 换行, y + 1
         // y = h + 2; // 每行之间空开一页, 总共有 8 页:page[0] - page[7]
     }
 
-    if(SIZE == 16){
-        OLED_Set_Pos(x, y);	
+    if (SIZE == 16) { // font size = 16, 每一个字符都占了 OLED_GRAM 的两页, 上半部和下半部合并组成一个字符
+        OLED_Set_Pos(x, y); // 上半部 在 page[y]
         for(i = 0; i < 8; i++)
-            OLED_WR_Byte(F8X16[c * 16 + i], OLED_DATA);
+            OLED_WR_Byte(F8X16[char_idx * 16 + i], OLED_DATA);
 
-        OLED_Set_Pos(x, y + 1);
+        OLED_Set_Pos(x, y + 1); // 下半部在 page[y+1]
         for(i = 0; i < 8; i++)
-            OLED_WR_Byte(F8X16[c * 16 + i + 8], OLED_DATA);
-    }
-    else {
+            OLED_WR_Byte(F8X16[char_idx * 16 + i + 8], OLED_DATA);
+    } else { // font size = 12;
         OLED_Set_Pos(x, y + 1);
         for(i = 0; i < 6; i++)
-            OLED_WR_Byte(F6x8[c][i], OLED_DATA);
+            OLED_WR_Byte(F6x8[char_idx][i], OLED_DATA);
     }
 
     return;
 }
 
-//m^n函数
+/**
+ * @brief m^n函数
+ * 
+ * @param m 
+ * @param n 
+ * @return u32 
+ */
 u32 oled_pow(u8 m,u8 n)
 {
     u32 result=1;	 
@@ -199,77 +222,109 @@ u32 oled_pow(u8 m,u8 n)
  * @param y 
  * @param num 数值(0~4294967295)
  * @param len 数字的位数
- * @param size 字体大小; 模式 0,填充模式;1,叠加模式
+ * @param size 字体大小; 
+ *      模式 0,填充模式;1,叠加模式
  * @return * void 
  */
-void OLED_ShowNum(u8 x,u8 y,u32 num,u8 len,u8 size)
+void OLED_ShowNum(u8 x, u8 y, u32 num, u8 len, u8 size)
 {
-    u8 t,temp;
-    u8 enshow=0;						   
-    for(t=0;t<len;t++)
-    {
-        temp=(num/oled_pow(10,len-t-1))%10;
-        if(enshow==0&&t<(len-1))
-        {
-            if(temp==0)
-            {
+    u8 t, temp;
+    u8 enshow = 0;
+					   
+    for (t = 0; t < len; t++) {
+        temp = (num / oled_pow(10, len - t - 1)) % 10;
+        if (enshow == 0 && t < (len - 1)) {
+            if (temp == 0) {
                 OLED_ShowChar(x+(size/2)*t,y,' ');
                 continue;
-            }
-            else 
+            } else
                 enshow=1; 
-              
         }
         OLED_ShowChar(x + (size / 2) * t, y, (temp + '0')); 
     }
-} 
+}
 
 /**
  * @brief 显示一个字符号串
  * 
  * @param x 0~127
  * @param y 0-7, y 表示页??
- * @param chr 
+ * @param str must end with '\0'
  */
-void OLED_ShowString(u8 x, u8 y, u8 *chr)
+void OLED_ShowString(u8 x, u8 y, u8 *str)
 {
     unsigned char j=0;
-    while (chr[j] != '\0') {
-        OLED_ShowChar(x, y, chr[j]);
+
+    while (str[j] != '\0') {
+        OLED_ShowChar(x, y, str[j]);
         x += 8;
-        if(x > 120){ // 换行???, 
+        if (x > 120) { // 换行???, 
             x = 0;
-            y += 2; // 行之间, 空开两个字符的宽度
+            y += 2; // 行之间, 空开两个像素(bit)的宽度
         }
         j++;
-        printf("x:%d, y:%d\r\n", x, y);
+        LOG_D("x:%d, y:%d", x, y);
     }
 }
 
 /**
- * @brief 显示汉字
+ * @brief 中文显示 16*16 汉字(占用 2 pages)
+ *        显示汉字
  *        这种方式只能显示指定的汉字
  * 
- * @param x position
- * @param y 
- * @param no 汉字在字库中的位置索引 index
+ * @param x 0-127, OLED_GRAM column index
+ * @param y:0-7 OLED_GRAM page index(row)
+ * @param charIdx 汉字在字库 Hzk 中的位置索引 index
  */
-void OLED_ShowCHinese(u8 x,u8 y,u8 no)
-{      			    
+void OLED_ShowCHinese(u8 x, u8 y, u8 charIdx)
+{
     u8 t, adder=0;
 
-    OLED_Set_Pos(x, y);	
+    OLED_Set_Pos(x, y);	// page[y]
     for(t = 0; t < 16; t++){
-        OLED_WR_Byte(Hzk[2 * no][t], OLED_DATA);
+        OLED_WR_Byte(chuini[2 * charIdx][t], OLED_DATA);
         adder += 1;
     }
-    OLED_Set_Pos(x, y+1);	
+    OLED_Set_Pos(x, y+1); // page[y+1]
     for(t = 0; t < 16; t++){	
-        OLED_WR_Byte(Hzk[2 * no + 1][t], OLED_DATA);
+        OLED_WR_Byte(chuini[2 * charIdx + 1][t], OLED_DATA);
         adder += 1;
     }
     return;		
 }
+
+/**
+ * @brief 中文显示 32*32 的汉字
+ * 
+ * @param x 
+ * @param y 
+ * @param no 
+ */
+void OLED_ShowCHinese32x32(u8 x, u8 y, u8 no)
+{ 
+    u8 t;
+
+    OLED_Set_Pos(x, y);
+    for (t = 0; t < 32; t++) {
+        OLED_WR_Byte(Hzk32x32[4*no][t],OLED_DATA);
+    }
+
+    OLED_Set_Pos(x, y+1);
+    for (t = 0; t < 32; t++) {
+        OLED_WR_Byte(Hzk32x32[4*no+1][t], OLED_DATA);
+    }
+
+    OLED_Set_Pos(x, y+2);
+    for (t = 0; t < 32; t++) {
+        OLED_WR_Byte(Hzk32x32[4*no+2][t],OLED_DATA);
+    }
+
+    OLED_Set_Pos(x, y+3);
+    for (t = 0; t < 32; t++) {
+        OLED_WR_Byte(Hzk32x32[4*no+3][t],OLED_DATA);
+    }
+}
+
 
 /**
  * @brief 显示显示BMP图片 128 × 64
@@ -285,13 +340,13 @@ void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned 
     unsigned int j=0;
     unsigned char x,y;
 
-    if(y1 % 8 == 0) 
-        y = y1 / 8;      
+    if(y1 % 8 == 0)
+        y = y1 / 8;
     else
         y = y1 / 8 + 1;
-    for(y = y0; y < y1; y++){
-        OLED_Set_Pos(x0,y);
-        for(x = x0; x < x1; x++){      
+    for (y = y0; y < y1; y++) {
+        OLED_Set_Pos(x0, y);
+        for (x = x0; x < x1; x++) {      
             OLED_WR_Byte(BMP[j++], OLED_DATA);	    	
         }
     }
@@ -307,7 +362,8 @@ void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned 
  */
 void OLED_Init(void)
 {
-#if OLED_BSP_HAL
+    LOG_I("OLED ssh1106 init");
+#if OLED_BSP_HAL /* HAL 库版本 */
     GPIO initialization with HAL lib
  	GPIO_InitTypeDef  GPIO_InitStructure;
 
@@ -322,22 +378,20 @@ void OLED_Init(void)
  	GPIO_InitStructure.GPIO_Pin =0xFF; //PC0~7 OUT推挽输出
  	GPIO_Init(GPIOC, &GPIO_InitStructure);
  	GPIO_SetBits(GPIOC,0xFF); //PC0~7输出高
- 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15;				 //PG13,14,15 OUT推挽输出
+ 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15; //PG13,14,15 OUT推挽输出
  	GPIO_Init(GPIOG, &GPIO_InitStructure);
- 	GPIO_SetBits(GPIOG,GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15);						 //PG13,14,15 OUT  输出高
+ 	GPIO_SetBits(GPIOG,GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15); //PG13,14,15 OUT  输出高
 #else
- 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1;				 //PC0,1 OUT推挽输出
+ 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1; //PC0,1 OUT推挽输出
  	GPIO_Init(GPIOC, &GPIO_InitStructure);
- 	GPIO_SetBits(GPIOC,GPIO_Pin_0|GPIO_Pin_1);						 //PC0,1 OUT  输出高
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;				 //PG15 OUT推挽输出	  RST
+ 	GPIO_SetBits(GPIOC,GPIO_Pin_0|GPIO_Pin_1); //PC0,1 OUT  输出高
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15; //PG15 OUT推挽输出	  RST
  	GPIO_Init(GPIOG, &GPIO_InitStructure);
- 	GPIO_SetBits(GPIOG,GPIO_Pin_15);						 //PG15 OUT  输出高
+ 	GPIO_SetBits(GPIOG,GPIO_Pin_15); //PG15 OUT  输出高
 #endif // OLED_MODE
-
-#else // OLED_BSP_HAL
-    RCC->APB2ENR |= 1 << 3; //使能PORTB时钟 
-    RCC->APB2ENR |= 1 << 4; //使能PORTC时钟 	  
+#else /* 寄存器版本 */
+    RCC->APB2ENR |= 1 << 3; // 使能PORTB时钟 
+    RCC->APB2ENR |= 1 << 4; // 使能PORTC时钟 	  
 #if OLED_MODE == OLED_8080 //使用8080并口模式				 
     JTAG_Set(SWD_ENABLE);
     GPIOB->CRL=0X33333333;
@@ -349,17 +403,12 @@ void OLED_Init(void)
     GPIOC->CRL|=0X33000000;
     GPIOC->ODR|=0X03C0;
 #else //使用4线 SPI 串口模式
-    GPIOB->CRL &= 0XFFFFFF00; // PB1, PB2clear
-    GPIOB->CRL |= 0XF0000033; // output push pull
-    GPIOB->ODR |= (3 << 0);   // 0X03 set output 1
 #if OLED_RESET_GPIO_CTR
     GPIOB->CRH &= 0xF0FFFFFF; // PB14 clear
     GPIOB->CRH |= 0x03000000; // output push pull
-    GPIOB->ODR |= (1 << 14);  // output 1
+    GPIOB->ODR |= (1 << 14);  // PB[14] output 1
 #endif /*OLED_RESET_GPIO_CTR*/
-    GPIOC->CRH &= 0XFFFFFF00; // PC8, PC9 clear  
-    GPIOC->CRH |= 0X00000033; // output push pull
-    GPIOC->ODR |= (3 << 8);     // output 1
+    SPI1_Soft_Init();
 #endif // OLED_MODE
 #endif // OLED_BSP_HAL
 
@@ -368,7 +417,7 @@ void OLED_Init(void)
     OLED_RST_Clr();
     delay_ms(100);
     OLED_RST_Set(); 
-                      
+
     OLED_WR_Byte(0xAE,OLED_CMD);//--turn off oled panel
     OLED_WR_Byte(0x02,OLED_CMD);//---set low column address
     OLED_WR_Byte(0x10,OLED_CMD);//---set high column address
@@ -400,7 +449,7 @@ void OLED_Init(void)
     
     OLED_WR_Byte(0xAF,OLED_CMD); /*display ON*/ 
     OLED_Clear();
-    OLED_Set_Pos(0,0); 	
+    OLED_Set_Pos(0, 0); 	
 
     return;
 }  

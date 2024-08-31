@@ -42,3 +42,4 @@ u8 FT5206_Scan(u8 mode);
 
 
 #endif
+

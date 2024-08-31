@@ -1,7 +1,8 @@
 /**
  * @file fattester.c
  * @author your name (you@domain.com)
- * @brief 对 FATFS 接口的封装, 一个简单地测试代码，不足以作为中间层, 真正要用还是要自己直接封装 FATFS 的接口
+ * @brief 对 FATFS 接口的封装, 一个简单地测试代码，不足以作为中间层, 
+ *        真正要用还是要自己直接封装 FATFS 的接口
  * @version 0.1
  * @date 2023-01-08
  * 
@@ -18,6 +19,8 @@
 #include "string.h"
 
 
+// 仅用于测试
+
 /**
  * @brief 为磁盘注册工作区(挂载)
  * 
@@ -29,7 +32,7 @@ u8 mf_mount(u8* path, u8 mt)
 {
 //    return f_mount(fs[0], (const TCHAR*)path, mt); 
     FATFS *pFS;
-    switch(*path){
+    switch (path[0]) {
         case '0':
         {
             pFS = fs[0];
@@ -86,6 +89,8 @@ u8 mf_read(u16 len)
     printf("\r\nRead file data is:\r\n");
     for(i = 0; i < len / 512; i++)
     {
+        // 为什么要这么操作, 只能 512 bytes????
+        // TODO:
         res = f_read(file, fatbuf, 512, &br);
         printf("read len1:%d, ret:%d\r\n", br, res);
         if(res)
@@ -128,7 +133,7 @@ u8 mf_read(u16 len)
  * @return u8 执行结果
  */
 u8 mf_write(u8*dat, u16 len)
-{			    
+{
     u8 res;	   					   
 
     printf("\r\nBegin Write file...\r\n");
@@ -312,9 +317,14 @@ u8 mf_fmkfs(u8* path, u8 mode, u16 au)
     return f_mkfs((const TCHAR*)path, mode, au);//格式化,drv:盘符;mode:模式;au:簇大小
 } 
 
-//删除文件/目录
-//pname:文件/目录路径+名字
-//返回值:执行结果
+/**
+ * @brief 删除文件/目录
+ *       TODO:
+ *       unlink 删除文件夹的时候必须要保证文件夹为空才可以成功删除
+ * 
+ * @param pname 文件/目录路径+名字
+ * @return u8 执行结果
+ */
 u8 mf_unlink(u8 *pname)
 {
     return  f_unlink((const TCHAR *)pname);

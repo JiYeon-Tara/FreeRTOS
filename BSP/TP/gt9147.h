@@ -37,3 +37,4 @@ u8 GT9147_Scan(u8 mode);
 
 
 #endif 
+

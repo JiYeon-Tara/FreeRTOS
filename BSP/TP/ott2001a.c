@@ -1,13 +1,13 @@
 #include "ott2001a.h"
 #include "touch.h"
-#include "ctiic.h"
+#include "i2c2_soft.h"
 #include "usart.h"
 #include "delay.h" 
 
 #if TP_ENABLE
 
 
-//向OTT2001A写入一次数据
+//向OTT2001A写入一次数据, 参考 《OTT2001A IIC协议》, slave device address:0x59
 //reg:起始寄存器地址
 //buf:数据缓缓存区
 //len:写数据长度
@@ -17,21 +17,23 @@ u8 OTT2001A_WR_Reg(u16 reg,u8 *buf,u8 len)
 	u8 i;
 	u8 ret=0;
 	CT_IIC_Start();	
- 	CT_IIC_Send_Byte(OTT_CMD_WR);   //发送写命令 	 
+ 	CT_IIC_Send_Byte(OTT_CMD_WR); //发送写命令 	 
 	CT_IIC_Wait_Ack();
-	CT_IIC_Send_Byte(reg>>8);   	//发送高8位地址
-	CT_IIC_Wait_Ack(); 	 										  		   
-	CT_IIC_Send_Byte(reg&0XFF);   	//发送低8位地址
+	CT_IIC_Send_Byte(reg>>8); //发送高8位地址
+	CT_IIC_Wait_Ack();
+	CT_IIC_Send_Byte(reg&0XFF); //发送低8位地址
 	CT_IIC_Wait_Ack();  
 	for(i=0;i<len;i++)
-	{	   
+	{
     	CT_IIC_Send_Byte(buf[i]);  	//发数据
-		ret=CT_IIC_Wait_Ack();
-		if(ret)break;  
+		ret = CT_IIC_Wait_Ack();
+		if(ret)
+			break;  
 	}
     CT_IIC_Stop();					//产生一个停止条件	    
 	return ret; 
 }
+
 //从OTT2001A读出一次数据
 //reg:起始寄存器地址
 //buf:数据缓缓存区
@@ -40,21 +42,22 @@ void OTT2001A_RD_Reg(u16 reg,u8 *buf,u8 len)
 {
 	u8 i; 
  	CT_IIC_Start();	
- 	CT_IIC_Send_Byte(OTT_CMD_WR);   //发送写命令 	 
+ 	CT_IIC_Send_Byte(OTT_CMD_WR); //发送写命令 	 
 	CT_IIC_Wait_Ack();
- 	CT_IIC_Send_Byte(reg>>8);   	//发送高8位地址
+ 	CT_IIC_Send_Byte(reg >> 8); //发送高8位地址
 	CT_IIC_Wait_Ack(); 	 										  		   
- 	CT_IIC_Send_Byte(reg&0XFF);   	//发送低8位地址
-	CT_IIC_Wait_Ack();  
- 	CT_IIC_Start();  	 	   
-	CT_IIC_Send_Byte(OTT_CMD_RD);   //发送读命令		   
+ 	CT_IIC_Send_Byte(reg & 0XFF); //发送低8位地址
+	CT_IIC_Wait_Ack();
+ 	CT_IIC_Start();
+	CT_IIC_Send_Byte(OTT_CMD_RD); //发送读命令		   
 	CT_IIC_Wait_Ack();	   
-	for(i=0;i<len;i++)
-	{	   
-    	buf[i]=CT_IIC_Read_Byte(i==(len-1)?0:1); //发数据	  
-	} 
+	for(i=0;i<len;i++) {
+		// 最后一个字节读完后需要发送 ACK
+    	buf[i]=CT_IIC_Read_Byte(i == (len - 1) ? 0 : 1); //发数据	  
+	}
     CT_IIC_Stop();//产生一个停止条件    
 }
+
 //传感器打开/关闭操作
 //cmd:1,打开传感器;0,关闭传感器
 void OTT2001A_SensorControl(u8 cmd)
@@ -62,7 +65,8 @@ void OTT2001A_SensorControl(u8 cmd)
 	u8 regval=0X00;
 	if(cmd)regval=0X80;
 	OTT2001A_WR_Reg(OTT_CTRL_REG,&regval,1); 
-} 
+}
+
 //初始化触摸屏
 //返回值:0,初始化成功;1,初始化失败 
 u8 OTT2001A_Init(void)
@@ -76,6 +80,7 @@ u8 OTT2001A_Init(void)
 	GPIOC->CRH|=0X00300000;	   
 	GPIOC->ODR|=1<<13;	   	//PC13 推挽输出 
 	CT_IIC_Init();      	//初始化电容屏的I2C总线  
+
 	OTT_RST=0;				//复位
 	delay_ms(100);
  	OTT_RST=1;				//释放复位		    

@@ -28,16 +28,17 @@
 
 /**
  * @brief 初始化IIC, 配置 GPIO
- *        PC12 - SCL; PC11 - SDA
+ *        PC12 - SCL;
+ *        PC11 - SDA
  * 
  */
 void IIC_Init(void)
 {
-    LOG_D("%s\n", __func__);
-    RCC->APB2ENR |= 1 << 4; // 先使能外设IO PORTC时钟
-    GPIOC->CRH &= 0XFFF00FFF; // clear
-    GPIOC->CRH |= 0X00033000; // PC11/12 推挽输出，输出模式, 最大 50MHz, 复用功能, 推挽输出
-    GPIOC->ODR |= 3 << 11; // PC11,12 输出高, (1 << 11) | (1 << 12)
+    LOG_I("%s\n", __func__);
+    RCC->APB2ENR |= 0x01 << 4; // 先使能外设IO PORTC时钟
+    GPIOC->CRH &= ~(0xFF << 12); // clear 0XFFF00FFF
+    GPIOC->CRH |= 0x33 << 12; // PC11/12 推挽输出，输出模式, 最大 50MHz, 复用功能, 推挽输出, 0X00033000
+    GPIOC->ODR |= 0x03 << 11; // PC11,12 输出高, (1 << 11) | (1 << 12)
     // LOG_D("or val:%#08X", (1 << 11) | (1 << 12));
 }
 
@@ -73,7 +74,7 @@ void IIC_Stop(void)
     delay_us(4); 
     IIC_SCL = 1;
     delay_us(4); 
-    IIC_SDA = 1; //发送I2C总线结束信号 STOP:when CLK is high DATA change form low to high(rolling edge)
+    IIC_SDA = 1; // STOP:when CLK is high DATA change form low to high(rolling edge)
 }
   
 /**
@@ -94,7 +95,7 @@ u8 IIC_Wait_Ack(void)
     delay_us(1);	   
     IIC_SCL = 1;
     delay_us(1);	 
-    while (IIC_READ_SDA) { // 对方拉低一段时间 DA 作为应答
+    while (IIC_READ_SDA) { // 从机拉低一段时间 SDA 作为 ACK
         ucErrTime++;
         if (ucErrTime > 250) { // I2C 异常
             IIC_Stop();
@@ -155,16 +156,16 @@ void IIC_Send_Byte(u8 txd)
     // 一位一位的写,从高位开始发送
     for (t = 0; t < 8; t++) {
         IIC_SDA = (txd & 0x80) >> 7; // 10000000 >> 7, 发送 bit[7]
-        txd <<= 1; 	  
+        txd <<= 1;
         delay_us(2);   // 对TEA5767这三个延时都是必须的
         IIC_SCL = 1;
-        delay_us(2); 
+        delay_us(2);
         IIC_SCL = 0;	// CLK 下降沿
         delay_us(2);
     }
 
     return;
-} 
+}
 
 /**
  * @brief 读1个字节
@@ -183,8 +184,6 @@ u8 IIC_Read_Byte(unsigned char ack)
         delay_us(2);
         IIC_SCL = 1; // CLK 上升沿
         receive <<= 1; // 读取数据也是从 bit[7] 开始
-        //TODO:
-        // 不需要 delay?
         if (IIC_READ_SDA) // bit[x] == 1
             receive++;
         delay_us(1); // 1+2 = 3us 读取一个 bit
@@ -198,27 +197,4 @@ u8 IIC_Read_Byte(unsigned char ack)
     return receive;
 }
 
-/**
- * @brief 
- * 
- * @param daddr 
- * @param addr 
- * @param data 
- */
-void IIC_Write_One_Byte(u8 daddr,u8 addr,u8 data)
-{
-
-}
-
-/**
- * @brief 
- * 
- * @param daddr 
- * @param addr 
- * @return u8 
- */
-u8 IIC_Read_One_Byte(u8 daddr,u8 addr)
-{
-
-}
 

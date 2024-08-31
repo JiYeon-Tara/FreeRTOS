@@ -2,7 +2,7 @@
 #define __EXFUNS_H 			   
 #include <stm32f10x.h>
 #include "ff.h"
-
+#include "util.h"
 
 /********************
  * GLOAL var
@@ -33,10 +33,10 @@ extern u8 *fatbuf;//SD卡数据缓存区
 
 
  
-u8 exfuns_init(void);							//申请内存
-u8 f_typetell(u8 *fname);						//识别文件类型
-u8 exf_getfree(u8 *drv,u32 *total,u32 *free);	//得到磁盘总容量和剩余容量
-u32 exf_fdsize(u8 *fdname);						//得到文件夹大小			 																		   
+u8 exfuns_init(void); //申请内存
+u8 f_typetell(u8 *fname); //识别文件类型
+u8 exf_getfree(u8 *drv,u32 *total,u32 *free); //得到磁盘总容量和剩余容量
+u32 exf_fdsize(u8 *fdname); //得到文件夹大小			 																		   
 #endif
 
 

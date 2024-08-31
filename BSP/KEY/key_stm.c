@@ -7,10 +7,17 @@
 #include "dlps.h"
 #endif
 
+#include "ulog.h"
+
 // WK_UP, PA0
 // KEY0, PC5
-// KEY1, PA15, 占用了 JTAG 的一个 IO, 所以要禁用 JTAG, 使能 SWD
+// KEY1, PA15, 和 JTAG 共用的 GPIO, 所以要禁用 JTAG, 使能 SWD
+/******************* WK_UP 按键和红外共用一个 GPIO, 需要拔掉跳线帽 *******************/
 
+
+static bool key0_pressed = false;
+static bool key1_pressed = false;
+static bool key_wkup_pressed = false;
 
 /**
  * @brief 按键初始化函数-
@@ -19,38 +26,34 @@
  */
 void KEY_Init(void)
 {
-    RCC->APB2ENR |= 1<<2;     	// 使能PORTA时钟
-    RCC->APB2ENR |= 1<<4;     	// 使能PORTC时钟
-    JTAG_Set(SWD_ENABLE);		// 关闭JTAG, 开启SWD
+    RCC->APB2ENR |= 1 << 2; // 使能PORTA时钟
+    RCC->APB2ENR |= 1 << 4; // 使能PORTC时钟
+    JTAG_Set(SWD_ENABLE); // 关闭JTAG, 开启SWD, JTAG 使用了 PA15
 
-    //TODO:
-    //PA0 - WK_UP 按键没有问题
-    // WK_UP 按键和红外共用一个 GPIO, 需要拔掉跳线帽
-#if DLPS_ENABLE
-    WKUP_Init();
-#else
-    GPIOA->CRL &= 0XFFFFFFF0;	// PA0 设置成输入, 模拟输入模式	  
-    GPIOA->CRL |= 0X00000008;   // 上拉 / 下拉输入模式
-    GPIOA->ODR &= 0xFFFFFFFF;   // 设置下拉， GPIOA->ODR &= 0xFFFFFFF7   
-#endif // DLPS_ENABLE
+#if LOOP_KEY_ENABLE == 1
+    GPIOA->CRH &= 0X0FFFFFFF; // PA15设置成输入	  
+    GPIOA->CRH |= 0X80000000; // 上拉 / 下拉输入模式		 
+    GPIOA->ODR |= (1 << 15); // PA15上拉, PA0(WK_UP)默认下拉
 
-    GPIOA->CRH &= 0X0FFFFFFF;	// PA15设置成输入	  
-    GPIOA->CRH |= 0X80000000; 	// 上拉 / 下拉输入模式		 
-    GPIOA->ODR |= (1 << 15);	// PA15上拉, PA0默认下拉
-
-    GPIOC->CRL &= 0XFF0FFFFF;	//PC5设置成输入	  
-    GPIOC->CRL |= 0X00800000;   
-    GPIOC->ODR |= 1 << 5;	    //PC5上拉, 通过输出数据寄存器设置上拉, 默认下拉
-
-    // 中断按键测试
-#if LOOP_KEY_ENABLE
+    GPIOC->CRL &= 0XFF0FFFFF; // PC5设置成输入	  
+    GPIOC->CRL |= 0X00800000; // 上拉 / 下拉输入模式
+    GPIOC->ODR |= 1 << 5; // PC5上拉, 通过输出数据寄存器设置上拉, 默认下拉
 #endif
 
+#if DLPS_ENABLE == 0 // WK_UP 作为普通的按键, 而不是低功耗唤醒按键时
+#if TEMP_ENABLE == 0 // DS 18B20 会用到这个 GPIO
+    GPIOA->CRL &= 0XFFFFFFF0; // PA0 设置成输入, 模拟输入模式	  
+    GPIOA->CRL |= 0X00000008; // 上拉 / 下拉输入模式
+    GPIOA->ODR &= 0xFFFFFFFF; // 设置下拉， GPIOA->ODR &= 0xFFFFFFF7
+#endif /* TEMP_ENABLE */
+#endif // DLPS_ENABLE
+    
+    // 中断按键测试
 #if INT_KEY_ENABLE
     EXTI_Init();
 #endif
 
-    printf("key init\r\n");
+    LOG_I("key init\r\n");
     return;
 } 
 
@@ -92,4 +95,49 @@ int8_t KEY_Scan(KEY_MODE_E mode)
  *        配置 GPIO 时钟 -> 配置为输入 -> 配置中断 -> 打开中断
  * 		  写中断服务函数
  */
+
+
+void set_key_pressed(int key_idx, bool pressed)
+{
+    switch (key_idx) {
+        case KEY0_IDX:
+            key0_pressed = pressed;
+            break;
+        case KEY1_IDX:
+            key1_pressed = pressed;
+            break;
+        case KEY_WKUP_IDX:
+            key_wkup_pressed = pressed;
+            break;
+        default:
+            break;
+    }
+}
+
+
+/**
+ * @brief 获取当前被按下的键
+ * 
+ * @return int 
+ */
+int key_pressed(void)
+{
+    if (key0_pressed) {
+        return KEY0_PRES;
+    } else if (key1_pressed) {
+        return KEY1_PRES;
+    } else if (key_wkup_pressed) {
+        return WKUP_PRES;
+    } else {
+        return NO_KEY_PRES;
+    }
+}
+
+// 恢复所有按键状态, main loop 最后调用
+void key_reset(void)
+{
+    set_key_pressed(KEY0_IDX, false);
+    set_key_pressed(KEY1_IDX, false);
+    set_key_pressed(KEY_WKUP_IDX, false);
+}
 

@@ -13,14 +13,17 @@
 #include "key_stm.h"
 #include "led.h"
 
+#include "ulog.h"
+
+// 实现功能:
 // 软件 tickless 模式 配合 MCU 的低功耗模式, 可以实现更低的功耗
-// 进入 standby mode: 长按 WK_UP 大于 3s 进入;
-// 退出 : 短按 WK_UP(上升沿中断) 唤醒 MCU
+// 进入 standby mode: 长按 WK_UP 大于 3s 进入待机模式;
+// 退出 : 短按 WK_UP(上升沿中断) 唤醒 MCU, 唤醒后相当于软复位,从开始进行重新初始化
 
 /*******************
  * MACRO
  *******************/
-#define WKUP_KD                  PAin(0)     // 检查 WKUP 是否被按下
+#define WKUP_KD                  PAin(0) // 检查 WKUP 是否被按下
 #define WKUP_MAJOR_INT_PRIOR     2
 #define WKUP_SUB_INT_PRIOR       2
 #define WKUP_INT_GROUP           2
@@ -32,9 +35,11 @@
  */
 void Sys_Enter_Standby(void)
 {
-    printf("enter standby mode\r\n");
+    LOG_I("enter standby mode\r\n");
+    // 关闭所有外设
     // 这里关闭了串口、GPIO、ADC 、Timer 等所有外设, 也可以不关闭需要的外设(根据实际情况)
-    RCC->APB2RSTR |= 0x01FC;    // 复位所有 IO 口
+    RCC->APB2RSTR |= 0x01FC; // 复位所有 IO 口
+
     // RCC->APB2RSTR |= 0xFC;
     Sys_Standby(); // 进入待机模式
 }
@@ -51,16 +56,16 @@ uint8_t Check_WKUP(void)
     uint8_t pressTime = 0; // 记录按下的时间
     LED0 = 0;
 
-    while(1){
-        if(WKUP_KD){
+    while (1) {
+        LOG_I("press time:%d", pressTime);
+        if (WKUP_KD == 1) {
             pressTime++;
             delay_ms(30); // 30 * 100 = 3000ms
-            if(pressTime >= 100){ // 按下超过 3s
+            if (pressTime >= 100) { // 按下超过 3s
                 LED0 = 0; // 点亮 LED0
                 return 1;
             }
-        }
-        else{ // 按下不足 3s
+        } else { // 按下不足 3s
             LED0 = 1;
             return 0;
         }
@@ -68,20 +73,22 @@ uint8_t Check_WKUP(void)
 }
 
 /**
- * @brief GPIO 初始化
+ * @brief 系统会在这个接口阻塞等待 WK_UP 按键中断将系统从待机模式唤醒
+ *        WKUP GPIO 初始化
+ *        配置实现 通过 GPIO 唤醒系统（进入低功耗后）
  * 
  */
 void WKUP_Init(void)
 {
+    LOG_I("DLPS WK_UP key init");
     RCC->APB2ENR |= 1 << 2; // 开使能 PORTA 时钟
     RCC->APB2ENR |= 1 << 0; // 开启辅助时钟
     GPIOA->CRL &= 0xFFFFFFF0; // PA0 设置输入
-    GPIOA->CRL |= 0x00000008; // 设置 上拉/下拉输入模式
+    GPIOA->CRL |= 0x00000008; // 上拉/下拉输入模式
     GPIO_NVIC_Config(GPIO_A, 0, RTIR); //  rising trigger interrupt
 
-    // 检查是否正常开机, 开机直接进入待机模式，
-    // 3s
-    if(Check_WKUP()){ // 不是正常开机
+    // 检查是否正常开机, 开机直接进入待机模式，3s
+    if (Check_WKUP()) { // 不是正常开机
         Sys_Standby();
     }
 
@@ -90,4 +97,5 @@ void WKUP_Init(void)
 
     return;
 }
+
 

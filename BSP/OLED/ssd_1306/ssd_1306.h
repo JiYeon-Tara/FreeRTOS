@@ -1,21 +1,15 @@
 #ifndef __SSD_13306_H__
 #define __SSD_13306_H__	
-
-
-
-
-#if OLED_SCREEN_ENABLE
-
 #include "sys.h"
 #include "stdlib.h"
 #include "bsp_config.h"
-#include "oled.h"   
+#include "oled.h"
 //////////////////////////////////////////////////////////////////////////////////
 //1,修改OLED_ShowChar函数,支持12/16/24字体
 //2,修改OLED_ShowString函数,支持字体设置
 ////////////////////////////////////////////////////////////////////////////////// 	  
 
-
+#if OLED_SCREEN_ENABLE
 //OLED控制用函数
 // void OLED_WR_Byte(u8 dat,u8 cmd);	    
 // void OLED_Display_On(void);

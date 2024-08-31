@@ -9,11 +9,10 @@
  * 
  */
 #include "touch.h"
-#include "LCD.h"
+#include "ILI93xx.h"
 #include "led.h"
 
-#if TP_ENABLE
-
+#if TP_ENABLE == 1
 
 /**
  * @brief 
@@ -49,6 +48,24 @@ void gui_draw_hline(u16 x0, u16 y0, u16 len, u16 color)
 }
 
 /**
+ * @brief 画有宽度的实线 (x0,y0) (x0+len-1, y0+width-1)
+ * 
+ * @param x0 
+ * @param y0 
+ * @param lenth 
+ * @param width 
+ * @param color 
+ */
+void gui_draw_line(u16 x0, u16 y0, u16 lenth, u16 width, u16 color)
+{
+	if(lenth == 0)
+        return;
+	LCD_Fill(x0, y0, x0 + lenth - 1, y0 + width - 1, color);	
+
+    return;
+}
+
+/**
  * @brief 画实心圆
  * 
  * @param x0 x0,y0:坐标
@@ -57,7 +74,7 @@ void gui_draw_hline(u16 x0, u16 y0, u16 len, u16 color)
  * @param color 颜色
  */
 void gui_fill_circle(u16 x0, u16 y0, u16 r, u16 color)
-{											  
+{
 	u32 i;
 	u32 imax = ((u32)r * 707) / 1000 + 1;
 	u32 sqmax = (u32)r * (u32)r + (u32)r / 2;
@@ -78,16 +95,7 @@ void gui_fill_circle(u16 x0, u16 y0, u16 r, u16 color)
 		gui_draw_hline(x0-x,y0+i,2*x,color);
 		gui_draw_hline(x0-x,y0-i,2*x,color);
 	}
-}  
-
-//两个数之差的绝对值 
-//x1,x2：需取差值的两个数
-//返回值：|x1-x2|
-u16 my_abs(u16 x1,u16 x2)
-{			 
-	if(x1>x2)return x1-x2;
-	else return x2-x1;
-} 
+}
 
 /**
  * @brief 画一条粗线
@@ -145,7 +153,7 @@ void lcd_draw_bline(u16 x1, u16 y1, u16 x2, u16 y2,u8 size,u16 color)
 			uCol += incy; 
 		} 
 	}  
-}  
+}
 
 /**
  * @brief 电阻触摸屏测试函数, 5个触控点的颜色	
@@ -159,11 +167,11 @@ void rtp_test(void)
 	// while(1)
 	// {
 	//  	key = KEY_Scan(0);
-		tp_dev.scan(0); 		 
-		if(tp_dev.sta & TP_PRES_DOWN)			//触摸屏被按下
-		{	
-		 	if(tp_dev.x[0] < lcddev.width && tp_dev.y[0] < lcddev.height){	
-				if(tp_dev.x[0] > (lcddev.width - 24) && tp_dev.y[0] < 16)
+		tp_dev.scan(0);
+		if(tp_dev.sta & TP_PRES_DOWN) //触摸屏被按下
+		{
+		 	if(tp_dev.x[0] < lcddev.width && tp_dev.y[0] < lcddev.height) {
+				if(tp_dev.x[0] > (lcddev.width - 24) && tp_dev.y[0] < 16)  // 超出边界
                     Load_Drow_Dialog();//清除
 				else 
                     TP_Draw_Big_Point(tp_dev.x[0], tp_dev.y[0], RED); // 画图	  			   
@@ -188,13 +196,13 @@ void rtp_test(void)
 
 /**
  * @brief 电阻触摸屏屏幕校准程序
- *        电阻屏需要校准, 电容屏不需要???
+ *        电阻屏需要校准, 电容屏不需要
  * 
  */
 void enter_tp_adjust()
 {
     LCD_Clear(WHITE);//清屏
-    TP_Adjust();  //屏幕校准 
+    TP_Adjust(); //屏幕校准 
     TP_Save_Adjdata();	 
     Load_Drow_Dialog();
 
@@ -226,7 +234,8 @@ void ctp_test(void)
 						lastpos[t][0] = tp_dev.x[t];
 						lastpos[t][1] = tp_dev.y[t];
 					}
-					lcd_draw_bline(lastpos[t][0], lastpos[t][1], tp_dev.x[t], tp_dev.y[t], 2, POINT_COLOR_TBL[t]);//画线
+					lcd_draw_bline(lastpos[t][0], lastpos[t][1], tp_dev.x[t], tp_dev.y[t], 
+									2, POINT_COLOR_TBL[t]);//画线
 					lastpos[t][0] = tp_dev.x[t];
 					lastpos[t][1] = tp_dev.y[t];
 					if(tp_dev.x[t] > (lcddev.width - 24) && tp_dev.y[t] < 16){ // 超出边界
@@ -243,6 +252,15 @@ void ctp_test(void)
 		// if(i % 20 == 0)
         //     LED0 =! LED0;
 	// }	
+}
+
+void tp_test_loop(void)
+{
+	if (tp_dev.touchtype & 0x80) {
+		ctp_test();
+	} else {
+		rtp_test();
+	}
 }
 
 #endif // TP_ENABLE

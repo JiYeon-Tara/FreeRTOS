@@ -13,19 +13,25 @@
 #include "board_config.h"
 #include "sys.h"
 
+/****************************************************************************
+ * MACRO
+ ****************************************************************************/
 //WWDT
 // #if IWATCH_DOG_TEST_ENABLE || WWATCH_DOT_TEST_ENABLE
 #define WWDT_PRIEMPTION_PRIORITY    2
 #define WWDT_SUB_PRIORITY           3
 #define WWDT_NVIC_GROUP             2
 // #endif
-
-/***********************
- * GLOBAL var
- ***********************/
-extern u8 WWDG_CNT; 		// 0111 1111; 保存WWDG计数器的设置值,默认为最大.计数器起始值(递减)
-extern u8 WWDG_UPPER_CNT;	// 上部分触发时间点; 合理喂狗时间:0x5F - 0x3F
-extern u8 SPLIT_FREQ;			// 8 分频
+#if WWATCH_DOG_ENABLE == 1
+#define WWDG_CNT                    0x7F // T[6:0]:01111111; 保存WWDG计数器的设置值,默认为最大.递减计数器起始值
+#define WWDG_UPPER_CNT              0x5F // 上部分触发时间点; 合理喂狗时间:0x5F - 0x40
+#define WWDG_CLK_8_PRESCALLER       3 // 00000011:8 分频
+#endif
+// 喂狗时间时间
+// 最小喂狗时间： (T[6:0] - W[6:0]) * Tper
+// 最小喂狗时间：(T[6:0] - 0x40) * Tper
+// 上边界:0x5F * (4096 * 2 ^ WDGTB)/fpclk1 = 86.47ms
+// 下边界:0x40 * (4096 * 2 ^ WDGTB)/fpclk1 = 
 
 
 void IWDG_Init(u8 prer, u16 rlr);

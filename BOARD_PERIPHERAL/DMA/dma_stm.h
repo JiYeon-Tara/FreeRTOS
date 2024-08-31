@@ -9,12 +9,10 @@
 /*************
  * TYPEDEF
  *************/
-typedef struct
-{
+typedef struct {
 	uint8_t sendBuff[5168];
 	uint8_t textToSend[100];	// 要发送的内容需要小于 100
 	uint8_t sendSize;			// 要发送的数据长度
-
 } dma_manager_t;
 
 

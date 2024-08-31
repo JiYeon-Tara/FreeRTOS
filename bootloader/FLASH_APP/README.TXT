@@ -1,35 +1,12 @@
-ÊµÑéÆ÷²Ä:
-	MiniSTM32F103¿ª·¢°åV3°æ±¾
-	
-ÊµÑéÄ¿µÄ:
-	Ñ§Ï°STM32×Ô´øRTCµÄÊ¹ÓÃ
-	
-Ó²¼þ×ÊÔ´:
-	1,DS0(Á¬½ÓÔÚPA8) 
-	2,´®¿Ú1(²¨ÌØÂÊ:9600,PA9/PA10Á¬½ÓÔÚ°åÔØUSB×ª´®¿ÚÐ¾Æ¬CH340ÉÏÃæ)
-	3,ALIENTEK 2.8/3.5/4.3/7´çTFTLCDÄ£¿é(Í¨¹ýGPIOÇý¶¯,Á¬½Ó¹ØÏµ¼ûlcd.h) 
-	4,RTC(ÊµÊ±Ê±ÖÓ)
-	
-ÊµÑéÏÖÏó:
-	±¾ÊµÑéÍ¨¹ýTFTLCDÏÔÊ¾RTCÊ±¼ä£¬²¢¿ÉÒÔÍ¨¹ýusmartÉèÖÃRTCÊ±¼ä,´Ó¶øµ÷½ÚÊ±¼ä,ÒÔ±ã´ó¼ÒÑéÖ¤
-	RTC¹¦ÄÜ¡£
-	
-×¢ÒâÊÂÏî:  
-	1,4.3´çºÍ7´çÆÁÐèÒª±È½Ï´óµçÁ÷,USB¹©µç¿ÉÄÜ²»×ã,ÇëÓÃÍâ²¿µçÔ´¹©µç(5VµçÔ´£¬½ÓVOUT2¼´¿É).
-	2,±¾Àý³ÌÔÚLCD_Initº¯ÊýÀïÃæ(ÔÚILI93xx.c),ÓÃµ½ÁËprintf,Èç¹û²»³õÊ¼»¯´®¿Ú1,½«µ¼ÖÂÒº¾§ÎÞ·¨ÏÔÊ¾!! 
-	3,LCDÄ£¿éÔÚ¿ª·¢°åµÄLCD½Ó¿ÚÉÏÃæ£¬±ØÐë¿¿ÓÒ²å
-	3,´®¿Ú²¨ÌØÂÊÎª9600
-	4,ÇëÓÃUSBÏßÁ¬½ÓÔÚUSB_232,ÕÒµ½USB×ª´®¿Úºó²âÊÔ±¾Àý³Ì.
-	5,PA9/PA10±ØÐëÍ¨¹ýÌøÏßÃ±Á¬½ÓÔÚRXD/TXDÉÏ. 
-	6,±¾ÊµÑéÎªFLASH APP´úÂë£¬ÆðÊ¼µØÖ·Îª0x8008000£¬²»ÄÜÖ±½ÓÏÂÔØÔËÐÐ,±ØÐëÍ¨¹ýIAP Bootloader V1.0³ÌÐò½øÐÐIAP¸üÐÂ.
-	
 
-					ÕýµãÔ­×Ó@ALIENTEK
-					2014-3-08
-					¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
-					µç»°£º020-38271790
-					´«Õæ£º020-36773971
-					¹ºÂò£ºhttp://shop62103354.taobao.com
-					http://shop62057469.taobao.com
-					¹«Ë¾ÍøÕ¾£ºwww.alientek.com
-					¼¼ÊõÂÛÌ³£ºwww.openedv.com
+æœ¬å®žéªŒä¸ºFLASH APPä»£ç ï¼Œ
+èµ·å§‹åœ°å€ä¸º0x08008000ï¼Œä¸èƒ½ç›´æŽ¥ä¸‹è½½è¿è¡Œ(STM32é»˜è®¤ä»Ž0x08000000å¼€å§‹è¿è¡Œ),å¿…é¡»é€šè¿‡IAP Bootloader V1.0ç¨‹åºè¿›è¡ŒIAPæ›´æ–°.
+
+Bootloader:
+0x08000000~0x08007FFF  
+size:0x8000(32KB)
+
+App åœ°å€ç©ºé—´:
+0x08008000~0x080C0000 
+size:0x38000(256-32=224KB)
+

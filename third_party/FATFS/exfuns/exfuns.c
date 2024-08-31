@@ -27,14 +27,13 @@ const u8 *FILE_TYPE_TBL[6][13] = {
 
 
 ///////////////////////////////公共文件区,使用malloc的时候////////////////////////////////////////////
-FATFS *fs[2];  		// 逻辑磁盘工作区.	 
-FIL *file;	  		// 文件1
-FIL *ftemp;	  		// 文件2.
-UINT br, bw;		// 读写变量
-FILINFO fileinfo;	// 文件信息
-DIR dir;  			// 目录
-
-u8 *fatbuf;			// SD卡数据缓存区
+FATFS *fs[2] = {0}; // 逻辑磁盘工作区.	 
+FIL *file; // 文件1
+FIL *ftemp; // 文件2.
+UINT br, bw; // 读写字节数
+FILINFO fileinfo; // 文件信息
+DIR dir; // 目录
+u8 *fatbuf; // SD卡数据缓存区
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -45,15 +44,18 @@ u8 *fatbuf;			// SD卡数据缓存区
  */
 u8 exfuns_init(void)
 {
-    fs[0] = (FATFS*)mymalloc(sizeof(FATFS));	// 为磁盘0工作区申请内存	
-    fs[1] = (FATFS*)mymalloc(sizeof(FATFS));	// 为磁盘1工作区申请内存
-    file = (FIL*)mymalloc(sizeof(FIL));		//为file申请内存
-    ftemp = (FIL*)mymalloc(sizeof(FIL));		//为ftemp申请内存
-    fatbuf = (u8*)mymalloc(512);				//为fatbuf申请内存
-    if(fs[0] && fs[1] && file && ftemp && fatbuf) //申请有一个失败,即失败.
-        return 0;  
-    else 
-        return 1;	
+    LOG_I("into");
+    fs[0] = (FATFS*)mymalloc(sizeof(FATFS)); // 为磁盘0工作区申请内存	
+    fs[1] = (FATFS*)mymalloc(sizeof(FATFS)); // 为磁盘1工作区申请内存
+    file = (FIL*)mymalloc(sizeof(FIL)); //为file申请内存
+    ftemp = (FIL*)mymalloc(sizeof(FIL)); //为ftemp申请内存
+    fatbuf = (u8*)mymalloc(512); //为fatbuf申请内存
+    if(!fs[0] || !fs[1] || !file || !ftemp || !fatbuf) { //申请有一个失败,即失败.
+        LOG_E("malloc failed");
+        return 1;  
+    }
+
+    return 0;	
 }
 
 //将小写字母转为大写字母,如果是数字,则保持不变.

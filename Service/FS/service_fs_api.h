@@ -13,8 +13,11 @@
 /********************
  * MACRO
  ********************/
-// #define FS_FILE_SYSTEM_NAME             "/nand"         // 挂载文件系统目录
-#define FS_FILE_SYSTEM_NAME             "0:"         // 挂载文件系统目录
+// #define FS_FILE_SYSTEM_NAME  "/nand" // 挂载文件系统目录
+#define FS_FILE_SYSTEM_NAME     "0:" // 挂载文件系统目录
+
+#define FATFS_LOGIC_VOLUME_0    "0:"
+#define FATFS_LOGIC_VOLUME_1    "1:"
 
 // file operation
 #define	FA_READ				0x01
@@ -81,6 +84,8 @@ int file_tree(const char *p_root_path, char name_list[][128], uint32_t list_len)
 void fs_print_opened_files(fs_dump_cb_t cb);
 void dump_directory_tree(const char *path);
 
+// test
+void servics_fs_api_test(uint8_t op);
 
 #endif
 

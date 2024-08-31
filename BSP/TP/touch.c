@@ -8,17 +8,34 @@
  * @copyright Copyright (c) 2022
  * 
  */
+#include <stdlib.h>
+#include <math.h>
+
 #include "touch.h" 
-#include "lcd.h"
+#include "spi2_soft.h"
+#include "ILI93xx.h"
 #include "delay.h"
-#include "stdlib.h"
-#include "math.h"
-#include "24cxx.h" 
+#include "24cxx.h"
+#include "ulog.h"
 
-#if TP_ENABLE
 
-_m_tp_dev tp_dev=
-{
+// ILI9341 使用电阻屏
+// 使用软件 GPIO 模式 spi 方式
+
+
+/*********************************************************************************
+ * MACRO
+ *********************************************************************************/
+#define READ_TIMES 5 	//读取次数
+#define LOST_VAL 1	  	//丢弃值
+
+#define ERR_RANGE       50 //误差范围
+
+//保存在EEPROM里面的地址区间基址,
+//占用13个字节(RANGE:EEPROM_SAVE_TP_CAL_ADDR_BASE~EEPROM_SAVE_TP_CAL_ADDR_BASE+12)
+#define EEPROM_SAVE_TP_CAL_ADDR_BASE 40
+
+_m_tp_dev tp_dev = {
     TP_Init,
     TP_Scan,
     TP_Adjust,
@@ -32,76 +49,26 @@ _m_tp_dev tp_dev=
     0,	  	 		
 };
 
-//默认为touchtype=0的数据.
+//默认为touchtype=0的数据. 默认使用电阻屏, ILI9341 也使用的电阻屏
+//没有丰富的操作命令可以供操作, 只有简单的读取 X/Y 坐标命令
 u8 CMD_RDX = 0XD0;
 u8 CMD_RDY = 0X90;
 
+//提示字符串
+u8* const TP_REMIND_MSG_TBL="Please use the stylus click the cross on the screen.The cross will always move until the screen adjustment is completed.";
+
 
 /**
- * @brief SPI写数据
- *        向触摸屏 IC 写入 1byte 数据 
- *        GPIO 模拟 SPI   
+ * @brief 从触摸屏IC读取adc值, 读取AD转换值
  * 
- * @param num 要写入的数据
+ * @param CMD 
+ * @return u16 
  */
-void TP_Write_Byte(u8 num)    
-{  
-    u8 count = 0;   
-    for(count = 0; count < 8; count++)  
-    {
-        if(num & 0x80) // 先写高字节
-            TDIN=1;  
-        else 
-            TDIN=0;   
-        num <<= 1;    
-        TCLK = 0; 
-        delay_us(1);
-        TCLK = 1; //上升沿有效	        
-    }	
-
-    return;	 			    
+u16 TP_Read_AD(u8 CMD)
+{
+    SPI2_Soft_Read_AD(CMD);
 }
 
-/**
- * @brief SPI读数据 
- *        从触摸屏IC读取adc值
- *        发送一条命令, 然后读取
- * 
- * @param CMD 指令
- * @return u16 读到的数据	   
- */
-u16 TP_Read_AD(u8 CMD)	  
-{ 	 
-    u8 count=0; 	  
-    u16 Num=0; 
-    TCLK = 0;		//先拉低时钟 	 
-    TDIN = 0; 	//拉低数据线
-    TCS = 0; 		//选中触摸屏IC
-    TP_Write_Byte(CMD);//发送命令字
-    delay_us(6);//ADS7846的转换时间最长为6us
-    TCLK = 0; 	     	    
-    delay_us(1);    	   
-    TCLK = 1;		//给1个时钟，清除BUSY
-    delay_us(1);    
-    TCLK = 0; 	     	    
-    for(count = 0; count < 16; count++)//读出16位数据,只有高12位有效 
-    {
-        Num <<= 1; 	 
-        TCLK = 0;	//下降沿有效  	    	   
-        delay_us(1);    
-        TCLK = 1;
-        if(DOUT) // 当前 bit 为1
-            Num++; 		
-        else // 当前 bit 为 0
-            ; 
-    }  	
-    Num >>= 4;   	//只有高12位有效.
-    TCS = 1;		//释放片选	 
-    return (Num);   
-} 
-
-#define READ_TIMES 5 	//读取次数
-#define LOST_VAL 1	  	//丢弃值
 /**
  * @brief 读取一个坐标值(x或者y)
  *        连续读取READ_TIMES次数据,对这些数据升序排列,
@@ -127,13 +94,14 @@ u16 TP_Read_XOY(u8 xy)
                 buf[j] = temp;
             }
         }
-    }	  
+    }
     sum = 0;
     for(i = LOST_VAL; i < READ_TIMES - LOST_VAL; i++)
         sum += buf[i];
     temp = sum / (READ_TIMES - 2 * LOST_VAL);
+
     return temp;   
-} 
+}
 
 /**
  * @brief 读取x,y坐标
@@ -143,9 +111,9 @@ u16 TP_Read_XOY(u8 xy)
  * @param y 
  * @return u8 0,失败;1,成功。
  */
-u8 TP_Read_XY(u16 *x,u16 *y)
+u8 TP_Read_XY(u16 *x, u16 *y)
 {
-    u16 xtemp, ytemp;			 	 		  
+    u16 xtemp, ytemp;
     xtemp = TP_Read_XOY(CMD_RDX);
     ytemp = TP_Read_XOY(CMD_RDY);	  												   
     //if(xtemp<100||ytemp<100)
@@ -156,8 +124,6 @@ u8 TP_Read_XY(u16 *x,u16 *y)
     return 1;//读数成功
 }
 
-
-#define ERR_RANGE 50 //误差范围
 /**
  * @brief 连续2次读取触摸屏IC,且这两次的偏差不能超过
  *        ERR_RANGE,满足条件,则认为读数正确,否则读数错误.
@@ -167,7 +133,7 @@ u8 TP_Read_XY(u16 *x,u16 *y)
  * @param y 
  * @return * u8 0,失败;1,成功。
  */
-u8 TP_Read_XY2(u16 *x,u16 *y) 
+u8 TP_Read_XY2(u16 *x,u16 *y)
 {
     u16 x1,y1;
     u16 x2,y2;
@@ -191,6 +157,7 @@ u8 TP_Read_XY2(u16 *x,u16 *y)
 }  
 
 //////////////////////////////////////////////////////////////////////////////////		  
+#if LCD_SCREEN_ENABLE == 1
 //与LCD部分有关的函数  
 //画一个触摸点
 //用来校准用的
@@ -208,26 +175,27 @@ void TP_Drow_Touch_Point(u16 x, u16 y, u16 color)
     LCD_Draw_Circle(x,y,6);//画中心圈
 }
 
-//画一个大点(2*2的点)		   
+//画一个大点(2*2的点), 占用 4 个像素点	   
 //x,y:坐标
 //color:颜色
 void TP_Draw_Big_Point(u16 x,u16 y,u16 color)
-{	    
+{
     POINT_COLOR=color;
     LCD_DrawPoint(x,y);//中心点 
     LCD_DrawPoint(x+1,y);
     LCD_DrawPoint(x,y+1);
     LCD_DrawPoint(x+1,y+1);	 	  	
-}	
+}
+#endif /* LCD_SCREEN_ENABLE */
+//////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////////		  
 //触摸按键扫描
 //tp:0,屏幕坐标;1,物理坐标(校准等特殊场合用)
 //返回值:当前触屏状态.
 //0,触屏无触摸;1,触屏有触摸
 u8 TP_Scan(u8 tp)
 {
-    if(PEN == 0){ //有按键按下
+    if (PEN == 0) { // 有按键按下
         if(tp) // 读取物理坐标
             TP_Read_XY2(&tp_dev.x[0],&tp_dev.y[0]);
         else if(TP_Read_XY2(&tp_dev.x[0],&tp_dev.y[0]))//读取屏幕坐标
@@ -242,13 +210,11 @@ u8 TP_Scan(u8 tp)
             tp_dev.x[4] = tp_dev.x[0];//记录第一次按下时的坐标
             tp_dev.y[4] = tp_dev.y[0];  	   			 
         }			   
-    }
-    else{
+    } else{
         if(tp_dev.sta & TP_PRES_DOWN)//之前是被按下的
         {
-            tp_dev.sta &= ~(1 << 7);//标记按键松开	
-        }
-        else//之前就没有被按下
+            tp_dev.sta &= ~(1 << 7); // clear, 标记按键松开	
+        } else//之前就没有被按下
         {
             tp_dev.x[4] = 0;
             tp_dev.y[4] = 0;
@@ -256,12 +222,10 @@ u8 TP_Scan(u8 tp)
             tp_dev.y[0] = 0xffff;
         }	    
     }
+
     return tp_dev.sta & TP_PRES_DOWN;//返回当前的触屏状态
 }
 
-//////////////////////////////////////////////////////////////////////////	 
-//保存在EEPROM里面的地址区间基址,占用13个字节(RANGE:SAVE_ADDR_BASE~SAVE_ADDR_BASE+12)
-#define SAVE_ADDR_BASE 40
 //
 /**
  * @brief EEPROM 中保存校准参数	
@@ -271,21 +235,23 @@ u8 TP_Scan(u8 tp)
  */
 void TP_Save_Adjdata(void)
 {
-    s32 temp;			 
+    s32 temp;
+
     //保存校正结果!		   							  
     temp = tp_dev.xfac * 100000000;//保存x校正因素      
-    AT24CXX_WriteLenByte(SAVE_ADDR_BASE, temp, 4);   
+    AT24CXX_WriteLenByte(EEPROM_SAVE_TP_CAL_ADDR_BASE, temp, 4);   
     temp = tp_dev.yfac * 100000000;//保存y校正因素    
-    AT24CXX_WriteLenByte(SAVE_ADDR_BASE + 4, temp, 4);
+    AT24CXX_WriteLenByte(EEPROM_SAVE_TP_CAL_ADDR_BASE + 4, temp, 4);
     //保存x偏移量
-    AT24CXX_WriteLenByte(SAVE_ADDR_BASE + 8, tp_dev.xoff, 2);		    
+    AT24CXX_WriteLenByte(EEPROM_SAVE_TP_CAL_ADDR_BASE + 8, tp_dev.xoff, 2);		    
     //保存y偏移量
-    AT24CXX_WriteLenByte(SAVE_ADDR_BASE + 10, tp_dev.yoff, 2);	
+    AT24CXX_WriteLenByte(EEPROM_SAVE_TP_CAL_ADDR_BASE + 10, tp_dev.yoff, 2);	
     //保存触屏类型
-    AT24CXX_WriteOneByte(SAVE_ADDR_BASE + 12, tp_dev.touchtype);	
+    AT24CXX_WriteOneByte(EEPROM_SAVE_TP_CAL_ADDR_BASE + 12, tp_dev.touchtype);	
     temp = 0X0A;//标记校准过了
-    AT24CXX_WriteOneByte(SAVE_ADDR_BASE + 13, temp); 
-    printf("save TP adjust parameter:%f %f %d %d 0x%02X", tp_dev.xfac, tp_dev.yfac, tp_dev.xoff, tp_dev.yoff, tp_dev.touchtype);
+    AT24CXX_WriteOneByte(EEPROM_SAVE_TP_CAL_ADDR_BASE + 13, temp); 
+    LOG_I("save TP adjust parameter:%f %f %d %d 0x%02X", tp_dev.xfac, tp_dev.yfac, 
+            tp_dev.xoff, tp_dev.yoff, tp_dev.touchtype);
     return;
 }
 
@@ -295,35 +261,35 @@ void TP_Save_Adjdata(void)
 u8 TP_Get_Adjdata(void)
 {
     s32 tempfac;
-    tempfac=AT24CXX_ReadOneByte(SAVE_ADDR_BASE+13);//读取标记字,看是否校准过！ 		 
+    tempfac=AT24CXX_ReadOneByte(EEPROM_SAVE_TP_CAL_ADDR_BASE+13);//读取标记字,看是否校准过！ 		 
     if(tempfac==0X0A)//触摸屏已经校准过了			   
-    {    												 
-        tempfac=AT24CXX_ReadLenByte(SAVE_ADDR_BASE,4);		   
+    {
+        tempfac=AT24CXX_ReadLenByte(EEPROM_SAVE_TP_CAL_ADDR_BASE,4);		   
         tp_dev.xfac=(float)tempfac/100000000;//得到x校准参数
-        tempfac=AT24CXX_ReadLenByte(SAVE_ADDR_BASE+4,4);			          
+        tempfac=AT24CXX_ReadLenByte(EEPROM_SAVE_TP_CAL_ADDR_BASE+4,4);			          
         tp_dev.yfac=(float)tempfac/100000000;//得到y校准参数
         //得到x偏移量
-        tp_dev.xoff=AT24CXX_ReadLenByte(SAVE_ADDR_BASE+8,2);			   	  
-         //得到y偏移量
-        tp_dev.yoff=AT24CXX_ReadLenByte(SAVE_ADDR_BASE+10,2);				 	  
-         tp_dev.touchtype=AT24CXX_ReadOneByte(SAVE_ADDR_BASE+12);//读取触屏类型标记
+        tp_dev.xoff=AT24CXX_ReadLenByte(EEPROM_SAVE_TP_CAL_ADDR_BASE+8,2);			   	  
+        //得到y偏移量
+        tp_dev.yoff=AT24CXX_ReadLenByte(EEPROM_SAVE_TP_CAL_ADDR_BASE+10,2);				 	  
+        tp_dev.touchtype=AT24CXX_ReadOneByte(EEPROM_SAVE_TP_CAL_ADDR_BASE+12);//读取触屏类型标记
         if(tp_dev.touchtype)//X,Y方向与屏幕相反
         {
             CMD_RDX=0X90;
             CMD_RDY=0XD0;	 
-        }else				   //X,Y方向与屏幕相同
+        } else //X,Y方向与屏幕相同
         {
             CMD_RDX=0XD0;
             CMD_RDY=0X90;	 
         }		 
         return 1;	 
     }
-    printf("tp get adjust data\r\n");
+    LOG_I("tp get adjust parameter:%f %f %d %d 0x%02X", tp_dev.xfac, tp_dev.yfac, 
+            tp_dev.xoff, tp_dev.yoff, tp_dev.touchtype);
+
     return 0;
-}	 
-//提示字符串
-u8* const TP_REMIND_MSG_TBL="Please use the stylus click the cross on the screen.The cross will always move until the screen adjustment is completed.";
-                       
+}
+                   
 //提示校准结果(各个参数)
 void TP_Adj_Info_Show(u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u16 y2,u16 x3,u16 y3,u16 fac)
 {
@@ -351,11 +317,12 @@ void TP_Adj_Info_Show(u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u16 y2,u16 x3,u16 y3,u1
 
 /**
  * @brief 触摸屏校准代码
- *        得到四个校准参数
+ *        得到四个校准参数 
+ *        电阻屏需要校准, 电容屏不需要
  * 
  */
 void TP_Adjust(void)
-{								 
+{
     u16 pos_temp[4][2];//坐标缓存值
     u8  cnt = 0;	
     u16 d1, d2;
@@ -363,8 +330,8 @@ void TP_Adjust(void)
     double fac; 	
     u16 outtime = 0;
 
-    printf("TP adjust...\r\n");
-    cnt = 0;				
+    LOG_I("TP adjust...\r\n");
+    cnt = 0;
     POINT_COLOR = BLUE;
     BACK_COLOR = WHITE;
     LCD_Clear(WHITE);//清屏   
@@ -508,53 +475,42 @@ void TP_Adjust(void)
 }
     
 /**
- * @brief 触摸屏初始化
+ * @brief 触摸屏初始化, 通过 LCD 型号判断 TP 型号
+ *        需要在 LCD 后初始化
  * 
  * @return u8 0,没有进行校准; 1,进行过校准
  */
 u8 TP_Init(void)
-{	
-    printf("TP Init\r\n");
-    if(lcddev.id == 0X5510)				//4.3寸电容触摸屏
-    {
-        if(GT9147_Init() == 0)			//是GT9147
+{
+    LOG_I("TP Init\r\n");
+    /* 电容屏不需要校准 */
+    if (lcddev.id == 0X5510) { //4.3寸电容触摸屏
+        if(GT9147_Init() == 0) //是GT9147
         { 
             tp_dev.scan = GT9147_Scan;	//扫描函数指向GT9147触摸屏扫描
-        }
-        else{
+        } else {
             OTT2001A_Init();
-            tp_dev.scan = OTT2001A_Scan;	//扫描函数指向OTT2001A触摸屏扫描
+            tp_dev.scan = OTT2001A_Scan; //扫描函数指向OTT2001A触摸屏扫描
         }
-        tp_dev.touchtype |= 0X80;			//电容屏 
-        tp_dev.touchtype|=lcddev.dir&0X01;//横屏还是竖屏 
+        tp_dev.touchtype |= 0X80; // bit[7]:电容屏 
+        tp_dev.touchtype |= lcddev.dir & 0X01;// bit[0]:横屏还是竖屏 
         return 0;
-    }
-    else if(lcddev.id==0X1963){			//7寸电容触摸屏
+    } else if(lcddev.id==0X1963) { //7寸电容触摸屏
         FT5206_Init();
-        tp_dev.scan=FT5206_Scan;		//扫描函数指向GT9147触摸屏扫描		
-        tp_dev.touchtype|=0X80;			//电容屏 
+        tp_dev.scan=FT5206_Scan; //扫描函数指向GT9147触摸屏扫描		
+        tp_dev.touchtype|=0X80; //电容屏 
         tp_dev.touchtype|=lcddev.dir&0X01;//横屏还是竖屏 
         return 0;
-    }
-    else{
-        //注意,时钟使能之后,对GPIO的操作才有效
-        //所以上拉之前,必须使能时钟.才能实现真正的上拉输出
-        // PC0-3, PC13 initialization
-        RCC->APB2ENR |= 1 << 4;    //PC时钟使能	   
-        RCC->APB2ENR |= 1 << 0;    //开启辅助时钟							  
-        GPIOC->CRL &= 0XFFFF0000; //PC0~3
-        GPIOC->CRL |= 0X00003883; 
-        GPIOC->CRH &= 0XFF0FFFFF;//PC13
-        GPIOC->CRH |= 0X00300000;//PC13推挽输出 
-        GPIOC->ODR |= 0X200f;    //PC0~3 13 全部上拉  
-   
-        TP_Read_XY(&tp_dev.x[0],&tp_dev.y[0]);//第一次读取初始化	 
-        AT24CXX_Init(); // 初始化 EEPROM 24CXX
-        if(TP_Get_Adjdata()){ //已经校准
-            printf("TP already adjusted.\r\n");
+    } else { /* 电阻屏, 需要校准 */
+        SPI2_Soft_Init(); // GPIO 软件模拟 SPI
+        TP_Read_XY(&tp_dev.x[0],&tp_dev.y[0]);//第一次读取初始化
+#if EEPROM_ENABLE
+        AT24CXX_Init(); // 初始化 EEPROM 24CXX, EEPROM 中保存一些 TP 校准数据
+#endif
+        if(TP_Get_Adjdata()){ // TP 已经校准
+            LOG_I("TP already adjusted.\r\n");
             return 0;
-        }
-        else{ //未校准?								    
+        } else { //TP 未校准
             LCD_Clear(WHITE);//清屏
             TP_Adjust();  	//屏幕校准 
             TP_Save_Adjdata();	 
@@ -562,8 +518,7 @@ u8 TP_Init(void)
         TP_Get_Adjdata();	
     }
 
-    printf("TP init success touchtype:%02X\r\n", tp_dev.touchtype);
+    LOG_I("TP init success touchtype:%02X\r\n", tp_dev.touchtype);
     return 1; 									 
 }
 
-#endif // TP_ENABLE

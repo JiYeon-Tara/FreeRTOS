@@ -3,6 +3,7 @@
  * @author your name (you@domain.com)
  * @brief BSP, 这个文件起始就是"正点原子"在芯片厂商提供的驱动库的基础上移植了一下, 仅仅是做了"驱动工程师"的活
  *        与供应商提供的库不太一样, 使用了外部显存 GRAM, 避免了读出再写入的情况出现
+ *
  * @version 0.1
  * @date 2022-12-17
  * 
@@ -15,8 +16,22 @@
 #include "delay.h" 
 #include "usart.h"
  
-//  #if OLED_SCREEN_ENABLE
-#if 0
+ #if OLED_SCREEN_ENABLE == 1
+// ssd1306 control command list, 具体参数格式要看手册
+#define SSD1306_SETUP_CONTRAST_RATIO_CMD    0x81
+#define SSD1306_OPEN_DISPLAY_CMD            0xAE
+#define SSD1306_CLOSE_DISPLAY_CMD           0xAF
+#define SSD1306_OPEN_CHARGE_CMD             0x8D // 打开电荷泵
+#define SSD1306_SET_PAGE0_ADDR_CMD           0xB0 // 设置第0页页地址
+#define SSD1306_SET_PAGE1_ADDR_CMD           0xB1 // 设置第1页页地址
+#define SSD1306_SET_PAGE2_ADDR_CMD           0xB2 // 设置第2页页地址
+#define SSD1306_SET_PAGE3_ADDR_CMD           0xB3 // 设置第3页页地址
+#define SSD1306_SET_PAGE4_ADDR_CMD           0xB4 // 设置第4页页地址
+#define SSD1306_SET_PAGE5_ADDR_CMD           0xB5 // 设置第5页页地址
+#define SSD1306_SET_PAGE6_ADDR_CMD           0xB6 // 设置第6页页地址
+#define SSD1306_SET_PAGE7_ADDR_CMD           0xB7 // 设置第7页页地址
+#define SSD1306_SET_START_COLUMN_NUM_LOW_CMD           0x00 // 设置 0x00-0x0F 设置显示时起始列地址的低四位
+#define SSD1306_SET_START_COLUMN_NUM_HIGH_CMD           0x10 // 设置 0x10-0x1F 设置显示时起始列地址的低四位
 
 // OLED, chapter 15 还需要再认真看看, 如何切换不同的字库之类的;
 
@@ -30,7 +45,7 @@
 // [5]0 1 2 3 ... 127	
 // [6]0 1 2 3 ... 127	
 // [7]0 1 2 3 ... 127 		   
-u8 OLED_GRAM[128][8]; // 8 * 128 矩阵
+u8 OLED_GRAM[128][8]; // 8 * 128 矩阵保存 OLED 点阵数据(128*64)
 
 //
 /**
@@ -280,7 +295,7 @@ void OLED_ShowNum(u8 x,u8 y,u32 num,u8 len,u8 size)
 void OLED_ShowString(u8 x,u8 y,const u8 *p,u8 size)
 {	
     while((*p <= '~') && (*p >= ' '))//判断是不是非法字符!
-    {       
+    {
         if(x>(128-(size/2))){
             x=0;y+=size;
         }
@@ -300,9 +315,10 @@ void OLED_ShowString(u8 x,u8 y,const u8 *p,u8 size)
  */
 void OLED_Init(void)
 {
+    // step1:初始化通讯用到的 GPIO
     RCC->APB2ENR |= 1 << 3; //使能PORTB时钟 
     RCC->APB2ENR |= 1 << 4; //使能PORTC时钟 	  
-#if OLED_MODE == OLED_8080		//使用8080并口模式				 
+#if OLED_MODE == OLED_8080 //使用8080并口模式				 
     JTAG_Set(SWD_ENABLE);
     GPIOB->CRL=0X33333333;
     GPIOB->ODR|=0XFFFF;								    	 
@@ -330,14 +346,15 @@ void OLED_Init(void)
     // GPIOB->CRH &= 0x0FFFFFFF; // PB15 clear
     // GPIOB->CRH |= 0x30000000; // output push pull
     // GPIOB->ODR |= (1 << 15);  // output 1
-#endif
+#endif /* OLED_RESET_GPIO_CTR */
 
     GPIOC->CRH &= 0XFFFFFF00; // PC8, PC9 clear  
     GPIOC->CRH |= 0X00000033; // output push pull
     GPIOC->ODR |= (3 << 8);     // output 1
 
-#endif
+#endif /* OLED_MODE */
 
+    // step2: ssd1306 启动流程
     OLED_RST = 1; 
     delay_ms(100);  
     OLED_RST = 0;
@@ -378,10 +395,6 @@ void OLED_Init(void)
     printf("OLED ssd1306 init\r\n");
     return;
 }
-
-
-
-
 
 #endif
 

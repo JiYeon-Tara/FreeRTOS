@@ -2,7 +2,9 @@
  * @file fs_api.c
  * @author your name (you@domain.com)
  * @brief file system API, abstract layer
- * @version 0.1 封装 FATFS 接口, 作用文件系统层, 对上层应用提供操作文件的接口, 例如:open(), write(), read(), close(), lseek()...
+ * @version 封装 FATFS 接口
+ *          作用文件系统层, 对上层应用提供操作文件的接口, 
+ *          例如:open(), write(), read(), close(), lseek()...
  * @date 2022-12-31
  * 
  * @copyright Copyright (c) 2022
@@ -1603,6 +1605,80 @@ void dump_directory_tree(const char *path)
     dump_directory_tree_worker(path, 1);
 }
 
+/**
+ * @brief FS API 测试
+ * 
+ * @param op 
+ */
+void servics_fs_api_test(uint8_t op)
+{
+    switch(op){
+        case 0:
+        {
+            char *fileName = "0:test1.txt";
+            FRESULT res;
+            int fd;
+            char *buff = mymalloc(sizeof(uint8_t) * 256);
+            if(!buff){
+                printf("malloc error\r\n");
+                return;
+            }
+            // 暂时还不知道怎么支持同时读写文件
+            fd = open(fileName, FA_CREATE_NEW | FA_WRITE);
+            if(fd < 0){
+                printf("open ERROR, fd:%d\r\n", fd);
+                free(buff);
+                return;
+            }
+            res = write(fd, fileName, strlen(fileName) + 1);
+            if(res < 0){
+                printf("write ERROR, res:%d\r\n", res);
+                free(buff);
+                return;
+            }
+            printf("write len:%d\r\n", res);
+                res = close(fd);
+            if(res < 0) {
+                printf("write ERROR, res:%d\r\n", res);
+                free(buff);
+                return;
+            }
 
+            // 再次打开文件 读文件
+            fd = open(fileName, FA_READ);
+            if(fd < 0){
+                printf("open ERROR, fd:%d\r\n", fd);
+                free(buff);
+                return;
+            }
+            res = read(fd, buff, 156);
+            if(res < 0){
+                printf("write ERROR, res:%d\r\n", res);
+                free(buff);
+                return;
+            }
+            printf("read len:%d\r\n", res);
+            res = close(fd);
+            if(res < 0) {
+                printf("write ERROR, res:%d\r\n", res);
+                free(buff);
+                return;
+            }
+            free(buff);
+        }
+        break;
+        case 8:
+            // fs_test();
+        break;
+#if FS_TEST_ENABLE
+        case 9:
+            fs_speed_test(1);
+#endif
+        default:
+        break;
+    }
+
+    return;
+}
 
 

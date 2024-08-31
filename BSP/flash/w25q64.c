@@ -16,27 +16,20 @@
 #include "ulog.h"
 
 // falsh 使用 SPI 接口
-// NRF_CS, SD card, flash 等硬件都是通过 SPI1 来通信的, 所以在使用的时候需要"时分复用"
-// 通过片选(CS)控制
+// NRF_CS, SD_card, flash 等硬件都是通过 SPI1 来通信的, 所以在使用的时候需要"时分复用"
+// 通过片选(CS)控制 PA2.PA3.PA4, 拉低表示选中该器件
 
 // SPI1 CS - PA2
 // SPI1 SCK - PA5
 // SPI1 MISO - PA6
 // SPI1 MOSI - PA7
 
-// 4Kbytes 为一个 Sector(扇区)
-// 16 个sector 为 1 个 Block
-// W25Q64 容量为 64Mb, 8M Byte, 共有 128 个 Block, 每个 block 大小, 64K Byte
-// 每个 block 分 16 个 sector(扇区), 每个 sector 4K byte
-// W25Q64 的最少擦除单位为一个扇区，也就是每次必须擦除 4K 个字节。
-// 这样我们需要给 W25Q64 开辟一个至少 4K 的缓存区，这样对 SRAM 要求比较高，要求芯片必须有 4K 以上 SRAM 才能很好的操作。
-
 // flash 指令表
 #define W25X_WriteEnable		0x06 
 #define W25X_WriteDisable		0x04 
-#define W25X_ReadStatusReg		0x05 // status register1
-#define W25X_ReadStatusReg2		0x35 // status register2
-#define W25X_WriteStatusReg		0x01 
+#define W25X_ReadStatusReg		0x05 //write status register1
+#define W25X_ReadStatusReg2		0x35 //write status register2
+#define W25X_WriteStatusReg		0x01 // write status register1 & 2
 #define W25X_ReadData			0x03 
 #define W25X_FastReadData		0x0B 
 #define W25X_FastReadDual		0x3B
@@ -70,36 +63,38 @@
 #define W25X_SR_RV              0x40
 #define W25X_SR_SPR             0x80
 
-#define	SPI_FLASH_CS PAout(2)  	//选中FLASH	
-
-
 u16 SPI_FLASH_TYPE = W25Q64;//默认就是25Q64
 static u8 SPI_FLASH_BUF[4096]; // 4K 的 flash 写缓冲区
 
+u16 SPI_Flash_ReadID2(void);
 
 /**
- * @brief 初始化SPI FLASH的IO口
+ * @brief 初始化SPI FLASH的IO口 Flash_W25Q64_Init
  * 
  */
 void SPI_Flash_Init(void)
 {
-    u8 unique_id[8] = {0};
-    u8 len = sizeof(unique_id);
+    u16 id;
 
     RCC->APB2ENR |= 1 << 2; // PORTA时钟使能  
+    // TODO:
+    //这里修改为仅初始化 PA2
     GPIOA->CRL &= 0XFFF000FF; 
-    GPIOA->CRL |= 0X00033300; // PA2.3.4 推挽 	    
+    GPIOA->CRL |= 0X00033300; // PA2.3.4 推挽, PA3, PA4 为 NRF/SD card 的片选信号
     GPIOA->ODR |= 0X7 << 2; //PA2.3.4上拉
+
     SPI1_Init(); // 初始化SPI1
-    SPI1_ReadWriteByte(0xff); // 启动传输(主要作用：维持MOSI为高)， 写 0xFF 什么作用?
+    // SPI1_ReadWriteByte(0xff); // 启动传输(主要作用：维持MOSI为高)， 写 0xFF 什么作用?
     SPI1_SetSpeed(SPI_SPEED_4);	// 设置为18M时钟,高速模式
 
-    SPI_FLASH_TYPE = SPI_Flash_ReadID();//读取FLASH ID.
-    LOG_I("flash ID:%#04X", SPI_FLASH_TYPE);
-    LOG_I("external flash init");
-
-    SPI_Flash_ReadUniqueID((u8 *)unique_id, &len);
-    LOG_HEX("unique_id:", unique_id, len);
+#if SPI1_TEST_ENABLE
+#if SPI1_INT_ENABLE
+    SPI_Flash_ReadID2();
+#else
+    id = SPI_Flash_ReadID();
+    LOG_I("flash ID:%X", id);
+#endif
+#endif /* SPI1_TEST_ENABLE */
 
     return;
 }
@@ -162,17 +157,33 @@ void SPI_FLASH_Write_Disable(void)
  */
 u16 SPI_Flash_ReadID(void)
 {
-    u16 Temp = 0;	  
-    SPI_FLASH_CS = 0;		// 片选, 拉低选中
+    u16 id = 0;	  
+    SPI_FLASH_CS = 0; // 片选, 拉低选中
     SPI1_ReadWriteByte(W25X_ManufactDeviceID);	//发送读取ID命令, 这里不需要延迟, 直接写,SPI1_ReadWriteByte() 里面有延迟的   
     SPI1_ReadWriteByte(0x00); // dummy
     SPI1_ReadWriteByte(0x00); // dummy
     SPI1_ReadWriteByte(0x01); // 0x00
-    Temp |= SPI1_ReadWriteByte(0xFF) << 8;	// 先读到高字节  
-    Temp |= SPI1_ReadWriteByte(0xFF);
+    id |= SPI1_ReadWriteByte(0xFF) << 8; // 先读到高字节 MSB First
+    id |= SPI1_ReadWriteByte(0xFF);
     SPI_FLASH_CS = 1;
 
-    return Temp;
+    return id;
+}
+
+// SPI 中断读取测试
+u16 SPI_Flash_ReadID2(void)
+{
+    u16 id = 0;	  
+    SPI_FLASH_CS = 0; // 片选, 拉低选中
+    SPI1_Write_Byte(W25X_ManufactDeviceID);	//发送读取ID命令, 这里不需要延迟, 直接写,SPI1_ReadWriteByte() 里面有延迟的   
+    SPI1_Write_Byte(0x00); // dummy
+    SPI1_Write_Byte(0x00); // dummy
+    SPI1_Write_Byte(0x01); // 0x00
+    SPI1_Write_Byte(0xFF); // 先读到高字节 MSB First
+    SPI1_Write_Byte(0xFF);
+    SPI_FLASH_CS = 1;
+
+    return id;
 }
 
 /**
@@ -191,10 +202,10 @@ int SPI_Flash_ReadUniqueID(u8 *ptr, u8 *len)
 
     SPI_FLASH_CS = 0;
     SPI1_ReadWriteByte(W25X_ReadUniqueID);
-    SPI1_ReadWriteByte(0x00);
-    SPI1_ReadWriteByte(0x00);
-    SPI1_ReadWriteByte(0x00);
-    SPI1_ReadWriteByte(0x00);
+    SPI1_ReadWriteByte(0x00); // dummy
+    SPI1_ReadWriteByte(0x00); // dummy
+    SPI1_ReadWriteByte(0x00); // dummy
+    SPI1_ReadWriteByte(0x00); // dummy
     for (i = 0; i < 8; ++i) {
         ptr[i] = SPI1_ReadWriteByte(0xFF);
     }
@@ -207,7 +218,8 @@ int SPI_Flash_ReadUniqueID(u8 *ptr, u8 *len)
 
 /**
  * @brief 读取SPI FLASH  
- * 		  在指定地址开始读取指定长度的数据
+ * 		  在指定地址开始读取指定长度的数据, 发送 24 位地址之后, 程序就可以开始读取数据了,其地址会自动增加的,
+ *        不过要注意, 读取的地址范围不能超过 W25Q64 的地址范围
  * 
  * @param pBuffer 数据存储区
  * @param ReadAddr 开始读取的地址(24bit)
@@ -219,19 +231,40 @@ void SPI_Flash_Read(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead)
 
     SPI_FLASH_CS = 0; // 使能器件   
     SPI1_ReadWriteByte(W25X_ReadData); // 发送读取命令   
-    SPI1_ReadWriteByte((u8)((ReadAddr) >> 16)); // 发送24bit地址, MSB
+    SPI1_ReadWriteByte((u8)((ReadAddr) >> 16)); // 发送24bit地址, MSB first
     SPI1_ReadWriteByte((u8)((ReadAddr) >> 8));   
-    SPI1_ReadWriteByte((u8)ReadAddr);   
-    for (i = 0; i < NumByteToRead; i++) { 
-        pBuffer[i] = SPI1_ReadWriteByte(0XFF); //循环读数  
+    SPI1_ReadWriteByte((u8)ReadAddr);
+    for (i = 0; i < NumByteToRead; i++) {//循环读数  
+        pBuffer[i] = SPI1_ReadWriteByte(0XFF);
     }
     SPI_FLASH_CS = 1; //取消片选, The instruction is completed by driving /CS high.
 
     return;  	      
 }
 
-//TODO:
-//fast read
+/**
+ * @brief 11.2.9 Fast Read (0Bh)
+ * 
+ * @param ReadAddr 
+ * @param pBuffer 
+ * @param NumByteToRead 
+ */
+void SPI_Flash_Fast_Read(u32 ReadAddr, u8 *pBuffer, u16 NumByteToRead)
+{
+    u16 i;
+    SPI_FLASH_CS = 0; // 使能器件   
+    SPI1_ReadWriteByte(W25X_FastReadData); // 发送读取命令   
+    SPI1_ReadWriteByte((u8)((ReadAddr) >> 16)); // 发送24bit地址, MSB first
+    SPI1_ReadWriteByte((u8)((ReadAddr) >> 8));   
+    SPI1_ReadWriteByte((u8)ReadAddr);
+    SPI1_ReadWriteByte(0xFF); // dummy
+    for (i = 0; i < NumByteToRead; i++) { //循环读数  
+        pBuffer[i] = SPI1_ReadWriteByte(0XFF);
+    }
+    SPI_FLASH_CS = 1; //取消片选, The instruction is completed by driving /CS high.
+
+    return;
+}
 
 /**
  * @brief SPI在一页(0~65535)内写入少于256个字节的数据
@@ -379,7 +412,7 @@ void SPI_Flash_Erase_Chip(void)
 {
     SPI_FLASH_Write_Enable(); //SET WEL
     SPI_Flash_Wait_Busy();   
-      SPI_FLASH_CS = 0; //使能器件   
+    SPI_FLASH_CS = 0; //使能器件   
     SPI1_ReadWriteByte(W25X_ChipErase); //发送片擦除命令  
     SPI_FLASH_CS = 1; //取消片选
 
@@ -394,8 +427,8 @@ void SPI_Flash_Erase_Chip(void)
  */
 void SPI_Flash_Erase_Sector(u32 Dst_Addr)   
 {
-    Dst_Addr *= 4096; // 4KByte a sector
-    SPI_FLASH_Write_Enable();                  //SET WEL 	 
+    Dst_Addr *= W25Q64_SECTOR_SIZE; // 4KByte a sector
+    SPI_FLASH_Write_Enable(); //SET WEL 	 
     SPI_Flash_Wait_Busy();
 
     SPI_FLASH_CS = 0; //使能器件   
@@ -408,12 +441,11 @@ void SPI_Flash_Erase_Sector(u32 Dst_Addr)
     SPI_Flash_Wait_Busy();   				   //等待擦除完成
 }
 
-//等待空闲
+//等待 flash 从 bush -> 空闲
+// 第 0 位 flash busy 位
 void SPI_Flash_Wait_Busy(void)   
 {
-    // 第 0 位 flash busy 位
-    while((SPI_Flash_ReadSR() & 0x01) == 0x01)
-        ;   // 等待BUSY位清空
+    while((SPI_Flash_ReadSR() & 0x01) == 0x01); // 等待BUSY位清空
 }
 
 /**
@@ -436,16 +468,4 @@ void SPI_Flash_WAKEUP(void)
     SPI1_ReadWriteByte(W25X_ReleasePowerDown); // send W25X_PowerDown command 0xAB    
     SPI_FLASH_CS = 1; //取消片选     	      
     delay_us(3); //等待TRES1
-}
-
-/**
- * @brief flash read write test
- * 
- * 
- * 
- */
-void flash_read_write_test(void)
-{
-    //TODO:
-    LOG_I("%s", __func__);
 }

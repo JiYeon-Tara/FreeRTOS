@@ -98,7 +98,8 @@ void Ex_NVIC_Config(u8 GPIOx,u8 BITx,u8 TRIM)
 	//EXTI->EMR|=1<<BITx;//不屏蔽line BITx上的事件 (如果不屏蔽这句,在硬件上是可以的,但是在软件仿真的时候无法进入中断!)
  	if(TRIM&0x01)EXTI->FTSR|=1<<BITx;//line BITx上事件下降沿触发
 	if(TRIM&0x02)EXTI->RTSR|=1<<BITx;//line BITx上事件上升降沿触发
-} 	  
+}
+
 //不能在这里执行所有外设复位!否则至少引起串口不工作.		    
 //把所有时钟寄存器复位		  
 void MYRCC_DeInit(void)
@@ -143,8 +144,8 @@ void INTX_ENABLE(void)
 //addr:栈顶地址
 __asm void MSR_MSP(u32 addr) 
 {
-    MSR MSP, r0 			//set Main Stack value
-    BX r14
+    MSR MSP, r0 //set Main Stack value
+    BX r14 // BX LR   return
 }
 
 //进入待机模式	  

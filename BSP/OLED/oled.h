@@ -6,15 +6,15 @@
 #include "bmp.h"
 #include "oledfont.h"
 
-/**************
+/*********************************************************************
  * MACRO
- **************/
-#define OLED_8080       1           // 1:并行8080模式
-#define OLED_SPI        0           // 0:4线串行模式
+ *********************************************************************/
+#define OLED_8080               1 // 1:并行8080模式
+#define OLED_SPI                0 // 0:4线串行模式
 
-#define OLED_MODE       OLED_SPI    //OLED模式设置
-#define OLED_RESET_GPIO_CTR      1  // 通过单独的 GPIO 控制 OLED reset 引脚
-#define OLED_CHIP       1106
+#define OLED_MODE               OLED_SPI //OLED模式设置
+#define OLED_RESET_GPIO_CTR     1 // 通过单独的 GPIO 控制 OLED reset 引脚
+#define OLED_CHIP               1106 // 1.3 存使用 ssh_1106
 
 #if OLED_CHIP == 1106
 #include "ssh_1106.h"
@@ -22,19 +22,20 @@
 #include "ssd_1306.h"
 #endif
 
-
 /*-----------------OLED端口定义----------------*/
 #if OLED_MODE == OLED_SPI
-    // #include "spi_soft.h"
+#if OLED_RESET_GPIO_CTR == 1
+    #define OLED_RST    PBout(14) // 在MINISTM32上直接接到了STM32的复位脚！
+#endif
+    #define OLED_DC     PCout(8) // 命令/数据选择引脚:0,表示命令;1,表示数据;
+
+#include "spi1_soft.h" // 通过 GPIO 模拟 SPI
     // GPIO 模拟 SPI, 四线 SPI 模式下, 只能向模块写, 不能读
-    #define OLED_CS     PCout(9)        // 片选引脚
-// #if OLED_RESET_GPIO_CTR
-    #define OLED_RST    PBout(14)       // 在MINISTM32上直接接到了STM32的复位脚！
-// #endif // OLED_RESET_GPIO_CTR
-    #define OLED_DC     PCout(8)        // 命令/数据选择引脚:0,表示命令;1,表示数据;
-    #define OLED_SCLK   PBout(0)        // SCLK, D0 SPI 时钟线
-    #define OLED_SDIN   PBout(1)        // SDIN(MOSI), D1 SPI 数据线
-#elif (OLED_MODE == OLED_8080)
+    // 单向 SPI，只有 MOSI
+    // #define OLED_CS     PCout(9) // 片选引脚
+    // #define OLED_SCLK   PBout(0) // SCLK, D0 SPI 时钟线
+    // #define OLED_SDIN   PBout(1) // SDIN(MOSI), D1 SPI 数据线
+#elif OLED_MODE == OLED_8080
     // #include "parallel_8080.h"
     #define OLED_CS     PCout(9)        // 片选引脚
     #define OLED_DC     PCout(8)        // 命令/数据选择引脚:0,表示命令;1,表示数据;
@@ -47,7 +48,7 @@
     #define OLED_DATA 1	//写数据
 #else
     #error "warning unknown chip"
-#endif // OLED_MODE == OLED_SPI
+#endif /* OLED_MODE */
 
 
 // 供应商提供的 BSP 库接口

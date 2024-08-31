@@ -1,41 +1,28 @@
-ÊµÑéÆ÷²Ä:
-	MiniSTM32F103¿ª·¢°åV3°æ±¾
+å®žéªŒå™¨æ:
+	MiniSTM32F103å¼€å‘æ¿V3ç‰ˆæœ¬
 	
-ÊµÑéÄ¿µÄ:
-	Ñ§Ï°STM32µÄIAP¹¦ÄÜ,ÕÆÎÕIAPµÄÊ¹ÓÃ.
+å®žéªŒç›®çš„:
+	å­¦ä¹ STM32çš„IAPåŠŸèƒ½,æŽŒæ¡IAPçš„ä½¿ç”¨.
 	
-Ó²¼þ×ÊÔ´:
-	1,DS0(Á¬½ÓÔÚPA8) 
-	2,´®¿Ú1(²¨ÌØÂÊ:25600,PA9/PA10Á¬½ÓÔÚ°åÔØUSB×ª´®¿ÚÐ¾Æ¬CH340ÉÏÃæ)
-	3,ALIENTEK 2.8/3.5/4.3/7´çTFTLCDÄ£¿é(Í¨¹ýGPIOÇý¶¯,Á¬½Ó¹ØÏµ¼ûlcd.h) 
-	4,°´¼üKEY0(PC5)/KEY1(PA15)/KEY_UP(PA0,Ò²³ÆÖ®ÎªWK_UP)  
+ç¡¬ä»¶èµ„æº:
+	1,DS0(è¿žæŽ¥åœ¨PA8) 
+	2,ä¸²å£1(æ³¢ç‰¹çŽ‡:25600,PA9/PA10è¿žæŽ¥åœ¨æ¿è½½USBè½¬ä¸²å£èŠ¯ç‰‡CH340ä¸Šé¢)
+	3,ALIENTEK 2.8/3.5/4.3/7å¯¸TFTLCDæ¨¡å—(é€šè¿‡GPIOé©±åŠ¨,è¿žæŽ¥å…³ç³»è§lcd.h) 
+	4,æŒ‰é”®KEY0(PC5)/KEY1(PA15)/KEY_UP(PA0,ä¹Ÿç§°ä¹‹ä¸ºWK_UP)  
 		
-ÊµÑéÏÖÏó:
-	±¾ÊµÑé¿ª»úµÄÊ±ºòÏÈÏÔÊ¾ÌáÊ¾ÐÅÏ¢£¬È»ºóµÈ´ý´®¿ÚÊäÈë½ÓÊÕAPP³ÌÐò£¨ÎÞÐ£Ñé£¬Ò»´ÎÐÔ½ÓÊÕ£©£¬ÔÚ´®¿Ú½ÓÊÕ
-	µ½APP³ÌÐòÖ®ºó£¬¼´¿ÉÖ´ÐÐIAP¡£Èç¹ûÊÇSRAM APP£¬Í¨¹ý°´ÏÂKEY0¼´¿ÉÖ´ÐÐÕâ¸öÊÕµ½µÄSRAM APP³ÌÐò¡£Èç¹û
-	ÊÇFLASH APP£¬ÔòÐèÒªÏÈ°´ÏÂKEY_UP°´¼ü£¬½«´®¿Ú½ÓÊÕµ½µÄAPP³ÌÐò´æ·Åµ½STM32µÄFLASH£¬Ö®ºóÔÙ°´KEY1¼´
-	¿ÉÒÔÖ´ÐÐÕâ¸öFLASH APP³ÌÐò¡£
-	
-×¢ÒâÊÂÏî:  
-	1,4.3´çºÍ7´çÆÁÐèÒª±È½Ï´óµçÁ÷,USB¹©µç¿ÉÄÜ²»×ã,ÇëÓÃÍâ²¿µçÔ´¹©µç(5VµçÔ´£¬½ÓVOUT2¼´¿É).
-	2,±¾Àý³ÌÔÚLCD_Initº¯ÊýÀïÃæ(ÔÚILI93xx.c),ÓÃµ½ÁËprintf,Èç¹û²»³õÊ¼»¯´®¿Ú1,½«µ¼ÖÂÒº¾§ÎÞ·¨ÏÔÊ¾!! 
-	3,LCDÄ£¿éÔÚ¿ª·¢°åµÄLCD½Ó¿ÚÉÏÃæ£¬±ØÐë¿¿ÓÒ²å 
-	4,²»Òª°Ñ1820ºÍPA0µÄÌøÏßÃ±ÌøÉÏ,·ñÔò¿ÉÄÜµ¼ÖÂ°´¼ü"²»Áé". 
-	5,±¾ÊµÑé´®¿Ú1²¨ÌØÂÊÐèÒªÉèÖÃÎª£º25600£¡£¡£¡
-	6,±¾ÊµÑéÏÂÔØ³É¹¦ºó,ÐèÓÃ´®¿Úµ÷ÊÔÖúÊÖ·¢ËÍSRAM APP/FLASH APPµÈAPP´úÂë(.binÎÄ¼þ)ÑéÖ¤IAP¹¦ÄÜ. 
-	7,SRAM APP´úÂëµÄÆðÊ¼µØÖ·±ØÐëÊÇ£º0X20001000£¬FLASH APP´úÂëµÄÆðÊ¼µØÖ·±ØÐëÊÇ£º0X08008000.
-	8,´ó¼ÒÔÚ´´½¨APP´úÂëµÄÊ±ºò£¬ÇÐ¼ÇÒªÉèÖÃÖÐ¶ÏÏòÁ¿Æ«ÒÆÁ¿£¡£¡
+
+IAP ä¾‹ç¨‹å®žçŽ°åŠŸèƒ½ï¼š
+å¼€æœºçš„æ—¶å€™å…ˆæ˜¾ç¤ºæç¤ºä¿¡æ¯ï¼Œç„¶åŽç­‰å¾…ä¸²å£è¾“å…¥æŽ¥æ”¶ APP ç¨‹åºï¼ˆæ— æ ¡éªŒï¼Œä¸€æ¬¡æ€§æŽ¥æ”¶ï¼‰åœ¨ä¸²å£æŽ¥æ”¶åˆ° APP ç¨‹åºä¹‹åŽï¼Œå³å¯æ‰§è¡Œ IAPã€‚
+a.å¦‚æžœæ˜¯ SRAM APPï¼Œé€šè¿‡æŒ‰ä¸‹ KEY0 å³å¯æ‰§è¡Œè¿™ä¸ªæ”¶åˆ°çš„ SRAM APP ç¨‹åºã€‚
+b.å¦‚æžœæ˜¯ FLASH APPï¼Œåˆ™éœ€è¦å…ˆæŒ‰ä¸‹ WK_UP æŒ‰é”®ï¼Œå°†ä¸²å£æŽ¥æ”¶åˆ°çš„ APP ç¨‹åºå­˜æ”¾åˆ° STM32 çš„ FLASHï¼Œä¹‹åŽå†æŒ‰KEY1 æ—¢å¯ä»¥æ‰§è¡Œè¿™ä¸ª FLASH APP ç¨‹åºã€‚
+
+
+5,æœ¬å®žéªŒä¸²å£1æ³¢ç‰¹çŽ‡éœ€è¦è®¾ç½®ä¸ºï¼š25600ï¼ï¼ï¼
+6,æœ¬å®žéªŒä¸‹è½½æˆåŠŸåŽ,éœ€ç”¨ä¸²å£è°ƒè¯•åŠ©æ‰‹å‘é€SRAM APP/FLASH APPç­‰APPä»£ç (.binæ–‡ä»¶)éªŒè¯IAPåŠŸèƒ½. 
+7,SRAM APPä»£ç çš„èµ·å§‹åœ°å€å¿…é¡»æ˜¯ï¼š0X20001000ï¼ŒFLASH APPä»£ç çš„èµ·å§‹åœ°å€å¿…é¡»æ˜¯ï¼š0X08008000.
+8,å¤§å®¶åœ¨åˆ›å»ºAPPä»£ç çš„æ—¶å€™ï¼Œåˆ‡è®°è¦è®¾ç½®ä¸­æ–­å‘é‡åç§»é‡ï¼ï¼
 	  
 
-					ÕýµãÔ­×Ó@ALIENTEK
-					2014-3-15
-					¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
-					µç»°£º020-38271790
-					´«Õæ£º020-36773971
-					¹ºÂò£ºhttp://shop62103354.taobao.com
-					http://shop62057469.taobao.com
-					¹«Ë¾ÍøÕ¾£ºwww.alientek.com
-					¼¼ÊõÂÛÌ³£ºwww.openedv.com
 					
 					
 					

@@ -20,7 +20,7 @@
 #define OTT_SCAL_Y		0.32		//屏幕的 横坐标/OTT_MAX_Y		
  
 //I2C读写命令	
-#define OTT_CMD_WR 		0XB2     	//写命令
+#define OTT_CMD_WR 		0XB2     	//写命令, slave address:0x59, bit[7:1]:addr[7:1], bit[0]:R/W
 #define OTT_CMD_RD 		0XB3		//读命令
  
 //寄存器地址
@@ -35,11 +35,11 @@
 
  	
 
-u8 OTT2001A_WR_Reg(u16 reg,u8 *buf,u8 len);		//写寄存器(实际无用)
-void OTT2001A_RD_Reg(u16 reg,u8 *buf,u8 len);	//读寄存器
-void OTT2001A_SensorControl(u8 cmd);//传感器打开/关闭操作
-u8 OTT2001A_Init(void); 			//4.3电容触摸屏始化函数
-u8 OTT2001A_Scan(u8 mode);			//电容触摸屏扫描函数
+u8 OTT2001A_WR_Reg(u16 reg,u8 *buf,u8 len); //写寄存器(实际无用)
+void OTT2001A_RD_Reg(u16 reg,u8 *buf,u8 len); //读寄存器
+void OTT2001A_SensorControl(u8 cmd); //传感器打开/关闭操作
+u8 OTT2001A_Init(void); //4.3电容触摸屏始化函数
+u8 OTT2001A_Scan(u8 mode); //电容触摸屏扫描函数
 
 #endif // TP_ENABLE
 

@@ -18,7 +18,7 @@
 #include "sys.h"
 // #include "ILI9341.h"
 
-#include "LCD.h"
+#include "ILI93xx.h"
 
 
 // extern void led_set(u8 sta);

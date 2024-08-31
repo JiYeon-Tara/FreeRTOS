@@ -1,26 +1,20 @@
 #ifndef __MALLOC_H__
 #define __MALLOC_H__
 #include "sys.h"
-
+#include "util.h"
 
 #ifndef NULL
 #define NULL    0
 #endif
-
-//内存参数设定
-#define MEM_BLOCK_SIZE			32  	  						// 内存块大小为32字节
-#define MEM_MAX_SIZE			20 * 1024  						// 最大管理内存 42K
-#define MEM_ALLOC_TABLE_SIZE	MEM_MAX_SIZE/MEM_BLOCK_SIZE 	// 内存表大小
  
-         
+
 //内存管理控制器
-struct _m_mallco_dev
-{
-    void (*init)(void);				//初始化
-    u8 (*perused)(void);		  	//内存使用率
-    u8 	*membase;					//内存池 
-    u16 *memmap; 					//内存管理状态表
-    u8  memrdy; 					//内存管理是否就绪, 标志位
+struct _m_mallco_dev {
+    void (*init)(void); //初始化
+    u8 (*perused)(void); //内存使用率
+    u8 	*membase; //内存池 
+    u16 *memmap; //内存管理状态表
+    u8  memrdy; //内存管理是否就绪, 标志位
 };
 
 extern struct _m_mallco_dev mallco_dev;	//在mallco.c里面定义

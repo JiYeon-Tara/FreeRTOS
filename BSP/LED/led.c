@@ -4,6 +4,7 @@
 #include "stm32f10x.h"
 #include "gpio_stm.h"
 
+#include "ulog.h"
 
 // NOTE: 目前只是学习 GPIO 的简单使用, 
 // 后期可以使用回掉函数的方式， 通过注册驱动接口的方式，实现扩展任意个 LED
@@ -28,18 +29,18 @@
 void LED_Init(void)
 {
     // enable clock
-    RCC->APB2ENR |= 1 << 2;    // enable GPIOA clock	 
-    RCC->APB2ENR |= 1 << 5;    // enable GPIOD clock
+    RCC->APB2ENR |= 1 << 2; // enable GPIOA clock	 
+    RCC->APB2ENR |= 1 << 5; // enable GPIOD clock
 
     GPIOA->CRH &= 0XFFFFFFF0;  // reset PA8, 0xF0 : 1111 0000
     GPIOA->CRH |= 0X00000003;  // PA8:0011, output mode	 
     GPIOA->ODR |= (1 << 8);    // PA8 output 1
-                                              
+
     GPIOD->CRL &= 0XFFFFF0FF;	// reset PD2
     GPIOD->CRL |= 0X00000300;	// output mode
     GPIOD->ODR |= (1 << 2);     // output 1
 
-    printf("led red and yellow init\r\n");
+    LOG_I("led red and yellow init\r\n");
     return;
 }
 
@@ -73,7 +74,8 @@ void LED_Reset()
  */
 void LED_Toggle()
 {
-
+    GPIO_Toggle(GPIOA, LED0_PORT_NUM);
+    GPIO_Toggle(GPIOD, LED1_PORT_NUM);
 }
 
 /**
@@ -115,6 +117,13 @@ bool led_state_change(LED_PIN_E led, LED_STATUS_E status)
     return true;
 }
 
+void led_test_loop(void)
+{
+    LED_Toggle();
+    delay_ms(1000);
+    LED_Toggle();
+    delay_ms(1000);
+}
 
 
 

@@ -13,7 +13,7 @@
  */
 #include "24cxx.h"
 #include "usart.h"
-#include "i2c_soft.h"    // 包含 i2c 头文件
+#include "i2c_soft.h" // 软件 i2c, 通过 GPIO 实现
 #include "bsp_config.h"
 #include "ulog.h"
 
@@ -39,24 +39,35 @@ EEPROM的寿命可能更长一些，因为它可以进行单独的字节单位�
 而Flash需要进行整个页面或扇区的擦除.这意味着EEPROM可以更灵活地管理存储器，并减少对存储单元的擦写次数。
 Flash比EEPROM更便宜。
 */
-
-
-// I2C 接口，使用 GPIO 软件模拟 I2C 的方式，而不是使用的硬件 I2C 接口
-// PC12 - SCL
-// PC11 - SDA
-
-
-//初始化IIC接口
+/*****************************************************************************
+ * MACRO
+ *****************************************************************************/
+#define EEPROM_MIN_ADDR				0x00
+#define EEPROM_MAX_ADDR				0xFF // 255
+#define EEPROM_VALID_FLAG_ADDR 		0xFF // 在 EEPROM 最后一位作为保存数据有效标志位
+#define EEPROM_VALID_FLAG_VALUE		0x5A // 0101 1010
+/*****************************************************************************
+ *PUBLIC FUNCTIONS
+ *****************************************************************************/
+/**
+ * @brief 初始化IIC接口 
+ * 不需要单独上电, VCC 一直拉高的, 只需要配置 I2C 就可以使用
+ * I2C 接口，使用 GPIO 软件模拟 I2C 的方式，而不是使用的硬件 I2C 接口
+ * PC12 - SCL
+ * PC11 - SDA
+ * 读写逻辑参考数据手册：《AT24C02 datasheet》, IIC 从地址:0xA0
+ * 
+ */
 void AT24CXX_Init(void)
 {
-	IIC_Init(); // 硬件初始化(配置时钟以及 GPIO)
-	LOG_I("EEPROM Init\r\n");
+    IIC_Init(); // 硬件初始化(配置时钟以及 GPIO)
+    LOG_I("EEPROM Init");
 
-	return;
+    return;
 }
 
 /**
- * @brief 在AT24CXX指定地址读出一个数据
+ * @brief 在AT24CXX指定地址读出一个数据, Random Read
  *        需要符合芯片的I2C读取时序
  * 
  * @param ReadAddr ReadAddr:开始读数的地址, 不同型号(容量)的地址长度不同, 具体参考 datasheet, 24C02:8bytes 
@@ -64,33 +75,44 @@ void AT24CXX_Init(void)
  */
 u8 AT24CXX_ReadOneByte(u16 ReadAddr)
 {
-	u8 data = 0, ret = 0;	
-    //uint8_t ret;	  	    																 
-    IIC_Start();  // 每读写一个字节都需要发送 start 信号吗???
+      //uint8_t ret;	  	
+    u8 data = 0, ret = 0;
+
+    if (ReadAddr < EEPROM_MIN_ADDR || ReadAddr > EEPROM_MAX_ADDR) {
+        LOG_E("eeprom read invalid address:%d", ReadAddr);
+        return -1;
+    }
+                         
+    IIC_Start();  // Q:每读写一个字节都需要发送 start 信号吗? A: datasheet
 
     // 为了兼容不同型号
-	if (EE_TYPE > AT24C16) {
-		IIC_Send_Byte(0XA0); //发送写命令, 强制要求 MSB:1010
-		IIC_Wait_Ack();
+    if (EE_TYPE > AT24C16) {
+        IIC_Send_Byte(0XA0); //发送写命令, 强制要求 MSB:1010
+        IIC_Wait_Ack();
+        IIC_Send_Byte(ReadAddr >> 8);//MSB:高字节，大端
+    } else {
+        // IIC_Send_Byte(0XA0 + ((ReadAddr / 256) << 1)); // 发送器件地址0XA0,写数据, bit[0] 为读写标志位
+        IIC_Send_Byte(0XA0); // step1: random read dummy write:先发送, 0xA0
+    }
+    IIC_Wait_Ack(); 
 
-		IIC_Send_Byte(ReadAddr >> 8);//发送高地址，大端
-	} else {
-        IIC_Send_Byte(0XA0 + ((ReadAddr / 256) << 1));   // 发送器件地址0XA0,写数据
-	}
-	IIC_Wait_Ack(); 
+    // step2: dummy write
+    IIC_Send_Byte(ReadAddr % 256); //LSB, 发送地址低字节
+    // IIC_Send_Byte(ReadAddr & 0xFF);
+    IIC_Wait_Ack();
 
-    IIC_Send_Byte(ReadAddr % 256); // 发送地址低字节
-	// IIC_Send_Byte(ReadAddr & 0xFF);
-	IIC_Wait_Ack();
-
-	IIC_Start();  	 	   
-	IIC_Send_Byte(0XA1); //进入接收模式， 强制要求, MSB:1011
-	IIC_Wait_Ack();	 
+    // 真正的读开始
+    // step3:random read:然后发送 0xA1, device address:MSB bit[7:4]:1010, 24C02 bit[3:1]:000 bit[0]:1 为读写标志位
+    IIC_Start();
+    IIC_Send_Byte(0XA1); //进入接收模式， 强制要求, MSB:1011, 
+    IIC_Wait_Ack();	 
 
     data = IIC_Read_Byte(0);		   
-    IIC_Stop(); //产生一个停止条件, 每读写一个字节都需要发送 start 信号吗???
+    IIC_Stop();
+    //Q:产生一个停止条件, 每读写一个字节都需要发送 start 信号吗???
+    //A: random read 每次都需要 STOP 信号让 EEPROM 进入低功耗模式, 连续读则不需要
 
-	return data;
+    return data;
 }
 
 
@@ -102,40 +124,33 @@ u8 AT24CXX_ReadOneByte(u16 ReadAddr)
  */
 void AT24CXX_WriteOneByte(u16 WriteAddr, u8 DataToWrite)
 {
-	u8 ret = 0;
+    u8 ret = 0;
 
     IIC_Start();  
-	if(EE_TYPE > AT24C16){
-		IIC_Send_Byte(0XA0); /* 发送写命令 每读写一个字节都需要发送 start 信号, 是不是芯片固定的??? */
-		IIC_Wait_Ack();
-		// if(ret != I2C_SUCCESS){
-		// 	printf("I2C read error, does not recv ack, ret:%d\r\n", ret);
-		// }
-		IIC_Send_Byte(WriteAddr >> 8); //发送高地址	  
-	}
-    else 
-        IIC_Send_Byte(0XA0 + ((WriteAddr / 256) << 1)); //发送器件地址0XA0,写数据 
-	IIC_Wait_Ack();
+    if(EE_TYPE > AT24C16){
+        IIC_Send_Byte(0XA0); /* 发送写命令 每读写一个字节都需要发送 start 信号 */
+        IIC_Wait_Ack();
+        IIC_Send_Byte(WriteAddr >> 8); //发送高地址	  
+    }
+    else {
+        //step1:
+        // IIC_Send_Byte(0XA0 + ((WriteAddr / 256) << 1)); //发送器件地址0XA0,写数据 
+        IIC_Send_Byte(0XA0); //发送器件地址0XA0,写数据, device address:MSB bit[7:4]:1010, 24C02 bit[3:1]:000 bit[0]:0 为读写标志位
+    }
+    IIC_Wait_Ack();
 
-	// if(ret != I2C_SUCCESS){
-	// 	printf("I2C read error, does not recv ack, ret:%d\r\n", ret);
-	// }
+    //step2:
     IIC_Send_Byte(WriteAddr % 256); // 发送低地址 (writeAddr & 0xFF), 这样得到低字节
-	IIC_Wait_Ack(); 
-	// if(ret != I2C_SUCCESS){
-	// 	printf("I2C read error, does not recv ack, ret:%d\r\n", ret);
-	// }
+    IIC_Wait_Ack(); 
 
-	IIC_Send_Byte(DataToWrite); //发送字节
-	IIC_Wait_Ack();  
-	// if(ret != I2C_SUCCESS){
-	// 	printf("I2C read error, does not recv ack, ret:%d\r\n", ret);
-	// }
+    //step3:
+    IIC_Send_Byte(DataToWrite); //发送数据
+    IIC_Wait_Ack();  
 
     IIC_Stop(); // 产生一个停止条件, 每读写一个字节都需要发送 start 信号吗???
-	delay_ms(10); // 对于EEPROM器件，每写一次(1 byte)要等待一段时间，否则写失败！
+    delay_ms(10); // 对于EEPROM器件，每写一次(1 byte)要等待一段时间，否则写失败！
 
-	return;
+    return;
 }
 
 
@@ -149,13 +164,13 @@ void AT24CXX_WriteOneByte(u16 WriteAddr, u8 DataToWrite)
  */
 void AT24CXX_WriteLenByte(u16 WriteAddr, u32 DataToWrite, u8 Len)
 {
-	u8 t;
-	for (t = 0; t < Len; t++) {
-		AT24CXX_WriteOneByte(WriteAddr + t, (DataToWrite >> (8 * t)) & 0xff);
-	}
+    u8 t;
+    for (t = 0; t < Len; t++) {
+        AT24CXX_WriteOneByte(WriteAddr + t, (DataToWrite >> (8 * t)) & 0xff);
+    }
 
     return;
-} 
+}
 
 
 /**
@@ -168,17 +183,17 @@ void AT24CXX_WriteLenByte(u16 WriteAddr, u32 DataToWrite, u8 Len)
  * @return u32 数据
  */
 u32 AT24CXX_ReadLenByte(u16 ReadAddr, u8 Len)
-{  	
-	u8 t;
-	u32 temp=0;
-	for (t = 0; t < Len; t++) {
-		temp <<= 8;
-		temp += AT24CXX_ReadOneByte(ReadAddr + Len - t - 1); 	 				   
-	}
-	// for(t = 0; t < len; ++t){
-	// 	p[t] = AT24CXX_ReadOneByte(ReadAddr + t)
-	// }
-	return temp;												    
+{
+    u8 t;
+    u32 temp=0;
+    for (t = 0; t < Len; t++) {
+        temp <<= 8;
+        temp += AT24CXX_ReadOneByte(ReadAddr + Len - t - 1); 	 				   
+    }
+    // for(t = 0; t < len; ++t){
+    // 	p[t] = AT24CXX_ReadOneByte(ReadAddr + t)
+    // }
+    return temp;												    
 }
 
 
@@ -192,29 +207,26 @@ u32 AT24CXX_ReadLenByte(u16 ReadAddr, u8 Len)
  */
 u8 AT24CXX_Check(void)
 {
-#define EEPROM_VALID_FLAG_ADDR 		0xFF
-#define EEPROM_VALID_FLAG_VALUE		0x55
+    u8 value = 0;
 
-	u8 value = 0;
+    // address:0x00 - 0xFF
+    value = AT24CXX_ReadOneByte(EEPROM_VALID_FLAG_ADDR);// 避免每次开机都写AT24CXX	
+    LOG_I("read eeprom init flag address:%#08X value:%#08X", EEPROM_VALID_FLAG_ADDR, value);
 
-	// address:0x00 - 0xFF
-	value = AT24CXX_ReadOneByte(EEPROM_VALID_FLAG_ADDR);// 避免每次开机都写AT24CXX	
-	LOG_I("read eeprom flag address:%#08X value:%#08X", EEPROM_VALID_FLAG_ADDR, value);
-
-	if(value == EEPROM_VALID_FLAG_VALUE)
+    if (value == EEPROM_VALID_FLAG_VALUE) {
+        LOG_I("eeprom already init");
         return 0;
-	else {//排除第一次初始化的情况
-		AT24CXX_WriteOneByte(EEPROM_VALID_FLAG_ADDR, EEPROM_VALID_FLAG_VALUE); // 在 EEPROM 的地址 0xFF 处写入 0x55，来表示该芯片正常
-	    value = AT24CXX_ReadOneByte(EEPROM_VALID_FLAG_ADDR);	
-		LOG_I("read data 2:%d\r\n", value);		   
-  
-		if(value == EEPROM_VALID_FLAG_VALUE)
+    }
+    else {//排除第一次初始化的情况
+        AT24CXX_WriteOneByte(EEPROM_VALID_FLAG_ADDR, EEPROM_VALID_FLAG_VALUE); // 在 EEPROM 的地址 0xFF 处写入 0x55，来表示该芯片正常
+        value = AT24CXX_ReadOneByte(EEPROM_VALID_FLAG_ADDR);	
+        LOG_I("read eeprom init flag address:%#08X value:%#08X", EEPROM_VALID_FLAG_ADDR, value);
+        if(value == EEPROM_VALID_FLAG_VALUE)
             return 0;
-	}
+    }
 
-	return 1;											  
+    return 1;											  
 }
-
 
 /**
  * @brief 在AT24CXX里面的指定地址开始读出指定个数的数据
@@ -225,13 +237,47 @@ u8 AT24CXX_Check(void)
  */
 void AT24CXX_Read(u16 ReadAddr, u8 *pBuffer, u16 NumToRead)
 {
-	while(NumToRead)
-	{
-		*pBuffer++ = AT24CXX_ReadOneByte(ReadAddr++);	
-		NumToRead--;
-	}
-}  
+    while(NumToRead)
+    {
+        *pBuffer++ = AT24CXX_ReadOneByte(ReadAddr++);	
+        NumToRead--;
+    }
+}
 
+/**
+ * @brief 24C02 从当前地址开始读
+ * 
+ * @param pBuffer 
+ * @param NumToRead 
+ */
+u8 AT24CXX_CurrAddrRead(void)
+{
+    u8 data;
+
+    IIC_Start();
+    IIC_Send_Byte(0XA1); // step1: random read:先发送 0xA0
+    IIC_Wait_Ack();
+
+    data = IIC_Read_Byte(0);		   
+    IIC_Stop();
+
+    return data;
+}
+
+/**
+ * @brief 从 24C02 当前地址(内部维护了一个当前读取的地址)顺序读
+ * 
+ * @param pBuffer 
+ * @param NumToRead 
+ */
+void AT24CXX_SequentialRead(u8 *pBuffer,  u16 NumToRead)
+{
+    // After the microcontroller receives a data word, it responds with
+    // an acknowledge. As long as the EEPROM receives an acknowledge, it will continue to
+    // increment the data word address and serially clock out sequential data words.
+
+    IIC_Read_Byte(1);
+}
 
 /**
  * @brief 在AT24CXX里面的指定地址开始写入指定个数的数据
@@ -242,11 +288,11 @@ void AT24CXX_Read(u16 ReadAddr, u8 *pBuffer, u16 NumToRead)
  */
 void AT24CXX_Write(u16 WriteAddr, u8 *pBuffer, u16 NumToWrite)
 {
-	while (NumToWrite--) {
-		AT24CXX_WriteOneByte(WriteAddr, *pBuffer);
-		WriteAddr++;
-		pBuffer++;
-	}
+    while (NumToWrite--) {
+        AT24CXX_WriteOneByte(WriteAddr, *pBuffer);
+        WriteAddr++;
+        pBuffer++;
+    }
 }
 
 typedef struct {
@@ -274,27 +320,46 @@ void AT24CXX_read_write_test(void)
 
     board_config_t config = { "0.0.1", "0.0.2", "0.0.3", "0.0.4", 1, 0, 1};
 
-    LOG_D("board_config_t size:%d", sizeof(board_config_t));
+    LOG_D("board_config_t struct size:%d", sizeof(board_config_t));
     AT24CXX_Write(write_addr, (u8*)&config, sizeof(config));
-    LOG_D("write success");
     p_read = (board_config_t*)malloc(sizeof(board_config_t));
     if (!p_read)
         return;
     AT24CXX_Read(write_addr, (u8*)p_read, sizeof(board_config_t));
-
-    LOG_I("read:");
     LOG_I("bootloader_version:%s", p_read->bootloader_version);
     LOG_I("app_version:%s", p_read->app_version);
     LOG_I("factory_version:%s", p_read->factory_version);
     LOG_I("hardware_version:%s", p_read->hardware_version);
     LOG_I("have_nfc:%d have_gps:%d have_bt:%d", p_read->have_nfc, p_read->have_gps, p_read->have_bt);
-
     if (memcmp(&config, p_read, sizeof(board_config_t)) == 0)
         LOG_I("eeprom test success");
     else
         LOG_I("eeprom test failed");
 
+    LOG_HEX("eeprom data", p_read, sizeof(board_config_t));
+
     free(p_read);
+
+    return;
+}
+
+void AT24CXX_CurrAddrRead_test(void)
+{
+    int i;
+    // u8 *p = (u8*)malloc(512);
+
+    // if (!p) {
+    //     LOG_E("malloc failed");
+    //     return;
+    // }
+    u8 p[512] = {0};
+
+    for (i = 0; i < 512; ++i) {
+        p[i] = AT24CXX_CurrAddrRead();
+    }
+    LOG_HEX("seq read", p, 512);
+
+    // free(p);
 
     return;
 }

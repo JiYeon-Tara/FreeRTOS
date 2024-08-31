@@ -3,7 +3,11 @@
 #include "sys.h"
 #include "stdio.h"	 
 
- 
+
+// TODO:
+// 由于目前测试的方案是, 一次性接收完成后, 然后再进行写 flash, 然后跳转
+// 由于这里设置了串口最大接收 41KB
+// 因此 flash app 最大只能接受 41KB, 这里可以优化方案
 #define USART_REC_LEN  			41*1024 //定义最大接收字节数 41K
 #define EN_USART1_RX 			1		//使能（1）/禁止（0）串口1接收
 	  	

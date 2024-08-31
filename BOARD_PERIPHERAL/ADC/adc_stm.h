@@ -8,11 +8,11 @@
 /************
  * MACRO
  ************/
-#define ADC_VAL_CH0                 0  	// 通道1		
-#define ADC_VAL_CH1                 1  	// 通道1		
-#define ADC_GET_TEST_COUNT          100
-#define ADC_MCU_TEMPER_ENABLE       1   // 使用 MCU 自带的温度传感器测量温度
-#define ADC_MCU_TEMP_CHANNEL        16  // channel 16
+#define ADC_VAL_CH0                 0 // 通道0	
+#define ADC_VAL_CH1                 1 // 通道1		
+#define ADC_GET_TEST_COUNT          1 // 100
+#define ADC_MCU_TEMPER_ENABLE       1 // 使用 ADC 检测 MCU 自带的温度传感器测量温度(内部温度传感器)
+#define ADC_MCU_TEMP_CHANNEL        16 // 内部温度传感器和 ADC1 channel 16 相连
 
 	   									   
 void Adc_Init(void); 				//ADC通道初始化

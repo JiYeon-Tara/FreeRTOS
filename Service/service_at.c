@@ -18,6 +18,7 @@
 #include "led.h"
 #include "oled.h"
 #include "rtc.h"
+#include "dlps.h"
 #include "tp_test.h"
 #include "stm_flash.h"
 #include "test.h"
@@ -67,6 +68,7 @@ static bool at_inner_flash_test(const char *para1, const char *para2);
 static bool at_memory_manage_test(const char *para1, const char *para2);
 static bool at_sdcard_test(const char *para1, const char *para2);
 static bool at_fatfs_test(const char *para1, const char *para2);
+static bool at_dlps_test(const char *para1, const char *para2);
 
 // variables
 const static at_callback_t atCmdList[] = {
@@ -83,7 +85,10 @@ const static at_callback_t atCmdList[] = {
     {"AT^INNER_FLASH_TEST",                 at_inner_flash_test},
     {"AT^MEMORY_TEST",                      at_memory_manage_test},
     {"AT^SDCARD_TEST",                      at_sdcard_test},
-    {"AT^FATFS_TEST",                       at_fatfs_test}, 
+#if FS_ENABLE
+    {"AT^FATFS_TEST",                       at_fatfs_test},
+#endif
+    {"AT^DLPS",                             at_dlps_test},
 };
 static uint8_t _g_at_send_temp_buff[512];
 static AT_DIR_E atDir = AT_DIR_UART;
@@ -480,11 +485,12 @@ static bool at_sdcard_test(const char *para1, const char *para2)
     dir = (uint8_t)atoi(para1);
     sect = (uint8_t)atoi(para2);
     printf("dir:%d sect:%d\r\n", dir, sect);
-    sdcard_read_write_sectorx_test(sect, dir);
+    sdcard_read_write_sectorx_test();
     AT_TRANS("OK\r\n");
     return true; 
 }
 
+#if FS_ENABLE == 1
 static bool at_fatfs_test(const char *para1, const char *para2)
 {
     enum {
@@ -492,6 +498,7 @@ static bool at_fatfs_test(const char *para1, const char *para2)
         FS_API_TEST,
         TEST_MAX
     };
+
     uint8_t op = 0;
     uint8_t testAPI = 0;
     if(!para1 || !para2){
@@ -500,10 +507,21 @@ static bool at_fatfs_test(const char *para1, const char *para2)
     }
     testAPI = (uint8_t)atoi(para1);
     op = (uint8_t)atoi(para2);
-    if(testAPI == 0)
-        fatfs_test(op);
-    else
-        fs_api_test(op);
+    if(testAPI == 0) {
+#if FATFS_TEST_ENABLE
+        exfuns_test(op);
+#endif
+    } else {
+#if FS_API_TEST_ENABLE
+        servics_fs_api_test(op);
+#endif
+    }
     AT_TRANS("OK\r\n");
     return true; 
+}
+#endif
+
+static bool at_dlps_test(const char *para1, const char *para2)
+{
+    Sys_Enter_Standby();
 }

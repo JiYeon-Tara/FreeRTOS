@@ -17,11 +17,9 @@
 /***********************
  * MACRO
  ***********************/
-#define TIM3_PRIEMPTION_PRIORITY    1
 #define TIM3_SUB_PRIORITY           3
 #define TIM3_NVIC_GROUP             2
 
-#define TIM2_PREEMPTION_PRIORITY    2
 #define TIM2_SUB_RPIORITY           0
 #define TIM2_NVIC_GROUP             2
 

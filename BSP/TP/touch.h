@@ -7,13 +7,12 @@
 
 #if TP_ENABLE
 
-#define TP_PRES_DOWN 0x80  //触屏被按下	  
-#define TP_CATH_PRES 0x40  //有按键按下了 
+#define TP_PRES_DOWN 0x80  // bit[7]触屏被按下	  
+#define TP_CATH_PRES 0x40  // bit[6]有按键按下了 
 #define CT_MAX_TOUCH  5    //电容屏支持的点数,固定为5点
 
 //触摸屏控制器
-typedef struct
-{
+typedef struct {
     u8 (*init)(void);			//初始化触摸屏控制器
     u8 (*scan)(u8);				//扫描触摸屏.0,屏幕扫描;1,物理坐标;	 
     void (*adjust)(void);		//触摸屏校准 
@@ -25,29 +24,20 @@ typedef struct
                                 //b6:0,没有按键按下; 1,有按键按下. 
                                 //b5:保留
                                 //b4~b0:电容触摸屏按下的点数(0,表示未按下,1表示按下)
-/////////////////////触摸屏校准参数(电容屏不需要校准)//////////////////////								
+/////////////////////触摸屏校准参数(电容屏不需要校准)//////////////////////
     float xfac;					
     float yfac;
     short xoff;
     short yoff;	   
     //新增的参数,当触摸屏的左右上下完全颠倒时需要用到.
-    //b0:0,竖屏(适合左右为X坐标,上下为Y坐标的TP)
-    //   1,横屏(适合左右为Y坐标,上下为X坐标的TP) 
+    //b0:0,竖屏(适合左右为X坐标,上下为Y坐标的TP);1,横屏(适合左右为Y坐标,上下为X坐标的TP) 
     //b1~6:保留.
-    //b7:0,电阻屏
-    //   1,电容屏 
+    //b7:0,电阻屏; 1,电容屏 
     u8 touchtype;
 }_m_tp_dev;
 
 extern _m_tp_dev tp_dev;	 	//触屏控制器在touch.c里面定义
 
-// 软件模拟 SPI
-// 电阻屏芯片连接引脚	   
-#define PEN  PCin(1)   	//PC1  INT
-#define DOUT PCin(2)   	//PC2  MISO
-#define TDIN PCout(3)  	//PC3  MOSI
-#define TCLK PCout(0)  	//PC0  SCLK
-#define TCS  PCout(13) 	//PC13 CS 
    
 //电阻屏函数
 void TP_Write_Byte(u8 num);						//向控制芯片写入一个数据

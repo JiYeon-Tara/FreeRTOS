@@ -1,6 +1,6 @@
 #include "gt9147.h"
 #include "touch.h"
-#include "ctiic.h"
+#include "i2c2_soft.h"
 #include "usart.h"
 #include "delay.h" 
 #include "string.h" 
@@ -107,6 +107,7 @@ u8 GT9147_Init(void)
 	GPIOC->CRH&=0XFF0FFFFF;	//PC13 推挽输出
 	GPIOC->CRH|=0X00300000;	   
 	GPIOC->ODR|=1<<13;	   	//PC13 推挽输出 
+
 	CT_IIC_Init();      	//初始化电容屏的I2C总线  
 	GT_RST=0;				//复位
 	delay_ms(10);

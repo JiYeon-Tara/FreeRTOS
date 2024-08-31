@@ -72,17 +72,35 @@
 //JTAG模式设置定义
 #define JTAG_SWD_DISABLE   0X02
 #define SWD_ENABLE         0X01
-#define JTAG_SWD_ENABLE    0X00	
+#define JTAG_SWD_ENABLE    0X00
+
+//NVIC
+#define DEFAULT_NVIC_GROUP              (0x02) // 用于设置 NVIC->AIRCR, 优先级分组(抢占优先级2:子优先级2)
+#define UNUSED_NVIC_GROUP               (0x00) // 没有用到
+
+//NVIC_SubPriority和NVIC_PreemptionPriority的原则是,数值越小,优先级越高
+//DEFAULT_NVIC_GROUP, 抢占优先级和子优先级 取值范围:0-3
+// 仅能用于 NVIC_GROUP==2 的情况
+#define NVIC_PREEMPTION_PRIORITY_HIGH   (0x00)
+#define NVIC_PREEMPTION_PRIORITY_MIDDLE (0x01)
+#define NVIC_PREEMPTION_PRIORITY_LOW   (0x02)
+#define NVIC_PREEMPTION_PRIORITY_VERY_LOW   (0x03)
+
+#define NVIC_SUBPRIORITY_HIGH           (0x00)
+#define NVIC_SUBPRIORITY_MIDDLE         (0x01)
+#define NVIC_SUBPRIORITY_LOW            (0x02)
+#define NVIC_SUBPRIORITY_VERY_LOW       (0x03)
 
 
 void Stm32_Clock_Init(u8 PLL);  //时钟初始化  
 void Sys_Soft_Reset(void);      //系统软复位
 void Sys_Standby(void);         //待机模式 	
 void MY_NVIC_SetVectorTable(u32 NVIC_VectTab, u32 Offset);//设置偏移地址
-void MY_NVIC_PriorityGroupConfig(u8 NVIC_Group);//设置NVIC分组
+void NVIC_PriorityGroupConfig(u8 NVIC_Group);
 void MY_NVIC_Init(u8 NVIC_PreemptionPriority,u8 NVIC_SubPriority,u8 NVIC_Channel,u8 NVIC_Group);//设置中断
 void GPIO_NVIC_Config(u8 GPIOx,u8 BITx,u8 TRIM);//外部中断配置函数(只对GPIOA~G)
 void JTAG_Set(u8 mode);
+u8 NVIC_Get_Chip_Support_Priority_Bit_Num(void);
 
 
 //以下为汇编函数

@@ -1,22 +1,15 @@
 #include "24l01.h"
 #include "delay.h"
 #include "spi.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK MiniSTM32开发板
-//NRF24L01驱动代码	   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//修改日期:2014/3/12
-//版本：V1.0
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2009-2019
-//All rights reserved									  
-//////////////////////////////////////////////////////////////////////////////////
-    
+
+
+// 与 flash , sd 卡 共用 spi1, 需要使用 CS 进行分时复用
+
+
 const u8 TX_ADDRESS[TX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; //发送地址
 const u8 RX_ADDRESS[RX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; //发送地址
- 
+
+
 //初始化24L01的IO口
 void NRF24L01_Init(void)
 {
@@ -37,6 +30,7 @@ void NRF24L01_Init(void)
 	NRF24L01_CE=0; 	//使能24L01
 	NRF24L01_CSN=1;	//SPI片选取消	 		 	 
 }
+
 //检测24L01是否存在
 //返回值:0，成功;1，失败	
 u8 NRF24L01_Check(void)
@@ -49,7 +43,8 @@ u8 NRF24L01_Check(void)
 	for(i=0;i<5;i++)if(buf[i]!=0XA5)break;	 							   
 	if(i!=5)return 1;//检测24L01错误	
 	return 0;		 //检测到24L01
-}	 	 
+}
+
 //SPI写寄存器
 //reg:指定寄存器地址
 //value:写入的值
@@ -62,6 +57,7 @@ u8 NRF24L01_Write_Reg(u8 reg,u8 value)
   	NRF24L01_CSN=1;                 //禁止SPI传输	   
   	return(status);       			//返回状态值
 }
+
 //读取SPI寄存器值
 //reg:要读的寄存器
 u8 NRF24L01_Read_Reg(u8 reg)
@@ -72,7 +68,8 @@ u8 NRF24L01_Read_Reg(u8 reg)
   	reg_val=SPI1_ReadWriteByte(0XFF);//读取寄存器内容
   	NRF24L01_CSN = 1;          //禁止SPI传输		    
   	return(reg_val);           //返回状态值
-}	
+}
+
 //在指定位置读出指定长度的数据
 //reg:寄存器(位置)
 //*pBuf:数据指针

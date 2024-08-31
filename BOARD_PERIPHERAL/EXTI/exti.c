@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2022
  * 
  */
+#include "stm32f10x.h"
 #include "exti.h"
 #include "led.h"
 #include "key_stm.h"
@@ -24,7 +25,9 @@
 #if MOUSE_ENABLE
 #include "ps2.h"
 #endif
-
+#if INT_KEY_ENABLE
+#include "key_stm.h"
+#endif
 
 
 // function declaration
@@ -33,32 +36,29 @@ void EXTI9_5_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
 
 /**
- * @brief external interrupt intialization
- * 
- */
-// void EXTI_Init(void)
-// {
-
-// }
-
-/**
  * @brief intialize the key interrupt
+ * 
  */
 void EXTI_Init()
 {
-    // key GPIO init
+    // key GPIO init at key_stm.c
     // KEY_Init();
 
     // configure NVIC
     GPIO_NVIC_Config(KEY0_GPIO, KEY0_PORT, FTIR);   //rising trigger
-    MY_NVIC_Init(KEY0_PRIEMPTION_PRIORITY, KEY0_SUB_PRIORITY, EXTI9_5_IRQn, KEY0_NVIC_GROUP);
+    MY_NVIC_Init(KEY0_PRIEMPTION_PRIORITY, KEY0_SUB_PRIORITY,
+                EXTI9_5_IRQn, DEFAULT_NVIC_GROUP);
 
     GPIO_NVIC_Config(KEY1_GPIO, KEY1_PORT, FTIR);   //falling trigger
-    MY_NVIC_Init(KEY1_PRIEMPTION_PRIORITY, KEY1_SUB_PRIORITY, EXTI15_10_IRQn, KEY1_NVIC_GROUP);
+    MY_NVIC_Init(KEY1_PRIEMPTION_PRIORITY, KEY1_SUB_PRIORITY,
+                EXTI15_10_IRQn, DEFAULT_NVIC_GROUP);
 
-#ifndef DLPS_ENABLE
+#if DLPS_ENABLE == 0 // 作为普通的按键, 而不是低功耗唤醒按键时
+#if TEMP_ENABLE == 0 // DS 18B20 会用到这个 GPIO
     GPIO_NVIC_Config(WKUP_GPIO, WKUP_PORT, RTIR);
-    MY_NVIC_Init(WKUP_PRIEMPTION_PRIORITY, WKUP_SUB_PRIORITY, EXTI0_IRQn, WKUP_NVIC_GROUP);
+    MY_NVIC_Init(WKUP_PRIEMPTION_PRIORITY, WKUP_SUB_PRIORITY,
+                EXTI0_IRQn, WKUP_NVIC_GROUP);
+#endif /* TEMP_ENABLE */
 #endif // DLPS_ENABLE
 
     return;
@@ -72,18 +72,27 @@ void EXTI0_IRQHandler(void)
 {
     // 中断中延时, 测量脉冲宽度的时候会出现异常
     EXTI->PR = 1 << 0; // 清除中断标志
-    // delay_ms(10);               // xiao dou 
-    if(WK_UP == 1){             // PA0 - wake up key
-#if INT_KEY_TEST_ENABLE
-        printf("WKUP pressed\n");
+    //TODO:
+    /* 正常使用不可以使用这种写法!! */
+    /* 正常使用不可以使用这种写法!! */
+    /* 正常使用不可以使用这种写法!! */
+    delay_ms(10); // xiao dou
+
+    if (WK_UP == 1) { // PA0 - wake up key
+#if INT_KEY_ENABLE
+        set_key_pressed(KEY_WKUP_IDX, true);
+#endif
+
+#if INT_KEY_TEST_ENABLE == 1 && DLPS_TEST_ENABLE == 0
+        LOG_I("WKUP pressed\n");
         LED0 = !LED0;
         LED1 = !LED1;
 #endif
     
-#if DLPS_TEST_ENABLE
+#if DLPS_TEST_ENABLE == 1
         // 判断 WKUP 是否按下超过 3s, 超过的话进入 standby mode
         // EXTI->PR = 1 << 0; // 清除中断标志
-        if(Check_WKUP()){
+        if (Check_WKUP()) {
             Sys_Enter_Standby();
         }
 #endif
@@ -98,20 +107,26 @@ void EXTI0_IRQHandler(void)
  */
 void EXTI9_5_IRQHandler(void)
 {
+    /************ 在中断中加 delay 这种操作不可以 *********/
+    // 可行的方法, 中断里面发信号, 在线程里面去处理
     delay_ms(10);
 
-    if(KEY0 == 0){
+    if (KEY0 == 0) {
+#if INT_KEY_ENABLE
+        set_key_pressed(KEY0_IDX, true);
+#endif
+
 #if INT_KEY_TEST_ENABLE
-        printf("key 0 pressed\n", __func__);
+        LOG_I("key 0 pressed\n", __func__);
         LED0 = !LED0;
 #endif
 
     // fedd watch dog
 #if IWATCH_DOG_TEST_ENABLE
-        printf("feed indepedent watch dog timer.\r\n");
+        LOG_I("feed indepedent watch dog timer.\r\n");
         IWDG_Feed();
 #elif WWATCH_DOT_TEST_ENABLE
-        // printf("feed window watch dog timer.\r\n");
+        // LOG_I("feed window watch dog timer.\r\n");
         // WWDG_Set_Counter();
 #endif
 
@@ -122,6 +137,7 @@ void EXTI9_5_IRQHandler(void)
         USART1->CR3 |= 1 << 7; // 使能 UART1 的 DMA TX
         DMA_Enable(DMA1_Channel4);
 #endif
+
     }
 
     // clear interrupt flag
@@ -134,15 +150,22 @@ void EXTI9_5_IRQHandler(void)
  */
 void EXTI15_10_IRQHandler(void)
 {
+    /************ 在中断中加 delay 这种操作不可以 *********/
+    // 可行的方法, 中断里面发信号, 在线程里面去处理
     delay_ms(10);
+
     if(KEY1 == 0){
+#if INT_KEY_ENABLE
+        set_key_pressed(KEY1_IDX, true);
+#endif
+
 #if INT_KEY_TEST_ENABLE
-        printf("key 1 pressed\n", __func__);
+        LOG_I("key 1 pressed\n", __func__);
         LED1 = !LED1;
 #endif
 
-#if WATCH_DOG_TEST_ENABLE
-        printf("feed watch dog timer.\r\n");
+#if IWATCH_DOG_TEST_ENABLE
+        LOG_I("feed watch dog timer.\r\n");
         IWDG_Feed();    // fedd watch dog
 #endif
 

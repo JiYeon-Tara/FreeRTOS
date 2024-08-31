@@ -10,7 +10,7 @@
  */
 #include "mouse.h"
 #include "usart.h"
-#include "lcd.h"
+#include "ILI93xx.h"
 
 
 // 鼠标测试失败

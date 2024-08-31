@@ -123,13 +123,13 @@ void SysTick_Handler(void)
  */
 void delay_init(uint32_t HCLK)
 {
-#if SYSTEM_SUPPORT_OS 			            //如果需要支持OS.
+#if SYSTEM_SUPPORT_OS //如果需要支持OS.
     u32 reload;
 #endif
-     SysTick->CTRL &= ~(1 << 2);			//SYSTICK使用外部时钟源 SysTick->CTRL, bit[2]:0-外部时钟, 1-内部时钟;
+     SysTick->CTRL &= ~(1 << 2); //SYSTICK使用外部时钟源 SysTick->CTRL, bit[2]:0-外部时钟, 1-内部时钟;
     //每个 us 需要的 systick 数
-    fac_us = HCLK / (8 * 1000000);			//不论是否使用OS,fac_us都需要使用, SYSTICK的时钟固定为HCLK时钟的1/8
-#if SYSTEM_SUPPORT_OS 						//如果需要支持OS. 这里不对吧?
+    fac_us = HCLK / (8 * 1000000); //不论是否使用OS,fac_us都需要使用, SYSTICK的时钟固定为HCLK时钟的1/8
+#if SYSTEM_SUPPORT_OS //如果需要支持OS. 这里不对吧?
     reload = HCLK/8;						//每秒钟的计数次数 单位为K	   
     reload *= 1000000/delay_ostickspersec;	//根据delay_ostickspersec设定溢出时间
                                             //reload为24位寄存器,最大值:16777216,在72M下,约合1.86s左右	
@@ -138,17 +138,17 @@ void delay_init(uint32_t HCLK)
     SysTick->LOAD = reload; 				//每1/delay_ostickspersec秒中断一次	
     SysTick->CTRL |= 1<<0;   				//开启SYSTICK    
 #else
-    fac_ms = (u16)fac_us * 1000;			//非OS下,代表每个ms需要的systick时钟数   
+    fac_ms = (u16)fac_us * 1000; //非OS下,代表每个ms需要的systick时钟数   
 #endif
     
     return;
-}								    
+}
 
 #if SYSTEM_SUPPORT_OS 						//如果需要支持OS.
 //延时nus
 //nus为要延时的us数.		    								   
 void delay_us(u32 nus)
-{		
+{
     u32 ticks;
     u32 told, tnow, tcnt = 0;               //unsigned int 类型 加到最大值之后又从 0 开始
     u32 reload = SysTick->LOAD;				//LOAD的值	    	 
@@ -221,15 +221,15 @@ void delay_us(u32 nus)
 void delay_ms(u16 nms)
 {
     u32 temp;		   
-    SysTick->LOAD = (u32)nms * fac_ms;			//时间加载(SysTick->LOAD为24bit)
+    SysTick->LOAD = (u32)nms * fac_ms; //时间加载(SysTick->LOAD为24bit)
     // 不使用 OS 时, systick 计时器没有被用到, 所以可以随意修改, 当普通硬件定时器用了;
     // 使用 OS 时, systick 要做 OS 的时钟源, 所以不可以随意修改 -> "时钟摘取法";
-    SysTick->VAL = 0x00;           			//清空计数器, systick 是一个倒计时定时器
-    SysTick->CTRL = 0x01 ;          			//开始倒数  
+    SysTick->VAL = 0x00; //清空计数器, systick 是一个倒计时定时器
+    SysTick->CTRL = 0x01 ; //开始倒数  
     do
     {
         temp = SysTick->CTRL;
-    }while((temp&0x01) && !(temp&(1<<16)));	//等待时间到达   
+    } while((temp&0x01) && !(temp&(1<<16)));	//等待时间到达   
     SysTick->CTRL= 0x00;      	 			//关闭计数器，通过计数器实现定时的目的
     SysTick->VAL = 0X00;       				//清空计数器	  	    
 

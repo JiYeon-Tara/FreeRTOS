@@ -34,9 +34,9 @@
 // size:0xC000(48K)
 
 // 增加 bootloader
-// bootloader:0x20000000 - 0x20001000, 最开始的 4K bootloader;
-// APP:0x20001000 - 0x2000B000, 中间的 40K 存放 APP 程序;
-// 0x2000B000 - 0x2000C000, 最后的 4K 用做 APP 程序的内存
+// bootloader:0x20000000 - 0x20000FFF, 最开始的 4K bootloader;
+// APP:0x20001000 - 0x2000AFFF, 中间的 40K 存放 APP 程序;
+// 0x2000B000 - 0x2000BFFF, 最后的 4K 用做 APP 程序的内存
 
 // address:0x20001000 - 0x2000B000
 // size:44K

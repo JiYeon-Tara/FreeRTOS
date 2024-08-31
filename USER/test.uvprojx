@@ -53,7 +53,7 @@
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
-          <BrowseInformation>0</BrowseInformation>
+          <BrowseInformation>1</BrowseInformation>
           <ListingPath>..\OBJ\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
@@ -186,7 +186,7 @@
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART;..\BOARD_PERIPHERAL;..\BSP\LED;..\BSP;..\BOARD_PERIPHERAL\GPIO;..\BSP\KEY;..\USER;..\BOARD_PERIPHERAL\ADC;..\BOARD_PERIPHERAL\BKP;..\BOARD_PERIPHERAL\DAC;..\BOARD_PERIPHERAL\DMA;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\I2C;..\BOARD_PERIPHERAL\RTC;..\BOARD_PERIPHERAL\SLEEP_MODE;..\BOARD_PERIPHERAL\SPI;..\BOARD_PERIPHERAL\TEMP;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\USART;..\BOARD_PERIPHERAL\WDT;..\BSP\EEPROM;..\BSP\flash;..\BSP\KEY;..\BSP\LCD;..\BSP\LED;..\BSP\OLED;..\BSP\PS2;..\BSP\SD_card;..\BOARD_PERIPHERAL;..\BSP;..\third_party;..\third_party\AT;..\third_party;..\BSP\remote_control;..\BSP\temperature;..\BOARD_PERIPHERAL\flash;..\Service;..\Service\memmang;..\Service\FS;..\third_party\FATFS\exfuns;..\third_party\FATFS\src;..\BSP\OLED;..\BOARD_PERIPHERAL\I2C;..\Service\FS</IncludePath>
+              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART;..\BOARD_PERIPHERAL;..\BSP\LED;..\BSP;..\BOARD_PERIPHERAL\GPIO;..\BSP\KEY;..\USER;..\BOARD_PERIPHERAL\ADC;..\BOARD_PERIPHERAL\BKP;..\BOARD_PERIPHERAL\DAC;..\BOARD_PERIPHERAL\DMA;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\I2C;..\BOARD_PERIPHERAL\RTC;..\BOARD_PERIPHERAL\SLEEP_MODE;..\BOARD_PERIPHERAL\SPI;..\BOARD_PERIPHERAL\TEMP;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\USART;..\BOARD_PERIPHERAL\WDT;..\BSP\EEPROM;..\BSP\flash;..\BSP\KEY;..\BSP\LCD;..\BSP\LED;..\BSP\OLED;..\BSP\PS2;..\BSP\SD_card;..\BOARD_PERIPHERAL;..\BSP;..\third_party;..\third_party\AT;..\third_party;..\BSP\remote_control;..\BSP\temperature;..\BOARD_PERIPHERAL\flash;..\Service;..\Service\memmang;..\Service\FS;..\third_party\FATFS\exfuns;..\third_party\FATFS\src;..\BSP\OLED;..\BOARD_PERIPHERAL\I2C;..\Service\FS;..\third_party\ulog;..\SYSTEM;..\SYSTEM\sys</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -404,6 +404,11 @@
               <FileName>usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\SYSTEM\usart\usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\SYSTEM\util.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -589,11 +594,6 @@
               <FilePath>..\BOARD_PERIPHERAL\flash\stm_flash.c</FilePath>
             </File>
             <File>
-              <FileName>ctiic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BOARD_PERIPHERAL\I2C\ctiic.c</FilePath>
-            </File>
-            <File>
               <FileName>i2c.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BOARD_PERIPHERAL\I2C\i2c.c</FilePath>
@@ -602,6 +602,21 @@
               <FileName>i2c_soft.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BOARD_PERIPHERAL\I2C\i2c_soft.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c2_soft.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\I2C\i2c2_soft.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi2_soft.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\SPI\spi2_soft.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi1_soft.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\SPI\spi1_soft.c</FilePath>
             </File>
           </Files>
         </Group>

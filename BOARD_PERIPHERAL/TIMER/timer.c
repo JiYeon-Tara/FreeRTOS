@@ -1,49 +1,58 @@
 #include "timer.h"
 #include "led.h"
+#include "sys.h"
 
-// 硬件定时器数量有限, 一般用于什么场合?
-// 还分高级定时器和普通定时器
+#include "util.h"
+#include "ulog.h"
+
+// 1.硬件定时器数量有限, 一般用于什么场合? 还分高级定时器(支持的功能更多,数量少)和普通定时器
+//2. 软件定时器如何实现(链表)?
 
 
-/***********************
+/*********************************************************************************
  * MACRO
- ***********************/
+ *********************************************************************************/
 #define TIMER1_CH1_PWM_VAL          TIM1->CCR1         // timer1 PWM val, 调节占空比
 
 // #define TIM2_CAPTURE_COMPLETE        (1 << 7)
 // #define TIM2_CAP_HIGH_LEVEL          (1 << 6)
 // #define TIM2_OVERRUN_TIMES
-
-
-/***********************
- * VARIABLES
- ***********************/
-
+/*********************************************************************************
+ * PRIVATE FUNCTIONS
+ *********************************************************************************/
 //[7]:0,没有成功的捕获; 1,成功捕获到一次.
 //[6]:0,还没捕获到高电平; 1,已经捕获到高电平了.
 //[5:0]:捕获高电平后溢出的次数
 u8 TIM2_CH1_CAPTURE_STA = 0;    // 输入捕获状态标志
 u16 TIM2_CH1_CAPTURE_VAL = 0;   // 输入捕获值
-
-
+/*********************************************************************************
+ * PUBLIC FUNCTIONS
+ *********************************************************************************/
 /**
  * @brief 通用定时器中断初始化
  *        这里时钟选择为APB1的2倍，而 APB1 为 36M, 所以 Tim2-7 时钟为 72M
  * 		  Tout = ((arr + 1) * (psc + 1)) / Tclk
  * 		  计数器的时钟频率计算: fclk  = fCK_PSC/(psc+1), 定时器主频 / (分频系数 + 1)
  *
- * @param[in]  arr 自动重装值
+ * @param[in]  arr 自动重装值, 范围:0~2^16
  * @param[in]  psc 时钟预分频数
  */
 void TIM3_Int_Init(u16 arr, u16 psc)
 {
     RCC->APB1ENR |= 1 << 1;		// TIM3时钟使能    
-     TIM3->ARR = arr;  			// 设定计数器自动重装值 
+    TIM3->ARR = arr;  			// 设定计数器自动重装值 
     TIM3->PSC = psc;  			// bit[15:0], 预分频器设置
     TIM3->DIER |= 1 << 0;   	// 允许更新中断				
     TIM3->CR1 |= 1 << 0;    	// 使能定时器3
-      MY_NVIC_Init(TIM3_PRIEMPTION_PRIORITY, TIM3_SUB_PRIORITY, TIM3_IRQn, TIM3_NVIC_GROUP); //抢占1，子优先级3，组2	
-    printf("timer 3 init\r\n");
+#if NVIC_TEST
+    ////抢占1，子优先级3，组2
+    MY_NVIC_Init(NVIC_PREEMPTION_PRIORITY_MIDDLE, NVIC_SUBPRIORITY_MIDDLE, 
+                TIM3_IRQn, DEFAULT_NVIC_GROUP);
+#else
+    MY_NVIC_Init(NVIC_PREEMPTION_PRIORITY_MIDDLE, NVIC_SUBPRIORITY_MIDDLE, 
+                TIM3_IRQn, DEFAULT_NVIC_GROUP);
+#endif
+    LOG_D("timer3 init\r\n");
     return;								 
 }
 
@@ -69,7 +78,7 @@ void TIM1_PWM_Init(u16 arr, u16 psc)
     TIM1->BDTR |= 1 << 15;      //MOE 主输出使能 
     TIM1->CR1 = 0x0080;         //ARPE 使能
     TIM1->CR1 |= 0x01;          //使能定时器 1
-    printf("timer1 init\r\n");
+    LOG_D("timer1 init\r\n");
     return;
 }
 
@@ -97,8 +106,11 @@ void TIM2_INPUT_Init(u16 arr, u16 psc)
     TIM2->DIER |= 1 << 1;       //允许捕获中断
     TIM2->DIER |= 1 << 0;       //允许更新中断
     TIM2->CR1 |= 0x01;          //使能定时器 2
-    MY_NVIC_Init(TIM2_PREEMPTION_PRIORITY, TIM2_SUB_RPIORITY,TIM2_IRQn, TIM2_NVIC_GROUP);//抢占 2，子优先级 0，组 2
-    printf("timer2 init\r\n");
+
+    //抢占 2，子优先级 0，组 2
+    MY_NVIC_Init(NVIC_PREEMPTION_PRIORITY_MIDDLE, TIM2_SUB_RPIORITY,
+                TIM2_IRQn, DEFAULT_NVIC_GROUP);
+    LOG_D("timer2 init\r\n");
     return;
 }
 
@@ -108,14 +120,22 @@ void TIM2_INPUT_Init(u16 arr, u16 psc)
  */
 void TIM3_IRQHandler(void)
 {
-    if(TIM3->SR & 0X0001) //溢出中断
-    {
+    LOG_D("%s enter %X", __func__, (uint16_t)TIM3->SR);
+    if (TIM3->SR & 0X0001) {//溢出中断
 #if TIMER3_TEST_ENABLE
         LED1 =! LED1;	
-        printf("%s\r\n", __func__);
-#endif		    				   				     	    	
+        // LOG_D("%s", __func__);
+#endif
+#if NVIC_TEST
+        // 在定时器中断中 delay， 按键(外部中断)设置不同的优先级,观察能否打断/pending 该中断
+        LOG_D("delay");
+        //TODO:
+        // 这里有个问题, 这个接口并不能 delay 5s
+        delay_ms(5000);
+#endif
     }
     TIM3->SR &= ~(1 << 0); //清除中断标志位 
+    LOG_D("%s exit %X", __func__, (uint16_t)TIM3->SR);
 
     return;  
 }

@@ -1,6 +1,6 @@
 #include "ft5206.h"
 #include "touch.h"
-#include "ctiic.h"
+#include "i2c2_soft.h"
 #include "usart.h"
 #include "delay.h" 
 #include "string.h" 
