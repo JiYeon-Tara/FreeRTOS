@@ -5,6 +5,8 @@
 /*------------------------------------------------------------------------*/
 
 #include "../ff.h"
+#include "util.h"
+
 
 #define _TINY_TABLE	0
 
@@ -3780,8 +3782,6 @@ WCHAR ff_convert (	/* Converted code, 0 means conversion error */
 
 	return c;
 }
-
-
 
 WCHAR ff_wtoupper (	/* Upper converted character */
 	WCHAR chr		/* Input character */

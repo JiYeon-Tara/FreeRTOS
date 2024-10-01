@@ -28,7 +28,9 @@
 #if INT_KEY_ENABLE
 #include "key_stm.h"
 #endif
-
+#if USB_ENABLE
+// #include "hw_config.h"
+#endif
 
 // function declaration
 void EXTI0_IRQHandler(void);
@@ -138,6 +140,9 @@ void EXTI9_5_IRQHandler(void)
         DMA_Enable(DMA1_Channel4);
 #endif
 
+#if USB_ENABLE
+    Joystick_Send(0,0,0,1); // 发送松开 到电脑
+#endif
     }
 
     // clear interrupt flag
@@ -236,6 +241,9 @@ void EXTI15_10_IRQHandler(void)
     }
 #endif
 
+#if USB_ENABLE
+    Joystick_Send(0,0,0,-1); // 发送滚轮数据到电脑
+#endif
     }
 
     EXTI->PR = 1 << 15;

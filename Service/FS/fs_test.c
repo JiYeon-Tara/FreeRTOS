@@ -11,7 +11,7 @@
 #include "fs_test.h"
 #include "service_config.h"
 
-#if FS_TEST_ENABLE
+#if FS_API_TEST_ENABLE
 #include "service_fs_api.h"
 #include "malloc.h"
 
@@ -19,8 +19,6 @@
 /********************
  * MACRO
  ********************/
-#define LOG_E(fmt, ...)     printf(fmt"\n", ##__VA_ARGS__)
-
 
 /**
  * @brief 

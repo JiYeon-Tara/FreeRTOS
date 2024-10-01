@@ -49,7 +49,7 @@
 /* To enable volume label functions, set _USE_LAVEL to 1 */
 
 
-#define	_USE_FORWARD	0	/* 0:Disable or 1:Enable */
+#define	_USE_FORWARD	1	/* 0:Disable or 1:Enable */
 /* To enable f_forward() function, set _USE_FORWARD to 1 and set _FS_TINY to 1. */
 
 
@@ -58,7 +58,11 @@
 /---------------------------------------------------------------------------*/
 
 #define _CODE_PAGE 437
-// #define _CODE_PAGE	936		// 这个用于设置语言类型，包括很多选项（见 FATFS 官网说明），这里设置为 936，即简体中文（GBK 码，需要 c936.c 文件支持，该文件在 option 文件夹）
+// NOTE:
+// cc936.c 中有一个 193KB 大小的数组, 非常占用 flash
+// 下一章节将该数组通过 C2B 工具转换成 bin 文件,然后存到外部 flash 中
+// #define _CODE_PAGE	936		// 这个用于设置编码格式，包括很多选项（见 FATFS 官网说明），
+// 这里设置为 936，即简体中文（GBK 码，需要 c936.c 文件支持，该文件在 option 文件夹）
 /* The _CODE_PAGE specifies the OEM code page to be used on the target system.
 /  Incorrect setting of the code page can cause a file open failure.
 /
@@ -121,7 +125,7 @@
 /  f_puts and f_printf(). This option has no effect when Unicode API is not enabled. */
 
 
-#define _FS_RPATH		0	/* 0 to 2 */
+#define _FS_RPATH		2	/* 0 to 2 */
 /* The _FS_RPATH option configures relative path feature.
 /
 /   0: Disable relative path feature and remove related functions.

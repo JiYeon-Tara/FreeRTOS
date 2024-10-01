@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "exfuns.h"
-#include "fattester.h" // 对 FATFS 接口的封装, 一个简单地测试代码，不足以作为中间层, 真正要用还是要自己直接封装 FATFS 的接口
+#include "fattester.h"
 #include "ff.h"
 
 

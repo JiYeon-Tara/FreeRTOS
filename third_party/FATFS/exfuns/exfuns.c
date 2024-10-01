@@ -15,7 +15,7 @@
 #include "usart.h"
 
 
- //文件类型列表
+ //文件类型列表, 数组中每一个元素都是指针
 const u8 *FILE_TYPE_TBL[6][13] = {
     {"BIN"},			//BIN文件
     {"LRC"},			//LRC文件
@@ -35,8 +35,6 @@ FILINFO fileinfo; // 文件信息
 DIR dir; // 目录
 u8 *fatbuf; // SD卡数据缓存区
 
-
-///////////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief 为exfuns申请内存
  * 
@@ -70,8 +68,9 @@ u8 char_upper(u8 c)
  * @brief 报告文件的类型
  * 
  * @param fname 文件名
- * @return u8 0XFF,表示无法识别的文件类型编号.
+ * @return u8 0XFF,表示无法识别的文件类型索引.
  *          其他,高四位表示所属大类,低四位表示所属小类.
+ *          e.g. 高四位:0x00 表示 BIN 文件
  */
 u8 f_typetell(u8 *fname)
 {
@@ -89,7 +88,7 @@ u8 f_typetell(u8 *fname)
     if(i == 250) //错误的字符串.
         return 0XFF;
 
-    for(i = 0; i < 5; i++) {//得到后缀名
+    for (i = 0; i < 5; i++) {//得到后缀名
         fname--;
         if(*fname == '.'){
             fname++;
@@ -98,7 +97,7 @@ u8 f_typetell(u8 *fname)
         }
     }
     strcpy((char *)tbuf, (const char*)attr);//copy
-    for(i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++)
         tbuf[i] = char_upper(tbuf[i]);//后缀全部变为大写 
 
     for(i = 0; i < 6; i++) {

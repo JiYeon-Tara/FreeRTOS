@@ -30,7 +30,7 @@
 #define OLED_SCREEN_TEST_ENABLE 0
 
 #define LCD_SCREEN_ENABLE       1
-#define LCD_SCREEN_TEST_ENABLE  0
+#define LCD_SCREEN_TEST_ENABLE  1
 
 // EEPROM
 #define EEPROM_ENABLE           1
@@ -39,12 +39,12 @@
 // TODO:
 // spi1 的分时复用
 // external flash ROM
-#define FLASH_ENABLE            0
+#define FLASH_ENABLE            1
 #define FLASH_TEST_ENABLE       0
 
 // TP
 #define TP_ENABLE               1
-#define TP_TEST_ENABLE          1
+#define TP_TEST_ENABLE          0
 
 // remote control
 #define REMOTE_CONTROL_ENABLE           0

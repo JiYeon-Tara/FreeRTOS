@@ -49,42 +49,47 @@ u16 FLASH_SECTOR_COUNT = 9832;	// 4.8MByte, 默认为 W25Q64
 /**
  * @brief 初始化磁盘驱动器(物理磁盘)
  * 
- * @param[in] pdrv
+ * @param[in] pdrv 要移植的物理驱动的编号(与挂载的盘符对应), e.g.:"0:"-0, "1:"-1
  * @return 0:init success
  */
 DSTATUS disk_initialize (
     BYTE pdrv				/* Physical drive nmuber (0..) */
 )
 {
-    u8 res = 0;	
+    u8 res = -1;	
     LOG_D("pdrv type:%d", pdrv);
 
     switch (pdrv) {
-        case SD_CARD://SDcard
+#if SD_CARD_ENABLE
+        case SD_CARD: {//SDcard
             res = SD_Initialize();//SD_Initialize() 
-             if(res) {// STM32 SPI 的 bug, SD 卡操作失败的时候, 如果不执行下面的操作, 会导致 SPI 读写异常
+            if(res) {// STM32 SPI 的 bug, SD 卡操作失败的时候, 如果不执行下面的操作, 会导致 SPI 读写异常
                 SD_SPI_SpeedLow();
                 SD_SPI_ReadWriteByte(0xff);//�ṩ�����8��ʱ��
                 SD_SPI_SpeedHigh();
             }
             break;
+        }
+#endif
 #if FLASH_ENABLE
-        case EX_FLASH: // external flash
+        case EX_FLASH: {// external flash
             SPI_Flash_Init();
+            res = 0;
             if(SPI_FLASH_TYPE == W25Q64)
                 FLASH_SECTOR_COUNT = 9832; // W25Q64
             else 
                 FLASH_SECTOR_COUNT = 0; // other
-             break;
+            break;
+        }
 #endif
         default:
             res = 1; 
-    }		 
+    }
+
     if(res)
-        return STA_NOINIT;
-    // else 
-    
-    return 0; //init success
+        return RES_ERROR;
+
+    return RES_OK; //init success
 }  
 
 
@@ -101,7 +106,7 @@ DSTATUS disk_status (
     // #define STA_NOINIT		0x01	/* Drive not initialized */
     // #define STA_NODISK		0x02	/* No medium in the drive */
     // #define STA_PROTECT		0x04	/* Write protected */
-    return 0;
+    return RES_OK;
 } 
 
 /**
@@ -151,10 +156,10 @@ DRESULT disk_read (
     }
 
     // 将 SPI_SD_Driver 的返回值转换为 ff.c 的返回值
-    if(res == 0x00)
-        return RES_OK;	 
-    else 
-        return RES_ERROR;	   
+    if (res)
+        return RES_ERROR;
+    
+    return RES_OK;  
 }
 
 #if _USE_WRITE
@@ -199,10 +204,10 @@ DRESULT disk_write (
     }
 
     // 将 SPI_SD_Driver 的返回值转换为 ff.c 的返回值
-    if(res == 0x00)
-        return RES_OK;	 
-    else 
-        return RES_ERROR;	
+    if (res)
+        return RES_ERROR;
+    
+    return RES_OK;
 }
 #endif
 
@@ -298,12 +303,12 @@ DWORD get_fattime (void)
         return 0;
     }
 
-    time |= (calendar.w_year - 1980) << 24;
+    time |= (calendar.w_year - 1980) << 25;
     time |= (calendar.w_month & 0x0F) << 21;
     time |= (calendar.w_date & 0x0F)  << 16;
     time |= (calendar.hour & 0x1F) << 11;
     time |= (calendar.min & 0x3F) << 5;
-    time |= (calendar.sec & 0x1F) << 0;
+    time |= (calendar.sec & 0x1F) << 1; // Second / 2 (0..29, e.g. 25 for 50)
 
     return time;
 }

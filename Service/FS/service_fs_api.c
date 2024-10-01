@@ -1459,7 +1459,7 @@ static int copy_folder(const char *path, const char *pathDst, buffer_area_t *tem
         return -2;
     }
 
-    while((res = f_readdir(_g_dir_opened[dirFp].dirHandler, pInfo)) == FR_OK) {
+    while ((res = f_readdir(_g_dir_opened[dirFp].dirHandler, pInfo)) == FR_OK) {
         // source directory name
         res = snprintf(pathName, _MAX_LFN, "%s/%s", path, pInfo->fname);
         if(res > _MAX_LFN) {

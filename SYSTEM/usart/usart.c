@@ -29,7 +29,7 @@ struct __FILE
 FILE __stdout;   
 
 //定义_sys_exit()以避免使用半主机模式    
-_sys_exit(int x) 
+void _sys_exit(int x) 
 { 
     x = x; 
 } 
@@ -174,7 +174,7 @@ void uart1_init(u32 pclk2, u32 baud)
  * @param p_data 
  * @param len 
  */
-void uart1_send(u8 *p_data, u16 len)
+void uart1_send(const u8 *p_data, u16 len)
 {
     u16 i;
 

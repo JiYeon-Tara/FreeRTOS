@@ -15,6 +15,8 @@
 #include "board_config.h"
 #include "bsp_config.h"
 #include "service_config.h"
+#include "gui_config.h"
+#include "third_party_config.h"
 /**************************************************************************
  * MACRO
  **************************************************************************/

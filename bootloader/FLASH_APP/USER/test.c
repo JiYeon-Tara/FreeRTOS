@@ -33,10 +33,9 @@ int main(void)
 		LCD_ShowString(60,130,200,16,16,"RTC ERROR!   ");	
 		delay_ms(800);
 		LCD_ShowString(60,130,200,16,16,"RTC Trying...");	
-	}		    						
+	}
 	    
-	while(1)
-	{	
+	while (1) {
 		if (USART_RX_STA & 0XC0) { // 串口是否接收完成
 			usart_recv_len = USART_RX_STA & 0X3F;
 			printf("usart_recv_len:%d", usart_recv_len);
@@ -44,7 +43,7 @@ int main(void)
 				printf("%X", USART_RX_BUF[idx]);
 			printf("\r\n");
 		}
-		delay_ms(10);								  
+		delay_ms(10);
 	};  	
 }
 

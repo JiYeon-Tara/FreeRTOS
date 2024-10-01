@@ -1,6 +1,7 @@
 #include "ILI93xx.h"
 #include "stdlib.h"
-#include "font.h" 
+#include "font.h"
+#include "font_test.h"
 #include "usart.h"
 #include "delay.h"	 
 
@@ -23,7 +24,7 @@
 
 //LCD的画笔颜色和背景色
 _lcd_dev lcddev; //管理LCD重要参数, 默认为竖屏
-u16 POINT_COLOR = 0x0000; //画笔颜色
+u16 POINT_COLOR = 0x0000; //画笔颜色-1
 u16 BACK_COLOR = 0xFFFF; //背景色 
 /********************************************************************************
  * PUBLIC FUNCTIONS
@@ -437,6 +438,7 @@ void LCD_DrawPoint(u16 x,u16 y)
 /**
  * @brief 快速画点
  * 画点操作流程：设置坐标 -> 写 GRAM 指令 -> 写入颜色数据
+ * TODO: 画一个点需要这么多条命令???
  * 
  * @param x x,y:坐标
  * @param y 
@@ -449,7 +451,7 @@ void LCD_Fast_DrawPoint(u16 x,u16 y,u16 color)
     {
         LCD_WR_REG(lcddev.setxcmd); 
         LCD_WR_DATA(x >> 8);
-        LCD_WR_DATA(x & 0XFF);  			 
+        LCD_WR_DATA(x & 0XFF);
         LCD_WR_REG(lcddev.setycmd); 
         LCD_WR_DATA(y>>8);
         LCD_WR_DATA(y&0XFF); 		 	 
@@ -2703,8 +2705,8 @@ void LCD_Init(void)
         LCD_SSD_BackLightSet(100);//背光设置为最亮
     }
 
-    // LCD_Set_Display_Dir(LCD_VERTICAL_SCREEN); //默认为竖屏
-    LCD_Set_Display_Dir(LCD_HORIZONTAL_SCREEN);
+    LCD_Set_Display_Dir(LCD_VERTICAL_SCREEN); //默认为竖屏
+    // LCD_Set_Display_Dir(LCD_HORIZONTAL_SCREEN);
     LCD_LED = 1; //点亮背光
     LCD_Clear(WHITE);   
 }
@@ -2748,7 +2750,7 @@ void LCD_Clear(u16 color)
  * @param color 要填充的颜色
  */
 void LCD_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 color)
-{          
+{
     u16 i, j;
     u16 xlen=0;
     u16 temp;
@@ -2798,7 +2800,7 @@ void LCD_Color_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 *color)
     for (i = 0; i < height; i++) {
         LCD_SetCursor(sx, sy + i); //设置光标位置 
         LCD_WriteRAM_Prepare(); //开始写入GRAM
-        for(j = 0; j < width; j++)
+        for (j = 0; j < width; j++)
             LCD_WR_DATA(color[i*width+j]);//写入数据 
     }
 }
@@ -2915,18 +2917,21 @@ void LCD_Draw_Circle(u16 x0,u16 y0,u8 r)
  * @param x 起始坐标
  * @param y 
  * @param character 要显示的字符:" "--->"~"
- * @param size 字体大小 12/16/24
+ * @param size 字体大小 12/16/24 对应的点阵矩阵(w*h):6*12, 16*16, 12*24
  * @param mode 叠加方式(1)还是非叠加方式(0)
  */
 void LCD_ShowChar(u16 x, u16 y, u8 character, u8 size, u8 mode)
 {
     u8 temp, t1, t;
     u16 y0 = y;
-    u8 csize = (size / 8 + ((size % 8) ? 1 : 0)) * (size / 2);		//得到字体一个字符对应点阵集所占的字节数
 
-    character = character - ' ';//得到偏移后的值（ASCII字库是从空格开始取模，所以-' '就是对应字符的字库）
-    for(t=0;t<csize;t++)
-    {  
+    // 字体大小和字符所占的 "点阵"数据大小没有直接关系?
+    // 而是和"字符矩阵"的宽和高有关;
+    // 只不过增大字体大小, 也需要把字符矩阵的宽和高增大, 否则会导致显示不完整
+    u8 csize = (size / 8 + ((size % 8) ? 1 : 0)) * (size / 2); //得到字体一个字符对应点阵集所占的字节数
+
+    character = character - ' '; //得到偏移后的值（ASCII字库是从空格开始取模，所以-' '就是对应字符的字库）
+    for(t = 0; t < csize; t++) {
         if(size == 12)
             temp = asc2_1206[character][t]; //调用1206字体
         else if(size == 16)
@@ -2934,29 +2939,84 @@ void LCD_ShowChar(u16 x, u16 y, u8 character, u8 size, u8 mode)
         else if(size == 24)
             temp = asc2_2412[character][t]; //调用2412字体
         else 
-            return;								//没有的字库
+            return; //没有的字库
 
-        for(t1=0;t1<8;t1++)
-        {
+        for (t1 = 0; t1 < 8; t1++) { // 画点方式:U2D,L2R
             if(temp & 0x80)
                 LCD_Fast_DrawPoint(x, y, POINT_COLOR);
             else if(mode == 0)
                 LCD_Fast_DrawPoint(x, y, BACK_COLOR);
-            temp <<= 1;
+            temp <<= 1; // MSB first
             y++;
-            if(y >= lcddev.height)
-                return;		//超区域了
-            if((y - y0) == size)
-            {
+            if (y >= lcddev.height) //超区域了
+                return;
+            if ((y - y0) == size) { //换下一列,12:12*6, 16:16*8; 24:24*12
                 y = y0;
                 x++;
-                if(x >= lcddev.width)
-                    return;	//超区域了
+                if (x >= lcddev.width) //超区域了
+                    return;
                 break;
             }
         }  	 
-    }  	    	   	 	  
+    }
+
 }
+
+
+/**
+ * @brief 在指定位置显示一个字符
+ *        12*6 用 "字库生成软件" 生成的 ASCII 点阵字库
+ * 
+ * @param x 起始坐标
+ * @param y 
+ * @param character 要显示的字符:" "--->"~"
+ * @param size 字体大小 12/16/24 对应的点阵矩阵(w*h):6*12, 16*16, 12*24
+ * @param mode 叠加方式(1)还是非叠加方式(0)
+ */
+#if 0
+void LCD_ShowCharSong(u16 x, u16 y, u8 character, u8 size, u8 mode)
+{
+    u8 temp, t1, t;
+    u16 y0 = y;
+
+    u8 csize = (size / 8 + ((size % 8) ? 1 : 0)) * (size / 2); //得到字体一个字符对应点阵集所占的字节数
+
+    // 该字库完全按照 ASCII 码进行存储, 总共 0x7F 个字符
+    // 一维数组存储, 字符 x 的存储位置为:arr[x*12]
+    // 每个字符占用 12 个 bytes
+    character = character - 0x00;
+
+    for (t = 0; t < csize; t++) {
+        if(size == 12)
+            temp = ascii_1206_song[character * 12 + t]; //调用1206字体
+        else if(size == 16)
+            temp = ascii_1608_song[character * 16 + t]; //调用1608字体
+        else if(size == 24)
+            temp = ascii_2412_song[character * 36 + t]; //调用2412字体
+        else 
+            return; //没有的字库
+
+        for (t1 = 0; t1 < 8; t1++) { // 画点方式:U2D,L2R
+            if(temp & 0x80)
+                LCD_Fast_DrawPoint(x, y, POINT_COLOR);
+            else if(mode == 0)
+                LCD_Fast_DrawPoint(x, y, BACK_COLOR);
+            temp <<= 1; // MSB first
+            y++;
+            if (y >= lcddev.height) //超区域了
+                return;
+            if ((y - y0) == size) { //换下一列,12:12*6, 16:16*8; 24:24*12
+                y = y0;
+                x++;
+                if (x >= lcddev.width) //超区域了
+                    return;
+                break;
+            }
+        }  	 
+    }
+
+}
+#endif
 
 //m^n函数
 //返回值:m^n次方.
@@ -2966,7 +3026,7 @@ u32 LCD_Pow(u8 m,u8 n)
     while(n--)
         result*=m;    
     return result;
-}	
+}
 
 /**
  * @brief 显示数字,高位为0,则不显示
@@ -3043,7 +3103,7 @@ void LCD_ShowxNum(u16 x,u16 y,u32 num,u8 len,u8 size,u8 mode)
         LCD_ShowChar(x + (size / 2) * t, y, temp + '0', size, mode & 0X01); 
     }
 } 
-    
+
 /**
  * @brief 显示字符串
  * 
@@ -3057,22 +3117,75 @@ void LCD_ShowxNum(u16 x,u16 y,u32 num,u8 len,u8 size,u8 mode)
  */
 void LCD_ShowString(u16 x, u16 y, u16 width, u16 height, u8 size, u8 *p)
 {
+#define LCD_DEBUG 1
+#if LCD_DEBUG
+    return;
+#else
     u8 x0 = x;
     width += x;
     height += y;
     while((*p <= '~') && (*p >= ' '))//判断是不是非法字符!
     {       
-        if(x >= width)
-        {
+        if(x >= width) { // 换行
             x = x0;
             y += size;
         }
-        if(y >= height)
-            break;//退出
+        if(y >= height) //退出
+            break;
         LCD_ShowChar(x, y, *p, size, 0);
-        x += size/2;
+        x += size/2; // 字符的宽度, 英文仅有汉字的一半大小
         p++;
-    }  
+    }
+#endif
+
+}
+
+/**
+ * @brief 显示其它的点阵数据, 例如:字库
+ * 
+ * @param x 
+ * @param y 
+ * @param size 字体大小
+ * @param p 
+ */
+void LCD_ShowOther(u16 x, u16 y, u8 size, u8 *p)
+{
+    u8 t;
+    // 字符大小
+	u8 csize = (size/8 + ((size%8) ? 1 : 0)) * (size);//得到字体一个字符对应点阵集所占的字节数	 
+
+    // TODO:
+    // 和要显示的字体大小有关系,
+    // 用于确定什么时候换行
+    // for (t1 = 0; t1 < 8; t1++) {
+    //             if (temp & 0x80)
+    //                 LCD_Fast_DrawPoint(x, y, POINT_COLOR);
+    //             else if(mode==0)
+    //                 LCD_Fast_DrawPoint(x, y, BACK_COLOR); 
+    //             temp <<= 1;
+    //             y++;
+    //             if((y-y0)==size)
+    //             {
+    //                 y=y0;
+    //                 x++;
+    //                 break;
+    //             }
+    //         }
+    // }
+}   
+
+/**
+ * @brief 
+ * 
+ * @param x 
+ * @param y 
+ * @param font 
+ * @param size 
+ * @param mode 
+ */
+void LCD_Show_Font(u16 x, u16 y, u8 *font, u8 size, u8 mode)
+{
+
 }
 
 #endif // LCD_SCREEN_ENABLE

@@ -70,6 +70,8 @@
 #define INNER_FLASH_ENABLE          1
 #define INNER_FLASH_TEST_ENABLE     1
 
+#define USB_ENABLE                  1
+#define USB_TEST_ENABLE             1
 
 #endif
 

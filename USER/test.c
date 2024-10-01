@@ -1,7 +1,7 @@
 /**
  * @file test.c
  * @author your name (you@domain.com)
- * @brief 测试所有外设功能实现; 切换到通过 AT 命令测试(service_at.c)
+ * @brief �����������蹦��ʵ��; �л���ͨ�� AT �������(service_at.c)
  * @version 0.1
  * @date 2022-11-27
  * 
@@ -62,22 +62,25 @@
 #include "util.h"
 #include "ulog.h"
 
+#include "service_asm_test.h"
 
+#include "gui/text/text.h"
+// #include "gui/image/image.h"
 // Program Size: Code=14966 RO-data=7166 RW-data=408 ZI-data=1848  
 // FromELF: creating hex file...
 // "..\OBJ\test.axf" - 0 Error(s), 13 Warning(s).
 // Build Time Elapsed:  00:00:01
 
 /**
- * @brief 编译信息解释, 代码占用 flash:14966 + 7166 = 22132 bytes
- * 占用 SRAM 大小:1848 + 408 = 1856 bytes
+ * @brief ������Ϣ����, ����ռ�� flash:14966 + 7166 = 22132 bytes
+ * ռ�� SRAM ��С:1848 + 408 = 1856 bytes
  * 
- * code 表示程序占用 flash 大小
- * RO-data 表示程序定义的常量(flash)
- * RW-data 表示程序定义的已经初始化的变量
- * ZI-data 表示未被初始化的变量
+ * code ��ʾ����ռ�� flash ��С
+ * RO-data ��ʾ������ĳ���(flash)
+ * RW-data ��ʾ��������Ѿ���ʼ���ı���
+ * ZI-data ��ʾδ����ʼ���ı���
  * 
- * startup_stm32f10x_hd.s 中, 定义了堆栈(heap + stack) 总大小 0x600 = 1536 bytes, 
+ * startup_stm32f10x_hd.s ��, �����˶�ջ(heap + stack) �ܴ�С 0x600 = 1536 bytes, 
  * 
  */
 
@@ -89,15 +92,16 @@ static uint8_t time_str[50] = "123456789";
 #if LCD_SCREEN_ENABLE == 1
 uint8_t random_string[50] = "Hello, world";
 static uint8_t lcd_id[20];
-u16 char_height = 16;
-u8 char_size = 16;
+const u8 char_size = 16;
+u16 display_rect_width; // ��ʾ����Ŀ�
+u16 display_rect_height; // ��ʾ����ĸ�
 #endif
 
 // #if DMA_TEST_ENABLE == 1
 static uint8_t sendBuff[4196];
 const uint8_t TEXT_TO_SEND[] = "hello, world";
 extern int interrupt_enter_cnt;
-#define TEXT_LENGTH 	(sizeof(TEXT_TO_SEND) - 1)	// 要发送的数据长度
+#define TEXT_LENGTH 	(sizeof(TEXT_TO_SEND) - 1)	// Ҫ���͵����ݳ���
 #define SEND_COUNT		300 // 300
 // #endif
 /*****************************************************************************
@@ -105,7 +109,7 @@ extern int interrupt_enter_cnt;
  *****************************************************************************/
 static void led_test(void)
 {
-    LED_Init();		  	 //初始化与LED连接的硬件接口
+    LED_Init();		  	 //��ʼ����LED���ӵ�Ӳ���ӿ�
     LED_Reset();
     delay_ms(5000);
     LED_Set();
@@ -113,7 +117,7 @@ static void led_test(void)
 }
 
 /**
- * @brief 必须在while(1) 中调用
+ * @brief ������while(1) �е���
  * 
  */
 static void key_test_loop(void)
@@ -121,7 +125,7 @@ static void key_test_loop(void)
 #if LOOP_KEY_ENABLE	
     uint8_t val;
 
-    // 必须在 while(1) 中调用
+    // ������ while(1) �е���
     // while(1){
         val = KEY_Scan(SINGLE_SHOT_MODE);
         // printf("val:%d\n", val);
@@ -154,7 +158,7 @@ static void usart_test(void)
     uint8_t len;
     uint8_t ix = 0;
 
-    uart1_init(72000000, 9600);	 //串口初始化为9600
+    uart1_init(72000000, 9600);	 //���ڳ�ʼ��Ϊ9600
     LED_Init();
     KEY_Init();
 
@@ -176,13 +180,13 @@ static void oled_screen_test(void)
 {
     OLED_Clear();
 
-    // OLED_ShowCHinese(0,0,0);//中
-    // OLED_ShowCHinese(18,0,1);//景
-    // OLED_ShowCHinese(36,0,2);//园
-    // OLED_ShowCHinese(54,0,3);//电
-    // OLED_ShowCHinese(72,0,4);//子
-    // OLED_ShowCHinese(90,0,5);//科
-    // OLED_ShowCHinese(108,0,6);//技
+    // OLED_ShowCHinese(0,0,0);//��
+    // OLED_ShowCHinese(18,0,1);//��
+    // OLED_ShowCHinese(36,0,2);//԰
+    // OLED_ShowCHinese(54,0,3);//��
+    // OLED_ShowCHinese(72,0,4);//��
+    // OLED_ShowCHinese(90,0,5);//��
+    // OLED_ShowCHinese(108,0,6);//��
 
     // OLED_ShowString(0,3,"1.3' OLED TEST");
     //OLED_ShowString(8,2,"ZHONGJINGYUAN");  
@@ -191,15 +195,15 @@ static void oled_screen_test(void)
     // OLED_ShowString(63,6,"CODE:");
 
     // OLED_Clear();
-    // OLED_ShowCHinese32x32(0, 0, 0); //中
-    // OLED_ShowCHinese32x32(32, 0, 1); //景
-    // OLED_ShowCHinese32x32(64, 0, 2); //园
+    // OLED_ShowCHinese32x32(0, 0, 0); //��
+    // OLED_ShowCHinese32x32(32, 0, 1); //��
+    // OLED_ShowCHinese32x32(64, 0, 2); //԰
 
     // OLED_DrawBMP()
     return;
 }
 
-// while(1) 中调用, 更新时间
+// while(1) �е���, ����ʱ��
 static void rtc_update_test()
 {
     sprintf((char*)time_str, "%d/%d/%d %d:%d:%d  %d", calendar.w_year, calendar.w_month,calendar.w_date, \
@@ -209,12 +213,12 @@ static void rtc_update_test()
 #endif
 
 #if LCD_SCREEN_ENABLE
-    LCD_ShowString(0, 32, lcddev.width, char_height, char_size, time_str);
+    LCD_ShowString(0, 32, display_rect_width, display_rect_height, char_size, time_str);
 #endif
 }
 
 /**
- * @brief 必须要在大循环的 while(1) 中调用
+ * @brief ����Ҫ�ڴ�ѭ���� while(1) �е���
  * 
  */
 static void at_cmd_test()
@@ -224,7 +228,7 @@ static void at_cmd_test()
     uint8_t len;
     uint8_t ix = 0;
 
-    // 如果实在线程中执行这个, 则可以用 while(1)
+    // ���ʵ���߳���ִ�����, ������� while(1)
     // while(1){
         if(USART_RX_STA & UART_RX_COMPLETE){
             uint8_t bufPos = 0;
@@ -237,16 +241,16 @@ static void at_cmd_test()
             
 
             if(USART_RX_BUF[0] == 'A' && USART_RX_BUF[1] == 'T'){
-                // 如果要多线程, 则发送到解析线程对列
+                // ���Ҫ���߳�, ���͵������̶߳���
                 // thread_msg_send(&g_thread_manager, THREAD_MANAGER_ID_AT, &USART_RX_BUF[0], len);
-                // 直接本地解析
+                // ֱ�ӱ��ؽ���
                 service_at_parse((char*)USART_RX_BUF);
                 
             }
             else if(USART_RX_BUF[0] == 'F' && USART_RX_BUF[1] == 'I'){
-                // 如果要多线程, 则发送到解析线程对列
+                // ���Ҫ���߳�, ���͵������̶߳���
                 // thread_msg_send(&g_thread_manager, THREAD_MANAGER_ID_FI, &USART_RX_BUF[0], len);
-                // 直接本地解析
+                // ֱ�ӱ��ؽ���
                 // service_fi_parse((char*)USART_RX_BUF);
             }
             else{
@@ -262,13 +266,13 @@ static void at_cmd_test()
 
 /**
  * @brief timer1 oputput pwm test
- *        100 : LED 点亮之后再增加 Vav 其实亮度差别不是太大
+ *        100 : LED ����֮�������� Vav ��ʵ���Ȳ����̫��
  *        
  */
 static void timer1_pwm_test(void)
 {
     static uint8_t dir = 1;
-    static uint16_t led0_pwm_val = 0; // 控制占空比
+    static uint16_t led0_pwm_val = 0; // ����ռ�ձ�
 
     delay_ms(10);
     if(dir == 1)
@@ -276,19 +280,19 @@ static void timer1_pwm_test(void)
     else
         --led0_pwm_val;
     
-    if(led0_pwm_val > 100)  // Timer1 重装载值为 800，开始减小方向
+    if(led0_pwm_val > 100)  // Timer1 ��װ��ֵΪ 800����ʼ��С����
         dir = -1; // 
-    if(led0_pwm_val == 0) // 开始增大
+    if(led0_pwm_val == 0) // ��ʼ����
         dir = 1;
     TIM1_set_reload_val(led0_pwm_val);
     // printf("%d\r\n", led0_pwm_val);
 }
 
 /**
- * @brief while(1) 中调用, 捕获脉冲宽度
- *        一次 1 微秒, 1us
- *        0xFFFF 为 uint16_t 的最大值, 是定时器2初始化的重装载值
- *        (1) 按键抖动导致统计不精确:测量的脉冲的时间一直是一个数字, 不知道什么原因 - 在 GPIO 中断(按键)中延时了, 导致统计出错
+ * @brief while(1) �е���, �����������
+ *        һ�� 1 ΢��, 1us
+ *        0xFFFF Ϊ uint16_t �����ֵ, �Ƕ�ʱ��2��ʼ������װ��ֵ
+ *        (1) ������������ͳ�Ʋ���ȷ:�����������ʱ��һֱ��һ������, ��֪��ʲôԭ�� - �� GPIO �ж�(����)����ʱ��, ����ͳ�Ƴ���
  * 
  */
 static void timer2_cap_test(void)
@@ -296,7 +300,7 @@ static void timer2_cap_test(void)
     uint32_t temp;
 
     if(TIM2_CH1_CAPTURE_STA & TIM2_CAPTURE_COMPLETE){
-        temp = (uint32_t)(TIM2_CH1_CAPTURE_STA & 0x3F); // 超时次数
+        temp = (uint32_t)(TIM2_CH1_CAPTURE_STA & 0x3F); // ��ʱ����
         printf("pulse number:%ld, curr timer cnt:%d\r\n", temp, TIM2_CH1_CAPTURE_VAL);
         temp *= 0xFFFF; // uint16_t_max = 65535
         temp += TIM2_CH1_CAPTURE_VAL;
@@ -316,15 +320,17 @@ static void ADC_test_loop(void)
 
     tempNum = Get_Adc_Average(ADC_VAL_CH1, ADC_GET_TEST_COUNT);
     sprintf((char*)tempArr, "PA1 Voltage:%2fV\n", adcVal2Voltage(tempNum));
-    LCD_ShowString(0, 48, lcddev.width, char_height, char_size, (char*)tempArr);
+    // TODO:
+    // �������� while(1) ����ˢ��, Ӧ�÷ŵ���ʱ����ѭ����, ָ��ʱ��ˢһ��
+    LCD_ShowString(0, 48, display_rect_width, display_rect_height, char_size, (char*)tempArr);
     // temperature
     tempNum = Get_Adc_Average(ADC_MCU_TEMP_CHANNEL, ADC_GET_TEST_COUNT);
     sprintf((char*)tempArr, "CPU Temp:%2f degree\n", adcVal2Temper(tempNum));
-    LCD_ShowString(0, 64, lcddev.width, char_height, char_size, (char*)tempArr);
+    LCD_ShowString(0, 64, display_rect_width, display_rect_height, char_size, (char*)tempArr);
 }
 
-// 只能在 loop 中调用
-// 让 DAC 输出三角波
+// ֻ���� loop �е���
+// �� DAC ������ǲ�
 //^^^^^^^^^^^^^^^
 static void dac_test_loop(void)
 {
@@ -352,19 +358,19 @@ void dma_test(void)
 {
     uint16_t t = 0, ix = 0;
     uint32_t sendNum;
-    float progress = 0;	// 传输进度条
+    float progress = 0;	// ���������
     uint8_t progressStr[30];
 
-    // DMA 测试
+    // DMA ����
     // UART1 TX - DMA1_Channel 4
-    // 外设为串口1, 外设地址位置 USART1->DR 寄存器的地址
-    // 存储器为 sendBuff, 存储器地址为数组首地址
-    // 传输数据量:长 (TEXT_LENGTH+2) * 100 bytes
+    // ����Ϊ����1, �����ַλ�� USART1->DR �Ĵ����ĵ�ַ
+    // �洢��Ϊ sendBuff, �洢����ַΪ�����׵�ַ
+    // ����������:�� (TEXT_LENGTH+2) * 100 bytes
     // DMA_Config(DMA1_Channel4, (uint32_t)&USART1->DR, (uint32_t)sendBuff, (TEXT_LENGTH + 2) * SEND_COUNT);
 
-    // 拷贝要发送的数据到数组中(存储器地址)
+    // ����Ҫ���͵����ݵ�������(�洢����ַ)
     for(ix = 0; ix < ((TEXT_LENGTH + 2) * SEND_COUNT); ix++){
-        if(t >= TEXT_LENGTH){// 加入换行符
+        if(t >= TEXT_LENGTH){// ���뻻�з�
             sendBuff[ix++] = 0x0D;
             sendBuff[ix++] = 0x0A;
             t = 0;
@@ -374,35 +380,35 @@ void dma_test(void)
         // LOG_I("%d %d\n", ix, t);
     }
 
-    // 按键按下一次, 就传输一次数据
-    // 开始一次 DMA 传输
-    // 等待 DMA 传输完成, 此时我们可以做一些其他事情(不需要 CPU 参与)
-    // 实际应用中, DMA 传输期间可以执行另外的任务
+    // ��������һ��, �ʹ���һ������
+    // ��ʼһ�� DMA ����
+    // �ȴ� DMA �������, ��ʱ���ǿ�����һЩ��������(����Ҫ CPU ����)
+    // ʵ��Ӧ����, DMA �����ڼ����ִ�����������
 
     LOG_I("DMA start transmit, send size:%d", ((TEXT_LENGTH + 2) * SEND_COUNT));
-    // 这样使能吗??????
-    USART1->CR3 |= (1 << 7); // 使能串口的 DMA 传输
+    // ����ʹ����??????
+    USART1->CR3 |= (1 << 7); // ʹ�ܴ��ڵ� DMA ����
 
-    DMA_Enable(DMA1_Channel4); // 开始传输一次
+    DMA_Enable(DMA1_Channel4); // ��ʼ����һ��
 
     while (1) {
         if(DMA1->ISR & (1 << 13)){
-            DMA1->IFCR |= 1 << 13; // 清除 DMA1 ch4 的传输完成中断标志
+            DMA1->IFCR |= 1 << 13; // ��� DMA1 ch4 �Ĵ�������жϱ�־
             LOG_I("DMA transfer completed.");
             break;
         }
-        // 获取当前传输数据的百分比(总共要传输 100 次)
-        sendNum = DMA1_Channel4->CNDTR; // 得到当前还剩余多少个数据
+        // ��ȡ��ǰ�������ݵİٷֱ�(�ܹ�Ҫ���� 100 ��)
+        sendNum = DMA1_Channel4->CNDTR; // �õ���ǰ��ʣ����ٸ�����
         progress = 1 - (sendNum / ((TEXT_LENGTH + 2) * SEND_COUNT));
-        progress *= 100; // 获得百分比
+        progress *= 100; // ��ðٷֱ�
         sprintf(progressStr, "send:%d%%", progress);
-        // 串口在使用, 直接使用 printf() 打印内容可能会异常
-        // 不再可以调用 UART1 串口打印
+        // ������ʹ��, ֱ��ʹ�� printf() ��ӡ���ݿ��ܻ��쳣
+        // ���ٿ��Ե��� UART1 ���ڴ�ӡ
         // LOG_D("sendNum:%d progress:%d%%", sendNum, progress);
 #if OLED_SCREEN_ENABLE == 1
         OLED_ShowString(50, 50, progressStr);
 #elif LCD_SCREEN_ENABLE == 1
-        LCD_ShowString(0, 100, lcddev.width, char_height, char_size, progressStr);
+        LCD_ShowString(0, 100, display_rect_width, display_rect_height, char_size, progressStr);
 #endif
     }
     LOG_I("DMA test finish\r\n");
@@ -424,7 +430,7 @@ void eeprom_test(void)
 
 #if defined(BASE_TEST)
     const uint8_t TEXT[] = "STM32_TEST_PROJECT";
-    const uint8_t textSize = sizeof(TEXT); // 保存结尾 '\0'
+    const uint8_t textSize = sizeof(TEXT); // �����β '\0'
     uint8_t buffer[256];
 
     while(AT24CXX_Check()){
@@ -436,8 +442,8 @@ void eeprom_test(void)
         delay_ms(500);
     }
 
-    // EEPROM 掉电不丢失， 
-    // 为了保证数据的可靠性, 通常会加上 CRC, 每次读取前校验一下 CRC
+    // EEPROM ���粻��ʧ�� 
+    // Ϊ�˱�֤���ݵĿɿ���, ͨ������� CRC, ÿ�ζ�ȡǰУ��һ�� CRC
     delay_ms(1000);
     LOG_I("write:%s\n", TEXT);
     AT24CXX_Write(EEPROM_WRITE_START_ADDR, (uint8_t*)TEXT, textSize);	
@@ -471,20 +477,20 @@ void eeprom_test(void)
 }
 
 /**
- * @brief 片外 flash 测试
+ * @brief Ƭ�� flash ����
  */
 void external_flash_test(uint8_t dir)
 {
     uint8_t count = 0;
     const uint8_t TEXT[] = "STM32_FLASH_OP_TEST";
-    const uint8_t textSize = sizeof(TEXT); // 保存结尾 '\0'
+    const uint8_t textSize = sizeof(TEXT); // �����β '\0'
     uint8_t buffer[256];
     uint8_t len;
-    const uint32_t FLASH_SIZE = 8 * 1024 * 1024;	// falsh 大小:8M
+    const uint32_t FLASH_SIZE = 8 * 1024 * 1024;	// falsh ��С:8M
     u8 unique_id[8] = {0};
     len = sizeof(unique_id);
 
-    SPI_FLASH_TYPE = SPI_Flash_ReadID();//读取FLASH ID.
+    SPI_FLASH_TYPE = SPI_Flash_ReadID();//��ȡFLASH ID.
     LOG_I("external flash type:%#04X", SPI_FLASH_TYPE);
     if (SPI_FLASH_TYPE != W25Q64) {
         LOG_E("flash init failed");
@@ -495,7 +501,7 @@ void external_flash_test(uint8_t dir)
     LOG_HEX("external flash unique_id", unique_id, len);
 
     //TODO:
-    /******************* flash 负载均衡, 不能一直往一个地址读写东西 *******************/
+    /******************* flash ���ؾ���, ����һֱ��һ����ַ��д���� *******************/
     SPI_Flash_Write((uint8_t*)TEXT, W25Q64_START_ADDR, textSize);
     LOG_HEX("flash write", TEXT, textSize);
 
@@ -552,19 +558,19 @@ static void remote_test(void)
     }
 }
 
-// 片上 lfash 测试
+// Ƭ�� lfash ����
 void inner_flash_test(uint8_t read_write_flag)
 {
     const uint8_t TEXT[] = "This is a hello world test project.";
     const uint8_t textSize = sizeof(TEXT) + 1;	// '\0'
     uint8_t buffer[256] = {0};
 
-    // flash 写入要注意:
-    // (1) 必须为偶数
-    // (2) 地址要大于本代码占用 flash 大小 + 0x08000000, 还要小于 flash 总大小, 不能把代码段修改了
-    // 总大小:0x08000000 - 0x08000000 + 1024 * 256 = 08040000
+    // flash д��Ҫע��:
+    // (1) ����Ϊż��
+    // (2) ��ַҪ���ڱ�����ռ�� flash ��С + 0x08000000, ��ҪС�� flash �ܴ�С, ���ܰѴ�����޸���
+    // �ܴ�С:0x08000000 - 0x08000000 + 1024 * 256 = 08040000
     // Program Size: Code=53974 RO-data=8078 RW-data=420 ZI-data=3908  
-    // 目前代码量:52K 左右
+    // Ŀǰ������:52K ����
 
     LOG_HEX("inner flash write:", TEXT, textSize);
     // uint8_t arr[] -> uint16_t*
@@ -577,34 +583,34 @@ void inner_flash_test(uint8_t read_write_flag)
 }
 
 /**
- * @brief 显示鼠标的坐标值
+ * @brief ��ʾ��������ֵ
  * 
- * @param x 在 LCD 上显示的坐标位置
+ * @param x �� LCD ����ʾ������λ��
  * @param y 
- * @param pos 坐标值
+ * @param pos ����ֵ
  */
 void Mouse_Show_Pos(u16 x, u16 y, short pos)
 {
     if(pos<0)
     { 
 #if LCD_SCREEN_ENABLE
-        LCD_ShowChar(x, y, '-', 16, 0); //显示负号
+        LCD_ShowChar(x, y, '-', 16, 0); //��ʾ����
 #endif
-        pos = -pos; //转为正数
+        pos = -pos; //תΪ����
     }
     else 
 #if LCD_SCREEN_ENABLE
-        LCD_ShowChar(x, y, ' ', 16, 0);//去掉负号
+        LCD_ShowChar(x, y, ' ', 16, 0);//ȥ������
 #endif
 
 #if LCD_SCREEN_ENABLE
-    LCD_ShowNum(x + 8, y, pos, 5, 16); //显示值 
+    LCD_ShowNum(x + 8, y, pos, 5, 16); //��ʾֵ 
 #endif
     return;
 }
 
 /**
- * @brief while(1) 中调用
+ * @brief while(1) �е���
  * 
  */
 static void mouse_test(void)
@@ -663,14 +669,14 @@ void memmang_test(uint8_t flag)
 }
 
 /**
- * @brief main loop 中调用
- * 按下按键 0 申请内存
- * 按下按键 1 释放内存
- * 打印使用率
+ * @brief main loop �е���
+ * ���°��� 0 �����ڴ�
+ * ���°��� 1 �ͷ��ڴ�
+ * ��ӡʹ����
  */
 void mem_manage_test_loop(void)
 {
-    static void *pArr[10] = {0}; // 最多分配十次
+    static void *pArr[10] = {0}; // ������ʮ��
     static int ptr_cnt = 0;
     uint8_t *ptr;
 
@@ -708,9 +714,9 @@ void mem_manage_test_loop(void)
 }
 
 /**
- * @brief 读取 SD card 指定扇区的内容
+ * @brief ��ȡ SD card ָ������������
  * 
- * @param sect 第几扇区
+ * @param sect �ڼ�����
  * @param dir 0:read; 1-write
  */
 void sdcard_read_write_sectorx_test(void)
@@ -740,12 +746,79 @@ void sdcard_read_write_sectorx_test(void)
 
     return;
 }
-
-#if FATFS_TEST_ENABLE == 1
-// FATFS 提供的接口测试
-static void fatfs_api_test1(void)
+#if FATFS_ENABLE
+/**
+ * @brief ���� SDcard & ext flash ����ֱ��ʹ��ͬһ�� SPI1 ��ԭ��, 
+ *        û�в���ϵͳ, ��ȫ���̲߳���, ֱ�Ӿ��Ƿ�ʱ����
+ * 
+ */
+void fatfs_init(void)
 {
-    uint8_t *path = "0:test.txt";
+    u8 ret;
+    static FATFS fs0 = {0};
+    static FATFS fs1 = {0};
+    static uint8_t workspace0[_MAX_SS];
+    static uint8_t workspace1[_MAX_SS];
+    
+    // ���� SDcard ��Ӧ�߼����� 0
+    // Ĭ�� SDcard �Լ� �ڴ����ģ���Ѿ���ʼ���ɹ�
+    // Q:sdcard �ϵ��ļ�ϵͳ��Ҫ��ʽ���Ժ�ſ����� STM32 �Ϲ��سɹ�???
+    // A:��һ��ʹ����Ҫ���ļ�ϵͳ���и�ʽ��,��Ҫ�Ǵ��̷���
+    ret = f_mount(&fs0, FATFS_LOGIC_VOLUME_0, 1); // �ļ�ϵͳ����ʧ��
+    if(ret != FR_OK) {
+        LOG_E("mount sdcard failed, ret:%d", ret);
+        if (ret == FR_NO_FILESYSTEM) {
+            LOG_E("try again");
+            ret = f_mkfs(FATFS_LOGIC_VOLUME_0, 0, sizeof(workspace0));
+            if (ret != FR_OK) {
+                LOG_E("format failed ret:%d", ret);
+                goto EXIT;
+            }
+            // ���¹���
+            ret = f_mount(&fs0, FATFS_LOGIC_VOLUME_0, 1);
+            if(ret != FR_OK) {
+                LOG_E("mount sdcard failed, ret:%d", ret);
+                goto EXIT;
+            }
+        } else {
+            goto EXIT;
+        }
+    }
+    LOG_I("FATFS volume %s mount success ret:%d", FATFS_LOGIC_VOLUME_0, ret);
+    
+    //TOOD:
+    // ����������������������, W25Q64 �� SDcard ���� SPI1,
+    // W25Q64 - �߼���1
+    ret = f_mount(&fs1, FATFS_LOGIC_VOLUME_1, 1); // �ļ�ϵͳ����ʧ��
+    if(ret != FR_OK) {
+        LOG_E("mount ext flash W25Q64 failed, ret:%d", ret);
+        if (ret == FR_NO_FILESYSTEM) {
+            LOG_E("try again");
+            ret = f_mkfs(FATFS_LOGIC_VOLUME_1, 0, sizeof(workspace1));
+            if (ret != FR_OK) {
+                LOG_E("format failed ret:%d", ret);
+                goto EXIT;
+            }
+            // ���¹���
+            ret = f_mount(&fs1, FATFS_LOGIC_VOLUME_1, 1);
+            if(ret != FR_OK) {
+                LOG_E("mount ext flash W25Q64 failed, ret:%d", ret);
+                goto EXIT;
+            }
+        } else {
+            goto EXIT;
+        }
+    }
+    LOG_I("FATFS volume %s mount success ret:%d", FATFS_LOGIC_VOLUME_1, ret);
+
+EXIT:
+    return;
+}
+#if FATFS_TEST_ENABLE == 1
+// FATFS �ṩ�Ľӿڲ���
+static void fatfs_api_test1(const char *file_path)
+{
+    const uint8_t *path = (uint8_t*)file_path;
     uint8_t *data = "Hello, world\r\n";
     FIL *fp = NULL;
     FRESULT ret;
@@ -753,61 +826,65 @@ static void fatfs_api_test1(void)
     uint8_t *p_buff = NULL;
 
     fp = (FIL*)mymalloc(sizeof(FIL));
-    // CHECK_NOT_NULL(fp);
     if (!fp) {
         LOG_E("malloc failed");
-        return;
+        goto EXIT;
     }
-
-    ret = f_open(fp, (const TCHAR*)path, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
-    if (ret != FR_OK) {
-        LOG_E("f_open failed path:%s ret:%d\r\n", path, ret);
-        return;
-    }
-    LOG_D("f_open success");
-
-    ret = f_write(fp, data, strlen(data) + 1, &num);
-    if (ret != FR_OK) {
-        LOG_E("f_write failed path:%s\r\n", path);
-        return;
-    }
-    LOG_D("f_write success write num:%dBytes", num);
-
-    // read
     p_buff = mymalloc(512);
     if (!p_buff) {
         LOG_E("malloc failed");
-        return;
+        goto EXIT;
     }
-    
+
+    // ret = f_open(fp, (const TCHAR*)path, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+    ret = f_open(fp, (const TCHAR*)path, FA_READ | FA_WRITE);
+    if (ret != FR_OK) {
+        LOG_E("f_open failed path:%s ret:%d\r\n", path, ret);
+        goto EXIT;
+    }
+    LOG_D("f_open %s success", path);
+
+    // ret = f_write(fp, data, strlen(data) + 1, &num);
+    // if (ret != FR_OK) {
+    //     LOG_E("f_write failed path:%s\r\n", path);
+    //     goto EXIT;
+    // }
+    // LOG_D("f_write success write len:%dBytes", num);
+
     ret = f_lseek(fp, 0);
     if (ret != FR_OK) {
         LOG_E("f_lseek failed path:%s\r\n", path);
-        return;
+        goto EXIT;
     }
     LOG_D("f_lseek success");
 
     ret = f_read(fp, p_buff, 512, &num);
     if (ret != FR_OK) {
         LOG_E("f_read failed path:%s\r\n", path);
-        return;
+        goto EXIT;
     }
-    LOG_D("f_read success write num:%dBytes", num);
+    LOG_D("f_read success read len:%dBytes", num);
     LOG_HEX("f_read:", p_buff, num);
 
-    ret = f_close(fp);
-    if (ret != FR_OK) {
-        LOG_E("f_close failed path:%s\r\n", path);
-        return;
+EXIT:
+    if (fp) {
+        ret = f_close(fp);
+        if (ret != FR_OK) {
+            LOG_E("f_close failed path:%s\r\n", path);
+            return;
+        }
+        LOG_D("f_close success");
     }
-    LOG_D("f_close success");
+    if (p_buff)
+        myfree(p_buff);
+    if (fp)
+        myfree(fp);
 
-    myfree(p_buff);
-    myfree(fp);
+    return;
 }
 
 /**
- * @brief 对 FATFS 接口进行了简单的封装然后测试——感觉没必要这么封装, 仅仅是为了可以用 AT 命令测试
+ * @brief �� FATFS �ӿڽ����˼򵥵ķ�װȻ����ԡ����о�û��Ҫ��ô��װ, ������Ϊ�˿����� AT �������
  *        
  * @param op 
  */
@@ -853,7 +930,7 @@ void exfuns_test(uint8_t op)
         break;
         case 1:
         {
-            // 仅仅打开当前目录, 不糊递归访问子目录
+            // �����򿪵�ǰĿ¼, �����ݹ������Ŀ¼
             if(ret = mf_opendir(dirPath) != FR_OK){
                 printf("ERROR directory path:%s, errNo:%d\r\n", dirPath, ret);
             }
@@ -870,7 +947,7 @@ void exfuns_test(uint8_t op)
         break;
         case 3:
         {
-            // 难道 FATFS 不可以以读写方式打开文件 ??????????????
+            // �ѵ� FATFS �������Զ�д��ʽ���ļ� ??????????????
             if(ret = mf_open(path, FA_READ ) != FR_OK){
                 printf("ERROR path:%s errNo:%d\r\n", path, ret);
                 return;
@@ -888,8 +965,8 @@ void exfuns_test(uint8_t op)
         break;
         case 4:
         {
-            // 0: 表示盘符
-            // 格式化
+            // 0: ��ʾ�̷�
+            // ��ʽ��
         //    if((ret = mf_fmkfs("0", FA_CREATE_ALWAYS, 1024)) != FR_OK){
         //         printf("create directory %s failed, errNo:%d\r\n", "0:TestDir", ret);
         //         return;
@@ -933,23 +1010,147 @@ void exfuns_test(uint8_t op)
 
     return;
 }
-
-
 #endif /* FS_TEST_ENABLE */
+#endif /* FATFS_ENABLE */
+/**
+ * @brief GBK �ֿ����
+ * 
+ */
+#if GUI_FONT_ENABLE
+void gui_font_init(void)
+{
+#define ERASE_FLASH_FLAG 0
+#if ERASE_FLASH_FLAG
+    uint8_t random_arr[256] = {0};
+    LOG_I("erase flash");
+    // �������������, Ȼ����� flash �е��ֿ�����
+    SPI_Flash_Write(random_arr, (4916 + 100) * 1024, sizeof(random_arr)); //�����ֿ���Ϣ
+#endif
+    LOG_I("gui_font_init");
+    if (font_init() != 0) {
+        LOG_E("get font info failed, update font");
+        if (update_font() != 0) {
+            LOG_E("update font failed");
+            return;
+        }
+    }
+}
+#if GUI_FONT_TEST_ENABLE
+void gui_font_test(void)
+{
+    LCD_Show_Str(0, 200, display_rect_width, display_rect_height, "China No 1.", char_size, 0);
+    LCD_Show_Str(0, 220, display_rect_width, display_rect_height, "�����Ǹ����", char_size, 0);
 
+    // lcd_show_unicode_str(0, 220, display_rect_width, display_rect_height, L"�����Ǹ����", char_size, 0);
+}
+#endif /* GUI_FONT_TEST_ENABLE */
+#endif /* GUI_FONT_ENABLE */
+
+#if GUI_IMAGE_ENABLE
+//�õ�path·����,Ŀ���ļ����ܸ���
+//path:·��		    
+//����ֵ:����Ч�ļ���
+static u16 pic_get_tnum(u8 *path)
+{	  
+    u8 res;
+    u16 rval = 0;
+    DIR tdir; //��ʱĿ¼
+    FILINFO tfileinfo; //��ʱ�ļ���Ϣ	
+    u8 *fn;	 			 			   			     
+
+    tfileinfo.lfsize = _MAX_LFN*2+1; //���ļ�����󳤶�
+    tfileinfo.lfname = mymalloc(tfileinfo.lfsize); //Ϊ���ļ������������ڴ�
+    if (!tfileinfo.lfname) {
+        LOG_E("malloc failed");
+        return rval;
+    }
+
+    res = f_opendir(&tdir,(const TCHAR*)path); //��Ŀ¼
+    if (res != FR_OK) {
+        myfree(tfileinfo.lfname);
+        return rval;
+    }
+    while (1) { //��ѯ�ܵ���Ч�ļ���
+        res = f_readdir(&tdir,&tfileinfo); //��ȡĿ¼�µ�һ���ļ�
+        if(res != FR_OK || tfileinfo.fname[0] == 0)
+            break;	//������/��ĩβ��,�˳�		  
+        fn = (u8*)(*tfileinfo.lfname?tfileinfo.lfname:tfileinfo.fname);			 
+        res = f_typetell(fn);	
+        if((res & 0XF0) == 0X50) {//ȡ����λ,�����ǲ���ͼƬ�ļ�	
+            rval++;//��Ч�ļ�������1
+        }	    
+    }
+    // TODO:
+    // close dir ?
+    LOG_I("%s pic num:%d", path, rval);
+
+    return rval;
+}
+
+/**
+ * @brief ����ʵ�ֲ�����:1.ֱ�ӵ��� fatfs �ڲ��ӿ�, 2.Ϊʲô��ֱ�ӱ����ļ����� 
+ *  �����ļ������ļ�������
+ * 
+ * @param dir_path 
+ */
+static void gui_get_image_info_list(const char *dir_path)
+{
+    DIR picdir;
+    FILINFO picfileinfo;
+    u16 totoal_pic_num;
+	u8 *pname; //��·�����ļ���
+	u16 *picindextbl;	//ͼƬ������ 
+
+    if (f_opendir(&picdir, (const TCHAR*)dir_path) != FR_OK) { // ��ͼƬ�ļ���
+        LOG_E("%s open failed", dir_path);
+        return;
+    }
+
+    totoal_pic_num = pic_get_tnum((u8*)dir_path); //�õ�����Ч�ļ���
+    if (totoal_pic_num == 0) {
+        LOG_E("total pic num:%d", totoal_pic_num);
+        return;
+    }
+
+    // TODO:
+  	// picfileinfo.lfsize=_MAX_LFN*2+1;						//���ļ�����󳤶�
+	// picfileinfo.lfname=mymalloc(picfileinfo.lfsize); //Ϊ���ļ������������ڴ�
+ 	// pname=mymalloc(picfileinfo.lfsize); //Ϊ��·�����ļ��������ڴ�
+ 	// picindextbl=mymalloc(2*totoal_pic_num); //����2*totpicnum���ֽڵ��ڴ�,���ڴ��ͼƬ����
+ 	// if (picfileinfo.lfname == NULL || pname == NULL || picindextbl==NULL) {//�ڴ�������
+ 	// 	LOG_E("malloc failed");
+    //     return;
+	// }
+    
+    //
+}
+
+void gui_image_init(void)
+{
+    LOG_I("into");
+    piclib_init();
+    gui_get_image_info_list("0:PICTURE");
+}
+#if GUI_IMAGE_TEST_ENABLE
+void gui_image_test(void)
+{
+    ai_load_picfile("0:PICTURE/person_gif.gif",0,0,lcddev.width,lcddev.height,1);//��ʾͼƬ 
+}
+#endif /* GUI_IMAGE_TEST_ENABLE */
+#endif /* GUI_IMAGE_ENABLE */
 /*****************************************************************************
  * PUBLIC FUNCTIONS
  *****************************************************************************/
 void board_peripheral_init(void)
 {
-    Stm32_Clock_Init(9); //系统时钟设置
+    Stm32_Clock_Init(9); //ϵͳʱ������
     NVIC_PriorityGroupConfig(DEFAULT_NVIC_GROUP);
-    delay_init(72000000); //延时初始化
+    delay_init(72000000); //��ʱ��ʼ��
     delay_ms(100);
 
 #if UART1_ENABLE
-    // 初始化之后才可以使用 printf()
-    uart1_init(72000000, 115200);	 //串口初始化为9600
+    // ��ʼ��֮��ſ���ʹ�� printf()
+    uart1_init(72000000, 115200);	 //���ڳ�ʼ��Ϊ9600
     LOG_I("***************************************");
     LOG_I("*App start");
     LOG_I("***************************************");
@@ -965,25 +1166,25 @@ void board_peripheral_init(void)
 #endif
 
 #if IWATCH_DOG_ENABLE
-    IWDG_Init(4, 625); // 100:64分频, ReloadValue:625, 1000ms
+    IWDG_Init(4, 625); // 100:64��Ƶ, ReloadValue:625, 1000ms
 #elif WWATCH_DOG_ENABLE
-    WWDG_Init(WWDG_CNT, WWDG_UPPER_CNT, WWDG_CLK_8_PRESCALLER); // 计数器
+    WWDG_Init(WWDG_CNT, WWDG_UPPER_CNT, WWDG_CLK_8_PRESCALLER); // ������
 #endif
 
 #if TIMER1_ENABLE
-    TIM1_PWM_Init(899, 0); // 不分频， fpwm = 72 MHz / (899 + 1) = 0.08 MHz
+    TIM1_PWM_Init(899, 0); // ����Ƶ�� fpwm = 72 MHz / (899 + 1) = 0.08 MHz
 #endif
 
 #if TIMER2_ENABLE
-    // freq: 72 M / ((0xFFFF + 1) * 72), 这是 1M Hz 频率? 采样时间精度 1 us
-    // TIM2_CNT 每 +1 等于 1us, 最多统计 65535 * 1 = 65.5ms
-    // 加上统计的超时次数:0011 1111 0x3F * 65 = 4095ms = 4s
+    // freq: 72 M / ((0xFFFF + 1) * 72), ���� 1M Hz Ƶ��? ����ʱ�侫�� 1 us
+    // TIM2_CNT ÿ +1 ���� 1us, ���ͳ�� 65535 * 1 = 65.5ms
+    // ����ͳ�Ƶĳ�ʱ����:0011 1111 0x3F * 65 = 4095ms = 4s
     TIM2_INPUT_Init(0xFFFF, 72 - 1); 
 #endif
 
 #if TIMER3_ENABLE
-    // TIM3_Int_Init(4999, 8999); // 定时器频率 9KHz, 0.625s 周期
-    TIM3_Int_Init(4999 * 10, 8999); // 定时器频率 9KHz, 6.25s 周期
+    // TIM3_Int_Init(4999, 8999); // ��ʱ��Ƶ�� 9KHz, 0.625s ����
+    TIM3_Int_Init(4999 * 10, 8999); // ��ʱ��Ƶ�� 9KHz, 6.25s ����
 #endif
 
 #if ADC_ENABLE
@@ -1003,9 +1204,9 @@ void board_peripheral_init(void)
 
 #if DMA_ENABLE
     // USART1 TX - DMA1_Channel4
-    // 外设地址:(u32)USART1->DR, 也可以直接写寄存器地址
-    // 存储器地址:全局变量地址, 存储器增量模式
-    // 发送大小:一次大小 * 次数
+    // �����ַ:(u32)USART1->DR, Ҳ����ֱ��д�Ĵ�����ַ
+    // �洢����ַ:ȫ�ֱ�����ַ, �洢������ģʽ
+    // ���ʹ�С:һ�δ�С * ����
     DMA_Config(DMA1_Channel4, (u32)&USART1->DR, (u32)sendBuff, (TEXT_LENGTH + 2) * SEND_COUNT);
 #if DMA_TEST_ENABLE
     dma_test(); 
@@ -1014,12 +1215,22 @@ void board_peripheral_init(void)
 #endif // DMA_ENABLE
 
 #if INNER_FLASH_ENABLE
-    // 片内 falsh 不需要初始化直接使用即可
+    // Ƭ�� falsh ����Ҫ��ʼ��ֱ��ʹ�ü���
 #if INNER_FLASH_TEST_ENABLE
     inner_flash_test(1);
 #endif
 #endif
 
+#if USB_ENABLE
+    LOG_I("usb init");
+ 	USB_Port_Set(0); 	//USB??????
+	delay_ms(300);
+   	USB_Port_Set(1);	//USB????????
+	//USB????
+ 	USB_Interrupts_Config();    
+ 	Set_USBClock();   
+ 	USB_Init();
+#endif
 }
 
 void bsp_init(void)
@@ -1039,11 +1250,27 @@ void bsp_init(void)
 
 #if LCD_SCREEN_ENABLE
     LCD_Init();
+    display_rect_width = lcddev.width;
+    display_rect_height = char_size;
     sprintf((char*)lcd_id, "LCD ID:0x%04X", lcddev.id);
     LOG_I("%s\r\n", lcd_id);
-#if LCD_SCREEN_TEST_ENABLE
+
+#if LCD_SCREEN_TEST_ENABLE == 1
+    LCD_ShowString(0, 0, display_rect_width, display_rect_height, char_size, lcd_id);
+    LCD_ShowString(0, 16, display_rect_width, display_rect_height, char_size, random_string);
+    // LCD_ShowString(0, 100, display_rect_width, display_rect_height, char_size, "This is a screen display test");
+#if 0
+    LCD_ShowCharSong(0, 200, 'A', 12, 0);
+    LCD_ShowCharSong(0, 220, 'A', 16, 0);
+    LCD_ShowCharSong(0, 240, 'A', 24, 0);
 #endif
+#if RTC_ENABLE == 1
+    RTC_Get();
+    snprintf(time_str, sizeof(time_str), "%d-%d-%d %d:%d:%d  %d", calendar.w_year, calendar.w_month,
+        calendar.w_date, calendar.hour, calendar.min, calendar.sec, calendar.week);
 #endif
+#endif /* LCD_SCREEN_TEST_ENABLE */
+#endif /* LCD_SCREEN_ENABLE */
 
 #if TP_ENABLE
     TP_Init();
@@ -1094,12 +1321,12 @@ void bsp_init(void)
 #endif
 
 #if SD_CARD_ENABLE == 1
-    while(ret = SD_Initialize()) { // 检测不到 SD 卡
+    while(ret = SD_Initialize()) { // ��ⲻ�� SD ��
         LOG_E("sdcard init failed\r\n");
     }
     if(!ret){
         LOG_E("SD card init success\r\n");
-        sd_sect_size = SD_GetSectorCount(); // 获取扇区数
+        sd_sect_size = SD_GetSectorCount(); // ��ȡ������
         LOG_E("SD card sector number:%d\r\n", sd_sect_size);
     }
 #if SD_CARD_TEST_ENABLE
@@ -1134,47 +1361,17 @@ void service_init(void)
 
 #if FS_ENABLE
 #if FATFS_ENABLE
-    // 默认 SDcard 以及 内存管理模块已经初始化成功
-    // sdcard 上的文件系统需要格式化以后才可以在 STM32 上挂载成功???
-    // 使用自己写过的 SDcard 挂载文件系统会失败
-
-    // 文件系统挂载失败
-    ret = f_mount(fs[0], FATFS_LOGIC_VOLUME_0, 1); // 挂载 SDcard
-    if(ret != FR_OK) {
-    // if((ret = f_mount(fs[0], "0:", 1)) != FR_OK) { // 挂载 SDcard
-        LOG_E("mount sdcard failed, ret:%d", ret);
-        if (ret == FR_NO_FILESYSTEM) {
-            ret = f_mkfs(FATFS_LOGIC_VOLUME_0, 1, 1024);
-            if (ret != FR_OK) {
-                LOG_E("format failed ret:%d", ret);
-                goto EXIT;
-            }
-            // 重新挂载
-            ret = f_mount(fs[0], FATFS_LOGIC_VOLUME_0, 1);
-            if(ret != FR_OK) {
-                LOG_E("mount sdcard failed, ret:%d", ret);
-                goto EXIT;
-            }
-        } else {
-            goto EXIT;
-        }
-    }
-    LOG_I("FS:%s mount success", FATFS_LOGIC_VOLUME_0);
-    
-    ret = f_mount(fs[1], FATFS_LOGIC_VOLUME_1, 1);
-    if(ret != FR_OK){ // 挂载外部 flash
-        LOG_E("mount external flash failed, ret:%d", ret);
-        goto EXIT;
-    }
-    LOG_I("FS:%s mount success", FATFS_LOGIC_VOLUME_1);
-    //TOOD:
-    // 挂载两个物理磁盘有问题
-    // 目前先只测试 flash
-
+    fatfs_init();
+    // TODO:
+    // �Ƴ���ʱ����Ҫȡ������
+    // f_unmount("0:");
+    // f_unmount("1:");
 #if FATFS_TEST_ENABLE
-    fatfs_api_test1();
+    fs_op_test_framework();
+    // fatfs_api_test1("0:/test_sdcard.txt");
+    // fatfs_api_test1("1:/test_flash.txt");
 
-    // 自己简单封装的测试函数
+    // �Լ��򵥷�װ�Ĳ��Ժ���
     // if((ret = exfuns_init()) != 0){
     //     LOG_E("FATFS init failed, ret:%d", ret);
     //     goto EXIT;
@@ -1188,11 +1385,11 @@ void service_init(void)
 #endif /* FATFS_TEST_ENABLE */
 
 #if YAFFS_ENABLE
-
+#error "does not implement"
 #endif /* YAFFS_ENABLE */
 
 #if FS_API_ENABLE
-    // 文件系统 API 支持
+    // �ļ�ϵͳ API ֧��
     file_system_ctx_init();
 #if FS_API_TEST_ENABLE
 
@@ -1202,14 +1399,40 @@ void service_init(void)
 #endif /* FATFS_ENABLE */
 #endif /* FS_ENABLE */
 
+#if SERVICE_ASM_TEST == 1
+    // service_asm_test_load_global_val();
+    // nested_fun_call_fun1(100, 200, 300);
+    // null_ptr_test(NULL, 1);
+    div_0_test();
+#endif
+
     return;
 EXIT:
     LOG_E("ERROR");
     return;
 }
 
+void gui_init(void)
+{
+    LOG_I("enter");
+#if GUI_FONT_ENABLE
+    gui_font_init();
+#if GUI_FONT_TEST_ENABLE
+    gui_font_test();
+#endif
+#endif
+
+#if GUI_IMAGE_ENABLE
+    gui_image_init();
+#if GUI_IMAGE_TEST_ENABLE
+    gui_image_test();
+#endif
+#endif
+    LOG_I("exit");
+}
+
 /**
- * @brief while(1) 中调用
+ * @brief while(1) �е���
  * 
  */
 void board_peripheral_test_loop(void)
@@ -1241,7 +1464,7 @@ void board_peripheral_test_loop(void)
 }
 
 /**
- * @brief while(1) 中调用
+ * @brief while(1) �е���
  * 
  */
 void bsp_test_loop(void)
@@ -1260,19 +1483,6 @@ void bsp_test_loop(void)
 #if INT_KEY_TEST_ENABLE
 #endif
 
-#if LCD_SCREEN_TEST_ENABLE == 1
-    char_height = 16;
-    char_size = 16;
-    LCD_ShowString(0, 0, lcddev.width, char_height, char_size, lcd_id);
-    LCD_ShowString(0, 16, lcddev.width, char_height, char_size, random_string);
-    // LCD_ShowString(0, 100, lcddev.width, char_height, char_size, "This is a screen display test");
-#if RTC_ENABLE == 1
-    RTC_Get();
-    snprintf(time_str, sizeof(time_str), "%d-%d-%d %d:%d:%d  %d", calendar.w_year, calendar.w_month,
-        calendar.w_date, calendar.hour, calendar.min, calendar.sec, calendar.week);
-#endif
-#endif /* LCD_SCREEN_TEST_ENABLE */
-
 #if TP_ENABLE
     tp_test_loop();
 #endif
@@ -1282,7 +1492,7 @@ void bsp_test_loop(void)
     snprintf(temp_str, sizeof(temp_str), "External Temperature:%f C", (float)temperature/10);
     LOG_D("%s", temp_str);
 #if LCD_SCREEN_ENABLE
-    LCD_ShowString(0, 150, lcddev.width, char_height, char_size, temp_str);
+    LCD_ShowString(0, 150, display_rect_width, display_rect_height, char_size, temp_str);
 #endif /* LCD_SCREEN_ENABLE */
     delay_ms(1000);
 #endif /* TEMP_TEST_ENABLE */
@@ -1290,8 +1500,8 @@ void bsp_test_loop(void)
 }
 
 /**
- * @brief 组件库测试 loop
- *        while(1) 中调用
+ * @brief �������� loop
+ *        while(1) �е���
  * 
  */
 void component_test_loop(void)
@@ -1309,5 +1519,10 @@ void component_test_loop(void)
 #if 0
     LOG_HEX("arr", arr, 10);
 #endif
+}
+
+void gui_test_loop(void)
+{
+
 }
 

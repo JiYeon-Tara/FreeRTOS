@@ -21,10 +21,12 @@
 void board_peripheral_init(void);
 void bsp_init(void);
 void service_init(void);
+void gui_init(void);
 
 void board_peripheral_test_loop(void);
 void bsp_test_loop(void);
 void component_test_loop(void);
+void gui_test_loop(void);
 
 
 void eeprom_test(void);

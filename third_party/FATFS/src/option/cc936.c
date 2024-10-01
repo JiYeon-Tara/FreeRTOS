@@ -11,6 +11,7 @@
 #error This file is not needed in current configuration. Remove from the project.
 #endif
 
+// C2B 转换工具对文本格式有要求, 需要把和数组无关的内容都删掉, 比如函数等;
 static
 const WCHAR uni2oem[] = {
 /*  Unicode - OEM,  Unicode - OEM,  Unicode - OEM,  Unicode - OEM */
@@ -10920,7 +10921,11 @@ const WCHAR oem2uni[] = {
 };
 
 
-
+/**
+ * @brief Unicode 和 GBK 编码之间的转换
+ * 	      二分法查找, 将该数组保存到外部 flash时, 需要修改该函数
+ * 
+ */
 WCHAR ff_convert (	/* Converted code, 0 means conversion error */
 	WCHAR	chr,	/* Character code to be converted */
 	UINT	dir		/* 0: Unicode to OEMCP, 1: OEMCP to Unicode */
@@ -10931,20 +10936,22 @@ WCHAR ff_convert (	/* Converted code, 0 means conversion error */
 	int i, n, li, hi;
 
 
-	if (chr < 0x80) {	/* ASCII */
+	if (chr < 0x80) { /* ASCII */
 		c = chr;
 	} else {
-		if (dir) {		/* OEMCP to unicode */
+		if (dir) { /* OEMCP to unicode */
 			p = oem2uni;
 			hi = sizeof(oem2uni) / 4 - 1;
-		} else {		/* Unicode to OEMCP */
+		} else { /* Unicode to OEMCP */
 			p = uni2oem;
 			hi = sizeof(uni2oem) / 4 - 1;
 		}
+
 		li = 0;
 		for (n = 16; n; n--) {
 			i = li + (hi - li) / 2;
-			if (chr == p[i * 2]) break;
+			if (chr == p[i * 2])
+				break;
 			if (chr > p[i * 2])
 				li = i;
 			else
@@ -10956,7 +10963,49 @@ WCHAR ff_convert (	/* Converted code, 0 means conversion error */
 	return c;
 }
 
+#ifdef FLASH_ENABLE
+//  通过 C2B 工具将该数组转换为二进制, 保存到 flash 中
+WCHAR ff_convert_ext_falsh (	/* Converted code, 0 means conversion error */
+	WCHAR	src,	/* Character code to be converted */
+	UINT	dir		/* 0: Unicode to OEMCP, 1: OEMCP to Unicode */
+)
+{
+	WCHAR t[2];
+	WCHAR c;
+	u32 i, li, hi;
+	u16 n;			 
+	u32 gbk2uni_offset = 0;		  
+						  
+	if (src < 0x80) { //ASCII,直接不用转换.
+		c = src;
+	} else {
+ 		if (dir) { //GBK 2 UNICODE
+			gbk2uni_offset = ftinfo.ugbksize / 2;	 
+		} else { //UNICODE 2 GBK  
+			gbk2uni_offset = 0;	
+		}
 
+		/* Unicode to OEMCP */
+		hi = ftinfo.ugbksize / 2;//对半开. 二分法查找
+		hi = hi / 4 - 1;
+		li = 0;
+		for (n = 16; n; n--) {
+			i = li + (hi - li) / 2;	
+			SPI_Flash_Read((u8*)&t, ftinfo.ugbkaddr+i*4+gbk2uni_offset, 4);//读出4个字节  
+			if (src == t[0])
+				break;
+			
+			if (src > t[0])
+				li = i;  
+			else
+				hi = i;    
+		}
+		c = n ? t[1] : 0;  	    
+	}
+
+	return c;
+}	
+#endif /* FLASH_ENABLE */
 
 WCHAR ff_wtoupper (	/* Upper converted character */
 	WCHAR chr		/* Input character */

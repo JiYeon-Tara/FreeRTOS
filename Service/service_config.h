@@ -18,8 +18,10 @@
 #define FATFS_TEST_ENABLE           1
 #define FS_API_ENABLE               0
 #define FS_API_TEST_ENABLE          0
+#define FS_WORD_SAVE_AT_EXT_FLASH   1 // 字库通过 C2B 工具转换后保存到外部 flash
 
-
+// asm test
+#define SERVICE_ASM_TEST            1
 
 #endif
 

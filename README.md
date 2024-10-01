@@ -1,15 +1,22 @@
 ##### STM32 学习——寄存器版本
 
 TODO:
-1. MPU6050 姿态解算;
-2. 定时器章节, 输入捕获/PWM输出功能, 红外遥控器章节;
+ 写 FATFS API 测试用例;
+ service_fs_api 实现, 对 FATFS 等其他文件系统接口进行封装;
+2. 实现 BMP, GIF, JPG 格式图片头信息打印函数;
 
 
 书签:
 1. ch29, 无线通信实验,使用 2.4GHz,但是没有使用蓝牙协议, 通信距离:100m;
 2. OLED & LCD;
-3. ch34~ch36. FATFS 章节, 学完 FATFS 有关课程后再回来学习这部分内容;
- ch41~ch43:UCOS
+3. ch35~ch36. 字库(编解码)存储以及图片存储(编解码);
+ ch41~ch43:UCOS FreeRTOS 学习联系完再看这部分;
+4. ch38~ch39，学完"蓝牙， NFC52832 & esp32" 后再开始这部分 《USB》, 《CAN》;
+
+
+5. MPU6050 姿态解算;
+6. 定时器章节, 输入捕获/PWM输出功能, 红外遥控器章节;
+
 
 
 从寄存器版本开始学习，后面库函数版本以及HAL库版本带过即可；
@@ -18,8 +25,8 @@ TODO:
 
 先使用 Keil 编译版本 -> GCC 编译版本
 
-Questions:
 
+Questions:
 - 稚晖君 holocubic  + 华为太空人表盘；
 - 后续可以添加蓝牙 OTA 以及使用手机更换图片的功能；
 
@@ -76,9 +83,9 @@ void fun()
 
 
 
-##### 4. Q:stm32f103RCT6 这个板子的WK_UP按键好像有点问题，一直被触发，
-
-answer:按键没有问题，PA0 不需要短接，和 DS18B20 不能共用。
+##### 4. WK_UP 按键问题
+Q:stm32f103RCT6 这个板子的WK_UP按键好像有点问题，一直被触发，
+A:按键没有问题，PA0 不需要短接，和 DS18B20 不能共用。
 
 
 
@@ -103,11 +110,12 @@ flash page 划分：
 参考 STM32 数据手册， ARM 只是规定一个大致范围，真正的 page 分布，由芯片厂商自己去定义。
 ARM-CortexM3 规定的 flash 0.5GB, 范围:0x00000000~0x1FFFFFFF
 STM32F103RCT6:
-片上 flash:256KB
-片外扩展 flash W25Q64:8MB
+片上 flash:
+256KB
+片外扩展 flash W25Q64:
+8MByte
 
-
-SRAM:
+SRAM ARM 规定范围:0x20000000~0x3FFFFFFF:
 48KB(0xC000)
 0x20000000(0x20000000~0x2000BFFF)
 
@@ -115,8 +123,8 @@ SRAM:
 
 http://elm-chan.org/fsw/ff/00index_e.html
 
-U 盘上的文件系统需要格式化以后才可以在 STM32 上挂载成功???
-
+Q:U 盘上的文件系统需要格式化以后才可以在 STM32 上挂载成功???
+A:FATFS 文件系统系统内部需要对磁盘进行分区, 分为系统区,用户区等, 一块空白的磁盘是无法直接挂载文件系统的, 需要先格式化分区;
 
 
 ##### 9.FreeRTOS 移植
@@ -129,10 +137,11 @@ https://www.freertos.org/zh-cn-cmn-s/
 
 
 
-##### 11. Nuttx 移植
+##### 11. Nuttx(Vela) 移植
 
 https://nuttx.apache.org/
 
+##### 11. Linux 移植
 
 
 ##### 12. OTA(串口 IAP)

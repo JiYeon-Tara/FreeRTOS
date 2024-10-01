@@ -16,14 +16,16 @@
 #include "ulog.h"
 
 // falsh 使用 SPI 接口
-// NRF_CS, SD_card, flash 等硬件都是通过 SPI1 来通信的, 所以在使用的时候需要"时分复用"
+// NRF_CS, SD_card, flash 等硬件都是通过 SPI1 来通信的, 所以在使用的时候需要"分时复用"
 // 通过片选(CS)控制 PA2.PA3.PA4, 拉低表示选中该器件
 
 // SPI1 CS - PA2
 // SPI1 SCK - PA5
 // SPI1 MISO - PA6
 // SPI1 MOSI - PA7
-
+/*********************************************************************************
+ * MACRO
+ *********************************************************************************/
 // flash 指令表
 #define W25X_WriteEnable		0x06 
 #define W25X_WriteDisable		0x04 
@@ -62,12 +64,23 @@
 #define W25X_SR_TB              0x20
 #define W25X_SR_RV              0x40
 #define W25X_SR_SPR             0x80
-
+/*********************************************************************************
+ * PRIVATE VARIABLES
+ *********************************************************************************/
 u16 SPI_FLASH_TYPE = W25Q64;//默认就是25Q64
 static u8 SPI_FLASH_BUF[4096]; // 4K 的 flash 写缓冲区
-
+static bool spi_flash_already_init = false;
 u16 SPI_Flash_ReadID2(void);
-
+// TODO:
+struct ext_flash_manager_t {
+    bool init;
+};
+static struct ext_flash_manager_t ext_flash_manager = {
+    false,
+};
+/*********************************************************************************
+ * PUBLIC FUNCTIONS
+ *********************************************************************************/
 /**
  * @brief 初始化SPI FLASH的IO口 Flash_W25Q64_Init
  * 
@@ -75,6 +88,11 @@ u16 SPI_Flash_ReadID2(void);
 void SPI_Flash_Init(void)
 {
     u16 id;
+
+    if (spi_flash_already_init) {
+        LOG_E("SPI flash already init %d", spi_flash_already_init);
+        return;
+    }
 
     RCC->APB2ENR |= 1 << 2; // PORTA时钟使能  
     // TODO:
@@ -95,6 +113,7 @@ void SPI_Flash_Init(void)
     LOG_I("flash ID:%X", id);
 #endif
 #endif /* SPI1_TEST_ENABLE */
+    spi_flash_already_init = true;
 
     return;
 }

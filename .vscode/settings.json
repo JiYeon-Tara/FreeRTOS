@@ -56,7 +56,16 @@
     "spi.h": "c",
     "ps2.h": "c",
     "FONT.H": "cpp",
-    "stdio.h": "c"
+    "stdio.h": "c",
+    "service_asm_test.h": "c",
+    "text.h": "c",
+    "flash.h": "c",
+    "limits": "c",
+    "wchar.h": "c",
+    "stm32f10x.h": "c",
+    "fontupd.h": "c",
+    "hw_config.h": "c",
+    "type_traits": "c"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

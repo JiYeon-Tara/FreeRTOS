@@ -322,7 +322,7 @@
             <wLevel>0</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>1</v6Lang>
             <v6LangP>1</v6LangP>
@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART;..\BOARD_PERIPHERAL;..\BSP\LED;..\BSP;..\BOARD_PERIPHERAL\GPIO;..\BSP\KEY;..\USER;..\BOARD_PERIPHERAL\ADC;..\BOARD_PERIPHERAL\BKP;..\BOARD_PERIPHERAL\DAC;..\BOARD_PERIPHERAL\DMA;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\I2C;..\BOARD_PERIPHERAL\RTC;..\BOARD_PERIPHERAL\SLEEP_MODE;..\BOARD_PERIPHERAL\SPI;..\BOARD_PERIPHERAL\TEMP;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\USART;..\BOARD_PERIPHERAL\WDT;..\BSP\EEPROM;..\BSP\flash;..\BSP\KEY;..\BSP\LCD;..\BSP\LED;..\BSP\OLED;..\BSP\PS2;..\BSP\SD_card;..\BOARD_PERIPHERAL;..\BSP;..\third_party;..\third_party\AT;..\third_party;..\BSP\remote_control;..\BSP\temperature;..\BOARD_PERIPHERAL\flash;..\Service;..\Service\memmang;..\Service\FS;..\third_party\FATFS\exfuns;..\third_party\FATFS\src;..\BSP\OLED;..\BOARD_PERIPHERAL\I2C;..\Service\FS;..\third_party\ulog;..\SYSTEM;..\SYSTEM\sys</IncludePath>
+              <IncludePath>..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\KEY;..\BSP\KEY;..\BSP\LED;..\CORE;..\LIB;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\WDT;..\BSP\LCD;..\BSP\OLED;..\BSP\TEMP_18B20;..\BSP\TP;..\Service\BT;..\Service\USART;..\BOARD_PERIPHERAL;..\third_party\USMART;..\BOARD_PERIPHERAL;..\BSP\LED;..\BSP;..\BOARD_PERIPHERAL\GPIO;..\BSP\KEY;..\USER;..\BOARD_PERIPHERAL\ADC;..\BOARD_PERIPHERAL\BKP;..\BOARD_PERIPHERAL\DAC;..\BOARD_PERIPHERAL\DMA;..\BOARD_PERIPHERAL\EXTI;..\BOARD_PERIPHERAL\I2C;..\BOARD_PERIPHERAL\RTC;..\BOARD_PERIPHERAL\SLEEP_MODE;..\BOARD_PERIPHERAL\SPI;..\BOARD_PERIPHERAL\TEMP;..\BOARD_PERIPHERAL\TIMER;..\BOARD_PERIPHERAL\USART;..\BOARD_PERIPHERAL\WDT;..\BSP\EEPROM;..\BSP\flash;..\BSP\KEY;..\BSP\LCD;..\BSP\LED;..\BSP\OLED;..\BSP\PS2;..\BSP\SD_card;..\BOARD_PERIPHERAL;..\BSP;..\third_party;..\third_party\AT;..\third_party;..\BSP\remote_control;..\BSP\temperature;..\BOARD_PERIPHERAL\flash;..\Service;..\Service\memmang;..\Service\FS;..\third_party\FATFS\exfuns;..\third_party\FATFS\src;..\BSP\OLED;..\BOARD_PERIPHERAL\I2C;..\Service\FS;..\third_party\ulog;..\SYSTEM;..\SYSTEM\sys;..\GUI;..\GUI\image;..\GUI\text;..\GUI\video;..\..\STM32_test_project;..\Service\asm_test;..\GUI\image;..\BOARD_PERIPHERAL\USB;..\BOARD_PERIPHERAL\USB\CONFIG;..\BOARD_PERIPHERAL\USB\STM32_USB-FS-Device_Driver\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -515,6 +515,66 @@
               <FileType>1</FileType>
               <FilePath>..\BSP\OLED\oledfont.c</FilePath>
             </File>
+            <File>
+              <FileName>hw_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\CONFIG\hw_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_desc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\CONFIG\usb_desc.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_endp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\CONFIG\usb_endp.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_istr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\CONFIG\usb_istr.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_prop.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\CONFIG\usb_prop.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\CONFIG\usb_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\STM32_USB-FS-Device_Driver\src\usb_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\STM32_USB-FS-Device_Driver\src\usb_init.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_int.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\STM32_USB-FS-Device_Driver\src\usb_int.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\STM32_USB-FS-Device_Driver\src\usb_mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_regs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\STM32_USB-FS-Device_Driver\src\usb_regs.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_sil.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOARD_PERIPHERAL\USB\STM32_USB-FS-Device_Driver\src\usb_sil.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -658,6 +718,11 @@
               <FileType>1</FileType>
               <FilePath>..\Service\FS\service_fs_api.c</FilePath>
             </File>
+            <File>
+              <FileName>service_asm_test.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Service\asm_test\service_asm_test.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -707,6 +772,41 @@
               <FileName>unicode.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\third_party\FATFS\src\option\unicode.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>GUI</GroupName>
+          <Files>
+            <File>
+              <FileName>fontupd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\text\fontupd.c</FilePath>
+            </File>
+            <File>
+              <FileName>text.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\text\text.c</FilePath>
+            </File>
+            <File>
+              <FileName>gif.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\image\gif.c</FilePath>
+            </File>
+            <File>
+              <FileName>bmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\image\bmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>piclib.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\image\piclib.c</FilePath>
+            </File>
+            <File>
+              <FileName>tjpgd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\image\tjpgd.c</FilePath>
             </File>
           </Files>
         </Group>

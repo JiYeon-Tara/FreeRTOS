@@ -15,10 +15,10 @@
 /********************
  * MACRO
  ********************/
-#define USER_ROOT_DIR   "0:root/"
-#define USER_APP_DIR    "0:app/"
-#define USER_OTA_DIR    "0:ota/"
-#define RES_IMG_DIR     "0:image"
+#define USER_ROOT_DIR   "0:/root"
+#define USER_APP_DIR    "0:/app"
+#define USER_OTA_DIR    "0:/ota"
+#define RES_IMG_DIR     "0:/image"
 
 
 /**
