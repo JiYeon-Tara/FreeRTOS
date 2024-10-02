@@ -1156,3 +1156,10 @@ static int dir_modify_attr_test(void)
 
     return 0;
 }
+
+static int disk_info_test(void)
+{
+    // TODO:
+    // FATFS 还留了一点点小尾巴, 查询磁盘剩余空间以及修改磁盘名称
+    return 0;
+}

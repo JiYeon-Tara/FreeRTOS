@@ -8,10 +8,9 @@ TODO:
 
 书签:
 1. ch29, 无线通信实验,使用 2.4GHz,但是没有使用蓝牙协议, 通信距离:100m;
-2. OLED & LCD;
-3. ch35~ch36. 字库(编解码)存储以及图片存储(编解码);
+2. ch35~ch36. 字库(编解码)存储以及图片存储(编解码);
  ch41~ch43:UCOS FreeRTOS 学习联系完再看这部分;
-4. ch38~ch39，学完"蓝牙， NFC52832 & esp32" 后再开始这部分 《USB》, 《CAN》;
+1. ch38~ch39，学完"蓝牙， NFC52832 & esp32" 后再开始这部分 《USB》, 《CAN》;
 
 
 5. MPU6050 姿态解算;
@@ -156,55 +155,8 @@ ota.bin:对 user_flash 进行更新
 
 2.XIP 概念以及实现
 
+需要 flash 支持该功能? 直接从 flash 中取代码执行吗? 还是什么情况, 不太明白
 
 
 
-;function jump
-compare_fun
-	MOV R1,#0x0004
-	CMP R1,#0x00		;compare MOVGT, MOVLT, MOVEQ
-	
-	MOVEQ PC,LR ; if R1==0x00, return
-	;MOV PC,LR ; return
 
-;function loop
-loop	
-	MOV R1,#0x0004
-	CMP R1,#0x00
-	B loop
-	
-;save program state register
-save_cpsr
-	B save cpsr
-	
-subroutine_1
-	;PUSH {R0-R7,R12,LR}		;save register
-								;other operation
-	;POP {R0-R7,R12,LR}			;restore register
-	;BX R14						;return
-	
-special_fun_register_test1
-	MRS	R0,CPSR				;save CPSR to R0
-	MSR CPSR,R0
-	
-;label must define at line head
-NVIC_IRQ_SETEN0		EQU		0xE000E100	;define constant
-NVIC_IRQ0_ENABLE	EQU		0x01
-
-constant_test1
-	MOV R0,=NVIC_IRQ_SETN0
-	MOV R1,#NVIC_IRQ0_ENABLE
-	STR R1,[R0]					;*R0=R1,enable IRQ0 interrupt
-	
-
-number_test
-	LDR R3,=TEST_NUMBER1			;R3=TEST_NUMBER1
-	;LDR R4
-	
-	
-TEST_NUMBER1
-	DCD 0x12345678				;assemble psedo command
-HELLO_TEXT
-	DCB "HELLO\n"0
-	
-	END
